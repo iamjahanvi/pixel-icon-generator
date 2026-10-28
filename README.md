@@ -4,8 +4,6 @@ A Claude skill that turns a single word into a **16×16 pixel icon** in the styl
 
 Type `sunset` and you get three different takes, a preview page and Figma-ready SVGs. Then you pick one and refine it in plain words.
 
-![Pixtober reference icons and generated examples](docs/gallery.png)
-
 ## What you get
 
 - **Three takes per word**: different ideas, not recolours. "Coffee" might give a mug, a takeaway cup and a moka pot.
@@ -77,8 +75,6 @@ pixel-icons/              ← the skill (this folder is what gets installed)
   SKILL.md                ← instructions Claude follows
   scripts/pixelicon.py    ← renderer and style checker (Python 3)
   references/             ← the five Pixtober reference icons as JSON grids
-examples/                 ← generated "coffee" and "sunset" icons (JSON + SVG)
-docs/gallery.png          ← the image above
 pixel-icons.zip           ← the skill folder, zipped for uploading to Claude
 ```
 
@@ -93,10 +89,10 @@ Icons are stored as JSON: a palette plus 16 rows of 16 characters, where `.` mea
 ```
 
 ```bash
-python3 pixel-icons/scripts/pixelicon.py check examples/*.json             # validate the style rules
-python3 pixel-icons/scripts/pixelicon.py svg examples/*.json --out out     # export SVGs
-python3 pixel-icons/scripts/pixelicon.py preview out/p.html examples/*.json # build a preview page
-python3 pixel-icons/scripts/pixelicon.py import my-icon.svg my-icon        # convert your own icon to a grid
+python3 pixel-icons/scripts/pixelicon.py check my-icon.json              # validate the style rules
+python3 pixel-icons/scripts/pixelicon.py svg my-icon.json --out out       # export an SVG
+python3 pixel-icons/scripts/pixelicon.py preview out/p.html my-icon.json  # build a preview page
+python3 pixel-icons/scripts/pixelicon.py import my-icon.svg my-icon       # convert your own icon to a grid
 ```
 
 `check`, `svg`, `preview` and SVG `import` need only Python 3. `png` and PNG `import` also need [Pillow](https://pypi.org/project/pillow/).
