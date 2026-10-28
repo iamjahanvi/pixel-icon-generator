@@ -1,0 +1,27 @@
+{
+ "name": "smack",
+ "palette": {
+  "K": "#000000",
+  "a": "#ea924e",
+  "b": "#af5d1f"
+ },
+ "grid": [
+  "................",
+  "................",
+  "................",
+  "...KKKKKKKKK....",
+  "..KaaaaaaaaaK...",
+  ".KaaaaaaaaaabK..",
+  ".KabKabKabKabK..",
+  ".KaaaaaaaaaabK..",
+  ".KabKabKabKabK..",
+  ".KabKabKabKabK..",
+  ".KabKabKabKabK..",
+  "..KK.KK.KKaKKK..",
+  ".......KaaaabK..",
+  "........KKKKK...",
+  "................",
+  "................"
+ ],
+ "label": "Smack (fist)"
+}

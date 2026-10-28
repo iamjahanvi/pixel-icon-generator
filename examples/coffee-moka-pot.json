@@ -1,0 +1,28 @@
+{
+ "name": "coffee-moka-pot",
+ "label": "Coffee: moka pot",
+ "palette": {
+  "K": "#000000",
+  "a": "#c9d1d6",
+  "b": "#8e999f",
+  "c": "#ffffff"
+ },
+ "grid": [
+  "......KKK.......",
+  "......KKK.......",
+  "...KKKKKKKKK....",
+  ".KKaaaaaaabKKKK.",
+  "...KcaaaabK...K.",
+  "...KcaaaabK...K.",
+  "....KaaabK....K.",
+  "....KKKKKK...K..",
+  "....KaaabK..K...",
+  "...KaaaaabKK....",
+  "..KaaaaaaabK....",
+  "..KcaaaaaabK....",
+  ".KcaaaaaaaabK...",
+  ".KcaaaaaaaabK...",
+  ".KaaaaaaaaabK...",
+  "..KKKKKKKKKK...."
+ ]
+}

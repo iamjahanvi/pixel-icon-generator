@@ -1,0 +1,28 @@
+{
+ "name": "relic",
+ "palette": {
+  "K": "#000000",
+  "a": "#eddfc5",
+  "b": "#8ccdc0",
+  "c": "#549f90"
+ },
+ "grid": [
+  "..KKKKKKKKKKKK..",
+  ".KaaaaaaaaaaaaK.",
+  ".KaaKKKKKKKKaaK.",
+  ".KaKcbbbbbbbKaK.",
+  ".KaKcbKbbbKbKaK.",
+  ".KaKcbKbKbKbKaK.",
+  ".KaKcbbbKbbbKaK.",
+  ".KaKcbbKKbbbKaK.",
+  ".KaKcbbbbbbbKaK.",
+  ".KaaKKKKKKKKaaK.",
+  ".KaaaaaaaaaaaaK.",
+  ".KaKKaaaaKKKKaK.",
+  ".KaaaaaaaaaaaaK.",
+  "..KKKKKKKKKKKK..",
+  "..KaaaaaaaaaaK..",
+  "..KKKKKKKKKKKK.."
+ ],
+ "label": "Relic (old computer)"
+}

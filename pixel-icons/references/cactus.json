@@ -1,0 +1,28 @@
+{
+ "name": "cactus",
+ "palette": {
+  "K": "#000000",
+  "a": "#8aab1f",
+  "b": "#c7532e",
+  "c": "#bfdd4c"
+ },
+ "grid": [
+  ".......KK.......",
+  "...K..KaaK......",
+  "..KaK.KaaK..K...",
+  "..KcK.KacK.KaK..",
+  "..KaK.KaaK.KaK..",
+  "..KaK.KaaKKKcK..",
+  "..KaaKKcaKaaaK..",
+  "...KcaKaaKKKK...",
+  "....KKKaaK......",
+  "......KaaK......",
+  "....KKKacKKK....",
+  "...KbbKaaKbbK...",
+  "...KbKKKKKKbK...",
+  "....KbbbbbbK....",
+  "....KbbbbbbK....",
+  ".....KKKKKK....."
+ ],
+ "label": "Cactus"
+}

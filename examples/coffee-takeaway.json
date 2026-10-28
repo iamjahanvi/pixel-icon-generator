@@ -1,0 +1,30 @@
+{
+ "name": "coffee-takeaway",
+ "label": "Coffee: takeaway cup",
+ "palette": {
+  "K": "#000000",
+  "a": "#f4ede0",
+  "b": "#d8ccb5",
+  "c": "#ffffff",
+  "d": "#b5703d",
+  "e": "#ffffff"
+ },
+ "grid": [
+  "......KKKK......",
+  "...KKKccccKKK...",
+  "..KccccccccccK..",
+  ".KccccccccccccK.",
+  ".KKKKKKKKKKKKKK.",
+  "..KaeaaaaaaabK..",
+  "..KaeaaaaaaabK..",
+  "...KeaaaaaabK...",
+  "...KKKKKKKKKK...",
+  "...KddddddddK...",
+  "...KddddddddK...",
+  "...KKKKKKKKKK...",
+  "....KaaaaabK....",
+  "....KaaaaabK....",
+  "....KaaaaabK....",
+  ".....KKKKKK....."
+ ]
+}

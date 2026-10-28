@@ -1,0 +1,28 @@
+{
+ "name": "apple",
+ "palette": {
+  "a": "#f7203c",
+  "K": "#000000",
+  "b": "#ffffff",
+  "c": "#2bca30"
+ },
+ "grid": [
+  "......K.........",
+  ".......K........",
+  "...KKK.K.KKKK...",
+  "..KaKcKKKaaaaK..",
+  ".KaKccKaaaaaaaK.",
+  "KaKccKaaaaaaaaaK",
+  "KaaKKaaaaaabaaaK",
+  "KaaaaaaaaaaabaaK",
+  "KaaaaaaaaaaabaaK",
+  "KaaaaaaaaaaabaaK",
+  "KaaaaaaaaaaabaaK",
+  ".KaaaaaaaaabaaK.",
+  ".KaaaaaaaaaaaaK.",
+  "..KaaaaaaaaaaK..",
+  "...KaaaKKaaaK...",
+  "....KKK..KKK...."
+ ],
+ "label": "Apple"
+}

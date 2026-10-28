@@ -1,0 +1,34 @@
+{
+ "name": "ogre",
+ "palette": {
+  "K": "#000000",
+  "a": "#7dc03b",
+  "b": "#437d3d",
+  "c": "#913b21",
+  "d": "#b9eaf8",
+  "e": "#ffffff",
+  "f": "#7bc0d3",
+  "g": "#7a7302",
+  "h": "#fe0002",
+  "i": "#b10a0c"
+ },
+ "grid": [
+  "......KKKK...K..",
+  "....KKaaaaKKKdK.",
+  "...KaaaaaaaaKdK.",
+  ".KKKaaaaaaaaKdfK",
+  "KaabKaaaaaaKKdfK",
+  "KaabbKKaaKKbKdfK",
+  ".KKaaeeaaeeaKdfK",
+  "...KaeKaaKeaKdfK",
+  "....KaaaaaaKKdfK",
+  "..KKbbehhebbKdK.",
+  ".KaaaabiibaKgggg",
+  "KbbKaaaaaaaaKbbK",
+  ".KK.KccccccK.KK.",
+  "....KaccccaK....",
+  "....KabccbaK....",
+  ".....KK..KK....."
+ ],
+ "label": "Ogre"
+}

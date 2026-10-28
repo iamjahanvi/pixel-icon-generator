@@ -1,0 +1,31 @@
+{
+ "name": "sunset-mountains",
+ "label": "Sunset: sun behind the mountains",
+ "palette": {
+  "K": "#000000",
+  "a": "#ffc93c",
+  "b": "#f2862e",
+  "e": "#ffffff",
+  "m": "#8a8f98",
+  "s": "#646a75",
+  "n": "#4e7a3a"
+ },
+ "grid": [
+  "................",
+  ".........KKKK...",
+  "........KaaaaK..",
+  "....K..KaaaaaaK.",
+  "...KeK.KaaaaaabK",
+  "..KeeeKKaaaaaabK",
+  ".KmememKaaaKaabK",
+  "KmmmmmmsKaKmKabK",
+  "KmmmmmmmsKmmsKbK",
+  "KmmmmmmmKnnnnnKK",
+  "KmmmmmmKnnnnnnnK",
+  "KmmmmmKnnnnnnnnK",
+  "KmmmmKnnnnnnnnnK",
+  "KmmmKnnnnnnnnnnK",
+  "KmmKnnnnnnnnnnnK",
+  "KKKKKKKKKKKKKKKK"
+ ]
+}
