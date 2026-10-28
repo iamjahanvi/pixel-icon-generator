@@ -1,0 +1,37 @@
+{
+  "name": "pixel-icon-generator",
+  "version": "1.0.0",
+  "description": "An agent skill that turns a word into a 16x16 pixel icon in the Pixtober style: colour and black & white SVGs.",
+  "type": "module",
+  "bin": {
+    "pixel-icon-generator": "bin/cli.mjs"
+  },
+  "files": [
+    "bin",
+    "pixel-icons"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "pixel-art",
+    "icons",
+    "svg",
+    "agent-skills",
+    "claude",
+    "cursor",
+    "codex",
+    "pixtober",
+    "figma"
+  ],
+  "author": "Jahanvi Singh (https://x.com/me_Jahanvi)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamjahanvi/pixel-icon-generator.git"
+  },
+  "homepage": "https://github.com/iamjahanvi/pixel-icon-generator#readme",
+  "bugs": {
+    "url": "https://github.com/iamjahanvi/pixel-icon-generator/issues"
+  }
+}

@@ -1,0 +1,31 @@
+{
+ "name": "sword",
+ "style": "bw",
+ "size": "20x20 on a 24px canvas (reference only)",
+ "palette": {
+  "K": "#000000",
+  "w": "#ffffff"
+ },
+ "grid": [
+  "KKKKKKK.............",
+  "KKKKKKKK............",
+  "KKwwwKKKK...........",
+  "KKwwwwKKKK..........",
+  "KKwwwwwKKKK.........",
+  "KKKwwwwwKKKK........",
+  "KKKKwwwwwKKKK.......",
+  ".KKKKwwwwwKKKKKKKKK.",
+  "..KKKKwwwwwKKKKKKKK.",
+  "...KKKKwwwwwKKKwwKK.",
+  "....KKKKwwwwwKwKwKK.",
+  ".....KKKKwwwwwKwKKK.",
+  "......KKKKwwwKwKKKK.",
+  ".......KKKKwKKwKKKK.",
+  ".......KKKwKwwKwKKKK",
+  ".......KKwKwKKwKwKKK",
+  ".......KKwwKKKKwKwKK",
+  ".......KKKKKKKKKwwKK",
+  ".......KKKKKKKKKKKKK",
+  "..............KKKKKK"
+ ]
+}

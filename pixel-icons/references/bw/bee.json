@@ -1,0 +1,35 @@
+{
+ "name": "bee",
+ "style": "bw",
+ "size": "21x24 on a 24px canvas (reference only)",
+ "palette": {
+  "K": "#000000",
+  "w": "#ffffff"
+ },
+ "grid": [
+  "......KKKKKKKKK......",
+  "......KKKKKKKKK......",
+  "...KKKKKwKKKwKKKKK...",
+  "...KKKKKwKKKwKKKKK...",
+  "...KKwKKKwwwKKKwKK...",
+  "...KKwKKwwwwwKKwKK...",
+  "...KKwKKwwwwwKKwKK...",
+  "...KKKwKKwwwKKwKKK...",
+  "...KKKKwKKwKKwKKKK...",
+  "....KKKKwwwwwKKKK....",
+  "...KKKKwKwwwKwKKKK...",
+  "..KKKKwKKKwKKKwKKKK..",
+  ".KKKKwKKKwwwKKKwKKKK.",
+  "KKKKwKKKwKKKwKKKwKKKK",
+  "KKKwKKKwwwwwwwKKKwKKK",
+  "KKwKKwKwKKKKKwKwKKwKK",
+  "KKwKwKKwwwwwwwKKwKwKK",
+  "KKwKwKKwKKKKKwKKwKwKK",
+  "KKwKwKKwwwwwwwKKwKwKK",
+  "KKwKKKwKwKKKwKwKKKwKK",
+  "KKwKKwKwKwwwKwKwKKwKK",
+  "KKwwwKKwKKwKKwKKwwwKK",
+  "KKKKKKKKKKKKKKKKKKKKK",
+  "KKKKKKKKKKKKKKKKKKKKK"
+ ]
+}

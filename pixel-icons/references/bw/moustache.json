@@ -1,0 +1,29 @@
+{
+ "name": "moustache",
+ "style": "bw",
+ "size": "24x18 on a 24px canvas (reference only)",
+ "palette": {
+  "K": "#000000",
+  "w": "#ffffff"
+ },
+ "grid": [
+  "....KKKKKKKKKKKKKKKK....",
+  "...KKKKKKKKKKKKKKKKK....",
+  "...KKKwwwwwKKwwwwwKK....",
+  "...KKwKKKKKKwKKKKKKK....",
+  "...KKKKwwwKKKKwwwKKK....",
+  "...KKKwKKKwKKwKKKwKK....",
+  "....KKwKKwwKKwKKwwKK....",
+  "....KKwKwwwKKwKwwwKK....",
+  "....KKKwwwKKKKwwwKKK....",
+  "KKKKKKKKKKKKKKKKKKKKKKKK",
+  "KKKKKKKKwwwKKwwwKKKKKKKK",
+  "KKwKKKKwwwwwwwwwwKKKKwKK",
+  "KKKwKKwwwwwKKwwwwwKKwKKK",
+  "KKKwwwwwwwKKKKwwwwwwwKKK",
+  ".KKKwwwwwKwwwwKwwwwwKKK.",
+  ".KKKKwwwKKKKKKKKwwwKKKK.",
+  "..KKKKKKKKKKKKKKKKKKKK..",
+  "...KKKKKKK....KKKKKKK..."
+ ]
+}
