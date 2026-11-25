@@ -278,12 +278,26 @@ dialog.sheet:focus-visible { outline: none; }
   border: 1px solid rgba(0, 0, 0, 0.12);
 }
 .swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
-.add-colour {
-  position: relative; flex: none; width: 28px; height: 28px; display: grid; place-items: center; cursor: pointer;
-  border-radius: 8px; border: 1px dashed #b5b5b5; color: var(--muted); font-size: 18px; line-height: 1;
-}
+.add-colour-wrap { display: inline-flex; }
 .add-colour:hover { border-color: var(--text); color: var(--text); }
-.add-colour input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.add-colour {
+  flex: none; width: 28px; height: 28px; padding: 0; display: grid; place-items: center; cursor: pointer;
+  border-radius: 8px; border: 1px dashed #b5b5b5; background: transparent; color: var(--muted); font: 18px/1 var(--font);
+}
+.ed-colours { position: relative; }
+.hex-pop {
+  position: absolute; bottom: calc(100% + 8px); right: 0; z-index: 3; width: 220px; padding: 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg);
+}
+.hex-title { margin: 0 0 8px; font-size: 13px; font-weight: 500; }
+.hex-row { display: flex; gap: 8px; align-items: center; }
+.hex-row input[type="color"] { flex: none; width: 36px; height: 36px; padding: 0; border: 1px solid var(--border); border-radius: 9px; background: none; cursor: pointer; }
+.hex-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 3px; }
+.hex-row input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 6px; }
+.hex-row .field { font-size: 15px; text-transform: uppercase; }
+.hex-err { margin: 6px 0 0; font-size: 12px; color: var(--alert); }
+.hex-err:empty { display: none; }
+.hex-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
 .checks { list-style: none; margin: 0; padding: 0; font-size: 13px; }
 .checks li { position: relative; padding-left: 16px; margin-bottom: 6px; }
 .checks li::before { content: ""; position: absolute; left: 0; top: 6px; width: 7px; height: 7px; border-radius: 2px; }

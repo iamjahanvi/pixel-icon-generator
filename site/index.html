@@ -173,10 +173,22 @@
         <p class="ed-tip" id="ed-tip">Pencil: click or drag to draw.</p>
         <div class="ed-colours">
           <div class="swatches" id="ed-swatches" role="group" aria-label="Colours"></div>
-          <label class="add-colour" id="ed-add-wrap" title="Add a colour">
-            <input type="color" id="ed-add" value="#3fae49" aria-label="Add a colour">
-            <span aria-hidden="true">+</span>
-          </label>
+          <span class="add-colour-wrap" id="ed-add-wrap"><button type="button" class="add-colour" id="ed-add-btn" title="Add a colour" aria-label="Add a colour">+</button></span>
+          <div class="hex-pop" id="hex-pop" hidden>
+            <form id="hex-form" autocomplete="off">
+              <p class="hex-title" id="hex-title">Add a colour</p>
+              <div class="hex-row">
+                <input type="color" id="hex-swatch" value="#3fae49" aria-label="Pick visually" title="Pick visually">
+                <label class="sr" for="hex-in">Hex code</label>
+                <input id="hex-in" class="field" type="text" value="#3FAE49" maxlength="7" spellcheck="false">
+              </div>
+              <p class="hex-err" id="hex-err" role="alert"></p>
+              <div class="hex-actions">
+                <button type="button" class="btn small" id="hex-cancel">Cancel</button>
+                <button type="submit" class="btn dark small" id="hex-ok">Add</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
       <div class="ed-side">
@@ -186,10 +198,6 @@
             <button type="button" role="radio" data-style="color" aria-checked="true">Colour</button>
             <button type="button" role="radio" data-style="bw" aria-checked="false">Black &amp; white</button>
           </div>
-        </div>
-        <div class="ed-block" aria-live="polite">
-          <h3 class="ed-h">Checks</h3>
-          <ul class="checks" id="ed-checks"></ul>
         </div>
         <div class="ed-block">
           <h3 class="ed-h">Preview</h3>

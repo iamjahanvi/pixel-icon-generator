@@ -1,4 +1,4 @@
-import { N, check, svg } from "./core.js";
+import { N, svg } from "./core.js";
 import { toast, copyText, download, slugify, esc } from "./util.js";
 import { glyph } from "./glyphs.js";
 
@@ -71,7 +71,6 @@ export function initEditor() {
   }
 
   // ---------- drawing ----------
-  let problems = new Set();
   function render() {
     const d = doc();
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
@@ -82,41 +81,6 @@ export function initEditor() {
     }
     ctx.fillStyle = "#dedede";
     for (let i = 1; i < N; i++) { ctx.fillRect(i * C - 1, 0, 2, W); ctx.fillRect(0, i * C - 1, W, 2); }
-    // mark pixels that break a rule
-    ctx.strokeStyle = "#c8102e"; ctx.lineWidth = 3;
-    for (const p of problems) {
-      const [x, y] = p.split(",").map(Number);
-      ctx.strokeRect(x * C + 4, y * C + 4, C - 8, C - 8);
-    }
-  }
-
-  function renderChecks() {
-    const d = toPlain(doc());
-    const [errs, allWarns] = check(d);
-    // the starting palette is a box of colours, so unused ones are expected here
-    const warns = allWarns.filter((w) => !w.startsWith("unused palette keys"));
-    problems = new Set();
-    for (const m of errs) for (const [, x, y] of m.matchAll(/\((\d+),(\d+)\)/g)) problems.add(`${x},${y}`);
-    const empty = d.grid.every((r) => /^\.+$/.test(r));
-    const items = empty
-      ? [`<li class="warn">The grid is empty. Pick a colour and start drawing.</li>`]
-      : errs.length || warns.length
-        ? [...errs.map((m) => `<li class="err">${esc(humanize(m))}</li>`), ...warns.map((m) => `<li class="warn">${esc(humanize(m))}</li>`)]
-        : [`<li class="ok">Passes every ${d.style === "bw" ? "black & white" : "colour"} style check.</li>`];
-    $("#ed-checks").innerHTML = items.join("");
-  }
-
-  // make the checker's messages friendlier without hiding the detail
-  function humanize(m) {
-    return m
-      .replace(/^outline gap: coloured pixel touches transparency\/edge at .*/, "The outline has gaps: some coloured pixels touch the background. They're marked in red.")
-      .replace(/^stray pixel at .*/, "Some pixels float on their own. They're marked in red.")
-      .replace(/^outer outline thinner than 2px: .*/, "The outer outline is thinner than 2px in places. White pixels marked in red are too close to the edge.")
-      .replace(/^no pure black .*/, "Add pure black (#000000): it draws the outline.")
-      .replace(/^black & white icons use only #000000 and #ffffff, found (.*)/, "Black & white icons use only black and white. Found: $1.")
-      .replace(/^unused palette keys: (.*)/, "Unused colours in the palette: $1.")
-      .replace(/^(\d+) colours besides black.*/, "$1 colours besides black. Objects usually need 2–4.")
-      .replace(/^subject is small.*/, "The drawing is small. Icons usually fill 14–16 pixels.");
   }
 
   function renderPreview() {
@@ -143,7 +107,7 @@ export function initEditor() {
   }
 
   function refresh() {
-    renderChecks(); render(); renderPreview(); renderPalette(); renderDocs(); save();
+    render(); renderPreview(); renderPalette(); renderDocs(); save();
   }
 
   // ---------- tools ----------
@@ -191,7 +155,7 @@ export function initEditor() {
   const end = () => { if (drawing || last) { drawing = false; last = null; refresh(); } };
   canvas.addEventListener("pointerup", end);
   canvas.addEventListener("pointercancel", end);
-  function refreshCanvasOnly() { renderChecks(); render(); }
+  function refreshCanvasOnly() { render(); }
 
   // keyboard drawing for people who can't use a pointer: arrows move, space paints
   let cursor = [0, 0];
@@ -243,36 +207,54 @@ export function initEditor() {
   });
 
   // ---------- palette ----------
-  const picker = document.createElement("input");
-  picker.type = "color";
-  picker.style.cssText = "position:fixed;left:-100px;opacity:0";
-  document.body.appendChild(picker);
-  let editing = null;
+  // Our own small colour box, so the hex code is what people see first.
+  // The swatch inside it opens the browser's visual picker.
+  const pop = $("#hex-pop"), hexIn = $("#hex-in"), hexSw = $("#hex-swatch");
+  let editing = null; // palette key being changed, or null when adding
+  const normHex = (v) => {
+    let h = v.trim().replace(/^#/, "").toLowerCase();
+    if (/^[0-9a-f]{3}$/.test(h)) h = [...h].map((c) => c + c).join("");
+    return /^[0-9a-f]{6}$/.test(h) ? `#${h}` : null;
+  };
+  function openPop(k) {
+    editing = k;
+    const start = k ? doc().palette[k] : "#3fae49";
+    hexIn.value = start.toUpperCase(); hexSw.value = start;
+    $("#hex-title").textContent = k ? "Change colour" : "Add a colour";
+    $("#hex-ok").textContent = k ? "Done" : "Add";
+    $("#hex-err").textContent = "";
+    pop.hidden = false;
+    hexIn.focus(); hexIn.select();
+  }
+  function closePop() { pop.hidden = true; editing = null; }
+  function applyPop() {
+    const v = normHex(hexIn.value);
+    if (!v) { $("#hex-err").textContent = "Use a hex code like #3FAE49."; hexIn.focus(); return; }
+    const d = doc();
+    pushUndo();
+    if (editing) d.palette[editing] = v;
+    else {
+      const free = [...KEYS].find((k) => !(k in d.palette));
+      if (!free) { toast("The palette is full."); closePop(); return; }
+      d.palette[free] = v; key = free;
+      if (tool === "eraser" || tool === "pick") setTool("pencil");
+    }
+    closePop();
+    refresh();
+  }
+  hexIn.addEventListener("input", () => { const v = normHex(hexIn.value); if (v) hexSw.value = v; $("#hex-err").textContent = ""; });
+  hexSw.addEventListener("input", () => { hexIn.value = hexSw.value.toUpperCase(); });
+  $("#hex-form").addEventListener("submit", (e) => { e.preventDefault(); applyPop(); });
+  $("#hex-cancel").addEventListener("click", closePop);
+  pop.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closePop(); } });
+  $("#ed-add-btn").addEventListener("click", () => (pop.hidden || editing ? openPop(null) : closePop()));
   $("#ed-swatches").addEventListener("click", (e) => {
     const b = e.target.closest(".swatch"); if (!b) return;
     const k = b.dataset.key;
-    if (k === key && k !== "K" && doc().style !== "bw") {
-      editing = k; picker.value = doc().palette[k]; picker.click();
-      return;
-    }
+    if (k === key && k !== "K" && doc().style !== "bw") { openPop(k); return; }
     key = k;
     if (tool === "eraser" || tool === "pick") setTool("pencil");
     renderPalette();
-  });
-  picker.addEventListener("input", () => {
-    if (!editing) return;
-    doc().palette[editing] = picker.value;
-    render(); renderPreview(); renderPalette();
-  });
-  picker.addEventListener("change", () => { if (editing) { editing = null; refresh(); } });
-  $("#ed-add").addEventListener("change", (e) => {
-    const d = doc();
-    const free = [...KEYS].find((k) => !(k in d.palette));
-    if (!free) { toast("The palette is full."); return; }
-    pushUndo();
-    d.palette[free] = e.target.value.toLowerCase();
-    key = free;
-    refresh();
   });
 
   // ---------- style ----------

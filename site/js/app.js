@@ -272,7 +272,7 @@ $("#mk-form").addEventListener("submit", async (e) => {
     $("#mk-stage").innerHTML = iconSvg(r.doc, 128);
     $("#mk-idea").textContent = r.idea;
     $("#mk-note").textContent = r.errs.length
-      ? `It still breaks ${r.errs.length === 1 ? "1 style rule" : `${r.errs.length} style rules`}. Open it in the editor to see and fix the marked pixels.`
+      ? `It still breaks ${r.errs.length === 1 ? "1 style rule" : `${r.errs.length} style rules`}. Try again, or touch it up in the editor.`
       : r.warns.length ? `Passes the style checks, with a note: ${r.warns[0]}.` : "Passes every style check.";
     mkView("done");
     $("#mk-svg").focus();
