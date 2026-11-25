@@ -8,8 +8,17 @@ const STORE = "pixel-icons-draft-v1"; // your own drawing; icons you open are ne
 const KEYS = "abcdefghijmnopqrstuvwxyz";
 const BW_PALETTE = { K: "#000000", w: "#ffffff" };
 
+// new drawings are numbered: pixel-icon-1, pixel-icon-2, … (counted in this browser)
+const COUNT = "pixel-icons-count";
+function nextName() {
+  let n = 1;
+  try { n = (parseInt(localStorage.getItem(COUNT), 10) || 0) + 1; localStorage.setItem(COUNT, n); } catch { /* storage blocked */ }
+  return `pixel-icon-${n}`;
+}
+const isDefaultName = (name) => /^pixel-icon-\d+$/.test(name) || name === "my-icon";
+
 const blank = () => ({
-  name: "my-icon",
+  name: nextName(),
   style: "color",
   // everyday real-world colours to start from; add more with +
   palette: { K: "#000000", w: "#ffffff", g: "#8b8b8b", l: "#c9c9c9", r: "#e33a2f", o: "#f2932b", y: "#f7d84a", n: "#5bbd3c", b: "#3577e0", p: "#8a3fa0", t: "#8a5a32" },
@@ -219,6 +228,8 @@ export function initEditor() {
   $("#ed-clear").addEventListener("click", () => {
     pushUndo();
     doc().grid = Array.from({ length: N }, () => Array(N).fill("."));
+    // a cleared drawing is a new icon, so it gets the next number
+    if (mode === "draft" && isDefaultName(doc().name)) doc().name = nextName();
     refresh();
     toast("Cleared. Undo brings it back.");
   });
