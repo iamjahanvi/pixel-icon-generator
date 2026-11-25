@@ -132,8 +132,6 @@ export function initEditor() {
       `<button type="button" class="swatch" data-key="${k}" style="background:${v}" aria-pressed="${k === key}" aria-label="${k === "K" ? "Black (outline)" : v}${k !== "K" && d.style !== "bw" ? ". Click again to change it" : ""}" title="${k === "K" ? "Black, for outlines" : `${v}. Click again to change it`}"></button>`).join("");
     $("#ed-swatches").append(addWrap);
     addWrap.hidden = d.style === "bw";
-    $("#ed-current").style.background = pal[key];
-    $("#ed-current").title = key === "K" ? "Black" : pal[key];
     $$("#editor [data-style]").forEach((b) => b.setAttribute("aria-checked", b.dataset.style === d.style));
   }
 
