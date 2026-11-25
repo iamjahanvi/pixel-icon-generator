@@ -17,10 +17,12 @@ const CHATS = {
   claude: (q) => `https://claude.ai/new?q=${encodeURIComponent(q)}`,
   chatgpt: (q) => `https://chatgpt.com/?q=${encodeURIComponent(q)}`,
 };
-function openChat(where, word) {
-  if (where === "copy") return copyPrompt(word);
-  window.open(CHATS[where](buildPrompt(word, example)), "_blank", "noopener");
-  toast("When the icon comes back, paste the reply into the editor.");
+// Real links (not window.open), so they work in every browser and frame. Each link's href follows its word.
+function setChatLinks(scope, word) {
+  $$('a[data-chat]', scope).forEach((a) => {
+    a.href = word ? CHATS[a.dataset.chat](buildPrompt(word, example)) : CHATS[a.dataset.chat]("").replace(/\?q=$/, "");
+    a.dataset.word = word;
+  });
 }
 
 async function copyPrompt(word) {
@@ -79,14 +81,22 @@ $$(".line .copy").forEach((b) => b.addEventListener("click", async () => {
   b.textContent = ok ? "Copied" : "Couldn't copy";
   setTimeout(() => (b.textContent = "Copy"), 1500);
 }));
-function chatFromForm(where) {
-  const w = $("#prompt-word").value.trim();
-  if (!w) { toast("Type a word first."); $("#prompt-word").focus(); return; }
-  openChat(where, w);
-}
-$("#prompt-form").addEventListener("submit", (e) => { e.preventDefault(); chatFromForm(e.submitter?.dataset.chat || "claude"); });
-$$('#prompt-form [data-chat]:not([type="submit"])').forEach((b) => b.addEventListener("click", () => chatFromForm(b.dataset.chat)));
-$$("#lib-empty [data-chat]").forEach((b) => b.addEventListener("click", () => openChat(b.dataset.chat, search.value.trim())));
+const chatForm = $("#prompt-form");
+$("#prompt-word").addEventListener("input", (e) => setChatLinks(chatForm, e.target.value.trim()));
+chatForm.addEventListener("submit", (e) => { e.preventDefault(); $('a[data-chat="claude"]', chatForm).click(); });
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a[data-chat]");
+  if (a) {
+    if (!a.dataset.word) { e.preventDefault(); toast("Type a word first."); return; }
+    toast("When the icon comes back, paste the reply into the editor.");
+  }
+  const c = e.target.closest('button[data-chat="copy"]');
+  if (c) {
+    const w = c.closest("#lib-empty") ? search.value.trim() : $("#prompt-word").value.trim();
+    if (!w) { toast("Type a word first."); return; }
+    copyPrompt(w);
+  }
+});
 
 // ---------- library palette ----------
 const libDlg = $("#library"), search = $("#lib-search"), grid = $("#lib-grid");
@@ -114,6 +124,7 @@ function renderLib() {
     const w = search.value.trim();
     $("#lib-empty-text").textContent = w ? `No icon for “${w}” yet. Your AI tool can draw it.` : "No icons in this category yet.";
     $$("#lib-empty .lib-empty-actions, #lib-empty .hint").forEach((el) => (el.hidden = !w));
+    setChatLinks($("#lib-empty"), w);
   }
 }
 renderLib();
@@ -131,7 +142,7 @@ libDlg.addEventListener("keydown", (e) => {
   const tiles = $$(".tile", grid);
   if (e.target === search) {
     if (e.key === "ArrowDown" && tiles.length) { e.preventDefault(); tiles[0].focus(); }
-    if (e.key === "Enter") { e.preventDefault(); if (tiles.length) tiles[0].click(); else if (search.value.trim()) openChat("claude", search.value.trim()); }
+    if (e.key === "Enter") { e.preventDefault(); if (tiles.length) tiles[0].click(); else if (search.value.trim()) $('#lib-empty a[data-chat="claude"]').click(); }
     return;
   }
   const i = tiles.indexOf(e.target);

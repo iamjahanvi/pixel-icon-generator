@@ -65,8 +65,8 @@
           <label class="sr" for="prompt-word">Word to draw</label>
           <input id="prompt-word" class="chat-word" type="text" placeholder="Type a word, like kite" maxlength="40" spellcheck="false">
           <div class="chat-actions">
-            <button class="btn dark small" type="submit" data-chat="claude">Open in Claude</button>
-            <button class="btn small" type="button" data-chat="chatgpt">Open in ChatGPT</button>
+            <a class="btn dark small" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
+            <a class="btn small" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt">Open in ChatGPT</a>
             <button class="btn small" type="button" data-chat="copy">Copy prompt</button>
           </div>
         </form>
@@ -98,8 +98,8 @@
     <div class="lib-empty" id="lib-empty" hidden>
       <p id="lib-empty-text"></p>
       <div class="lib-empty-actions">
-        <button class="btn dark small" type="button" data-chat="claude">Open in Claude</button>
-        <button class="btn small" type="button" data-chat="chatgpt">Open in ChatGPT</button>
+        <a class="btn dark small" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
+        <a class="btn small" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt">Open in ChatGPT</a>
         <button class="btn small" type="button" data-chat="copy">Copy prompt</button>
       </div>
       <p class="hint">Then paste the reply into the <a href="#editor" data-open-editor>editor</a> to get the SVG. Have an Anthropic API key? <a href="#make" id="lib-empty-make">Make it here</a>.</p>
