@@ -4,7 +4,7 @@ An agent skill that turns a single word into a **16×16 pixel icon** in the styl
 
 Ask your AI tool for "a pixel icon of a lantern" and you get `lantern.svg` in your project, ready for code or Figma.
 
-**Website:** [pixelicons.iamjahanvi.com](https://pixelicons.iamjahanvi.com) has a library of 30 icons to download, an editor, and the copy-and-paste prompt.
+**Website:** [pixelicons.iamjahanvi.com](https://pixelicons.iamjahanvi.com) has a library of 30 icons to download, an editor, a way to make icons with your own API key, and the copy-and-paste prompt.
 
 ## What you get
 
@@ -57,6 +57,10 @@ npx pixel-icon-generator init --cursor   # .cursor/skills/ (Cursor only)
 ```
 
 Add `--global` to install it in your home folder for every project, and `--force` to replace an existing copy. It needs Node 18 or newer.
+
+### On the website, with your own API key
+
+On [the website](https://pixelicons.iamjahanvi.com/#make), click **Make**, type a word and paste your [Anthropic API key](https://platform.claude.com/settings/keys). Your browser sends the request straight to Anthropic, so the key never reaches the site. The site checks the icon against the style rules, asks Claude to fix any problems, and gives you the SVG.
 
 ### Any chatbot, without installing anything
 

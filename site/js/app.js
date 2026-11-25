@@ -1,4 +1,5 @@
-import { iconSvg, toast, copyText, download, esc } from "./util.js";
+import { iconSvg, toast, copyText, download, esc, slugify } from "./util.js";
+import { makeIcon, MODELS, savedKey, rememberKey } from "./make.js";
 import { buildPrompt } from "./prompt.js";
 import { initEditor } from "./editor.js";
 
@@ -102,6 +103,7 @@ function renderLib() {
     $("#lib-empty-prompt").textContent = w ? `Copy prompt for “${w}”` : "Copy prompt";
     $("#lib-empty-prompt").dataset.prompt = w;
     $("#lib-empty-prompt").hidden = !w;
+    $("#lib-empty-make").hidden = !w;
   }
 }
 renderLib();
@@ -211,6 +213,57 @@ function openEditor(docs) {
   edDlg.showModal();
 }
 
+// ---------- make an icon (visitor's own API key) ----------
+const mkDlg = $("#make");
+let made = null, job = null;
+$("#mk-model").innerHTML = MODELS.map((m) => `<option value="${m.id}">${esc(m.label)}</option>`).join("");
+function openMake(word) {
+  closeAll();
+  if (word) { $("#mk-word").value = word; mkView("form"); }
+  const k = savedKey();
+  if (k && !$("#mk-key").value) { $("#mk-key").value = k; $("#mk-remember").checked = true; }
+  mkDlg.showModal();
+  (!$("#mk-word").value ? $("#mk-word") : !$("#mk-key").value ? $("#mk-key") : $("#mk-go")).focus();
+}
+function mkView(state) {
+  $("#mk-form").hidden = state !== "form";
+  $("#mk-status").hidden = state !== "busy";
+  $("#mk-result").hidden = state !== "done";
+}
+$("#mk-remember").addEventListener("change", (e) => rememberKey(e.target.checked ? $("#mk-key").value.trim() : ""));
+$("#mk-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const word = $("#mk-word").value.trim(), key = $("#mk-key").value.trim();
+  $("#mk-error").textContent = "";
+  if (!word) { $("#mk-word").focus(); return; }
+  if (!key.startsWith("sk-ant-")) { $("#mk-error").textContent = "That doesn't look like an Anthropic API key. Keys start with sk-ant-."; $("#mk-key").focus(); return; }
+  if ($("#mk-remember").checked) rememberKey(key);
+  job = new AbortController();
+  mkView("busy");
+  try {
+    const r = await makeIcon({ word, key, model: $("#mk-model").value, example: bySlug("lantern") || lib[0], signal: job.signal, onStep: (t) => ($("#mk-step").textContent = t) });
+    r.doc.name = slugify(word);
+    made = { slug: r.doc.name, label: word, category: "Made by you", keywords: [], color: { palette: r.doc.palette, grid: r.doc.grid } };
+    $("#mk-stage").innerHTML = iconSvg(r.doc, 128);
+    $("#mk-idea").textContent = r.idea;
+    $("#mk-note").textContent = r.errs.length
+      ? `It still breaks ${r.errs.length === 1 ? "1 style rule" : `${r.errs.length} style rules`}. Open it in the editor to see and fix the marked pixels.`
+      : r.warns.length ? `Passes the style checks, with a note: ${r.warns[0]}.` : "Passes every style check.";
+    mkView("done");
+    $("#mk-svg").focus();
+  } catch (err) {
+    mkView("form");
+    if (err.name !== "AbortError") $("#mk-error").textContent = err.message;
+  } finally { job = null; }
+});
+$("#mk-cancel").addEventListener("click", () => job?.abort());
+mkDlg.addEventListener("close", () => job?.abort());
+$("#mk-svg").addEventListener("click", () => { download(`${made.slug}.svg`, iconSvg(asDoc(made))); toast(`Downloaded ${made.slug}.svg`); });
+$("#mk-more").addEventListener("click", () => openDetail(made, false));
+$("#mk-edit").addEventListener("click", () => openEditor([asDoc(made)]));
+$("#mk-again").addEventListener("click", () => { mkView("form"); $("#mk-word").select(); $("#mk-word").focus(); });
+$("#lib-empty-make").addEventListener("click", () => openMake(search.value.trim()));
+
 // ---------- wiring ----------
 function closeAll() { $$("dialog[open]").forEach((d) => d.close()); }
 document.addEventListener("click", (e) => {
@@ -221,6 +274,7 @@ document.addEventListener("click", (e) => {
   if (o) openDetail(bySlug(o.dataset.open), !!o.closest("#library"));
   if (t.closest("[data-open-library]")) { e.preventDefault(); openLibrary(); }
   if (t.closest("[data-open-editor]")) { e.preventDefault(); openEditor(); }
+  if (t.closest("[data-open-make]")) { e.preventDefault(); openMake(); }
   const c = t.closest("[data-close]");
   if (c) c.closest("dialog").close();
 });
@@ -241,3 +295,4 @@ document.addEventListener("keydown", (e) => {
 });
 if (location.hash === "#editor") openEditor();
 if (location.hash === "#library") openLibrary();
+if (location.hash === "#make") openMake();

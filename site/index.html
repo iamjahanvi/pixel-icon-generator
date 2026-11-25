@@ -66,7 +66,7 @@
           <input id="prompt-word" type="text" placeholder="Type a word, like kite" maxlength="40" spellcheck="false">
           <button class="btn dark small" type="submit">Copy prompt</button>
         </form>
-        <p class="hint">Paste it into ChatGPT, Gemini or any chat, then paste the reply into the <a href="#editor" data-open-editor>editor</a> to get the SVG.</p>
+        <p class="hint">Paste it into ChatGPT, Gemini or any chat, then paste the reply into the <a href="#editor" data-open-editor>editor</a> to get the SVG. Have an Anthropic API key? <a href="#make" data-open-make>Make it right here</a>.</p>
       </div>
     </div>
 
@@ -78,6 +78,7 @@
       <img src="favicon.svg" width="20" height="20" alt="">
       <span>Pixel Icons</span>
     </a>
+    <button class="dock-btn" type="button" data-open-make>Make</button>
     <button class="dock-btn" type="button" data-open-editor>Editor</button>
     <button class="dock-btn dark" type="button" data-open-library>Library <kbd>⌘K</kbd></button>
   </nav>
@@ -93,8 +94,11 @@
     <ul class="lib-grid" id="lib-grid"></ul>
     <div class="lib-empty" id="lib-empty" hidden>
       <p id="lib-empty-text"></p>
-      <button class="btn dark small" type="button" id="lib-empty-prompt">Copy prompt</button>
-      <p class="hint">Paste it into any AI chat, or install the skill and just ask.</p>
+      <div class="lib-empty-actions">
+        <button class="btn dark small" type="button" id="lib-empty-make">Make it here</button>
+        <button class="btn small" type="button" id="lib-empty-prompt">Copy prompt</button>
+      </div>
+      <p class="hint">Make it with your own Anthropic API key, or paste the prompt into any AI chat.</p>
     </div>
     <div class="palette-foot">
       <span class="keys"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move <kbd>↵</kbd> open</span>
@@ -191,6 +195,48 @@
             <button class="btn small" type="button" id="ed-paste">Paste from AI</button>
           </div>
         </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- make an icon with the visitor's own API key -->
+  <dialog class="sheet make" id="make" aria-labelledby="mk-title">
+    <div class="sheet-head">
+      <h2 id="mk-title">Make an icon</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close">✕</button>
+    </div>
+    <form class="mk-form" id="mk-form" autocomplete="off">
+      <div class="mk-field">
+        <label for="mk-word">Word</label>
+        <input id="mk-word" class="field" type="text" placeholder="Type a word, like kite" maxlength="40" spellcheck="false" required>
+      </div>
+      <div class="mk-field">
+        <label for="mk-key">Your Anthropic API key</label>
+        <input id="mk-key" class="field" type="password" placeholder="sk-ant-…" spellcheck="false" autocomplete="off" required>
+        <label class="mk-check"><input type="checkbox" id="mk-remember"> Remember on this device</label>
+        <p class="hint">Your key goes straight from this browser to Anthropic, never to this site. Each icon is one to three requests, billed to your key. <a href="https://platform.claude.com/settings/keys">Get a key</a></p>
+      </div>
+      <div class="mk-field">
+        <label for="mk-model">Model</label>
+        <select id="mk-model" class="field"></select>
+      </div>
+      <button class="btn dark" type="submit" id="mk-go">Make icon</button>
+    </form>
+    <div class="mk-status" id="mk-status" role="status" aria-live="polite" hidden>
+      <span class="mk-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span id="mk-step"></span>
+      <button class="btn small" type="button" id="mk-cancel">Cancel</button>
+    </div>
+    <p class="paste-error" id="mk-error" role="alert"></p>
+    <div class="mk-result" id="mk-result" hidden>
+      <div class="dt-stage" id="mk-stage"></div>
+      <p class="mk-idea" id="mk-idea"></p>
+      <p class="mk-note" id="mk-note"></p>
+      <div class="dt-actions">
+        <button class="btn dark small" type="button" id="mk-svg">Download SVG</button>
+        <button class="btn small" type="button" id="mk-more">Sizes &amp; code</button>
+        <button class="btn small" type="button" id="mk-edit">Open in editor</button>
+        <button class="btn small" type="button" id="mk-again">Make another</button>
       </div>
     </div>
   </dialog>

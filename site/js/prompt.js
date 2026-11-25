@@ -1,7 +1,7 @@
 // The copy-and-paste version of the skill, for AI tools without skills support.
 // `example` is a library entry shown to the model as a worked example.
 
-export function buildPrompt(word, example) {
+export function buildPrompt(word, example, { api = false } = {}) {
   const w = (word || "").trim() || "WORD";
   const ex = JSON.stringify({ name: example.slug, palette: example.color.palette, grid: example.color.grid }, null, 1)
     .replace(/\[\n\s+/g, "[\n  ").replace(/",\n\s+"/g, '",\n  "');
@@ -26,7 +26,7 @@ Before you answer, count every row: 16 rows, 16 characters each.
 Reply with one line saying which idea you drew, then one code block containing the icon's JSON.
 
 EXAMPLE ("${example.label.toLowerCase()}")
-${ex}
+${ex}${api ? "" : `
 
-To check the icon and download the SVG, paste the whole reply into the editor at pixelicons.iamjahanvi.com/#editor.`;
+To check the icon and download the SVG, paste the whole reply into the editor at pixelicons.iamjahanvi.com/#editor.`}`;
 }
