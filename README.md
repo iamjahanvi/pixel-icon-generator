@@ -136,7 +136,7 @@ node site/tools/test-site.mjs               # checks the site matches the skill 
 
 ## Credits
 
-Style and reference icons by **Jahanvi Singh**: [Pixtober 2024](https://jahanvi-pixtober-2024.framer.website/) · [@me_Jahanvi](https://x.com/me_Jahanvi). Skill built with Claude. Fonts on the site: [Allo](https://allo.joshpuckett.me) by Josh Puckett and [Departure Mono](https://departuremono.com) by Helena Zhang, both under the SIL Open Font License.
+Style and reference icons by **Jahanvi Singh**: [Pixtober 2024](https://jahanvi-pixtober-2024.framer.website/) · [@me_Jahanvi](https://x.com/me_Jahanvi). Skill built with Claude. The site uses the [Allo](https://allo.joshpuckett.me) font by Josh Puckett, under the SIL Open Font License.
 
 ## License
 

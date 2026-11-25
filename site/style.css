@@ -1,6 +1,5 @@
 /* Pixel Icons: a calm sheet of square grid paper, pixel icons scattered on it. */
 @font-face { font-family: "Allo"; src: url("fonts/allo-friendly.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: "Departure Mono"; src: url("fonts/departure-mono.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
 
 :root {
   --bg: #f6f6f6;
@@ -14,7 +13,6 @@
   --ok: #1f7a35;
   --alert: #c4162f;
   --font: "Allo", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --pixel: "Departure Mono", var(--mono);
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 32px -12px rgba(0, 0, 0, 0.14);
@@ -47,7 +45,6 @@ kbd {
   background: var(--sunken); border: 1px solid var(--border); color: var(--muted);
 }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.px { font-family: var(--pixel); font-weight: 400; letter-spacing: -0.05em; word-spacing: -0.3em; }
 
 /* ---------- buttons ---------- */
 .btn {
@@ -123,7 +120,6 @@ kbd {
 }
 .hero > * { pointer-events: auto; }
 .hero h1 { font-size: clamp(40px, 5.4vw + 12px, 68px); line-height: 1.04; letter-spacing: -0.02em; margin-bottom: 20px; }
-.hero h1 .px { font-size: 0.9em; }
 .sub { font-size: 18px; line-height: 1.5; color: var(--muted); max-width: 30em; margin: 0 0 32px; }
 
 .install {
@@ -215,7 +211,7 @@ kbd {
 .sizes { display: flex; flex-wrap: wrap; gap: 4px; }
 .sizes button {
   min-width: 40px; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
-  background: var(--surface); font: 13px var(--pixel); color: var(--muted);
+  background: var(--surface); font: 500 13px var(--font); color: var(--muted);
 }
 .sizes button:hover { color: var(--text); }
 .sizes button[aria-checked="true"] { background: var(--dark); border-color: var(--dark); color: #fff; }
@@ -283,7 +279,7 @@ kbd {
 .checks .warn { color: var(--muted); }
 .checks .warn::before { background: #a3a3a3; }
 .ed-preview { display: flex; align-items: flex-end; gap: 14px; }
-.ed-preview figure { margin: 0; text-align: center; color: var(--muted); font: 12px var(--pixel); }
+.ed-preview figure { margin: 0; text-align: center; color: var(--muted); font: 500 12px var(--font); }
 .ed-preview svg { display: block; image-rendering: pixelated; margin: 0 auto 4px; }
 #ed-name { margin-bottom: 10px; }
 .ed-actions { display: flex; flex-wrap: wrap; gap: 6px; }
