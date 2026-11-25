@@ -1,27 +1,44 @@
 import { N, check, svg } from "./core.js";
-import { GRID_LINE, toast, copyText, download, slugify, esc } from "./util.js";
+import { toast, copyText, download, slugify, esc } from "./util.js";
+import { glyph } from "./glyphs.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-const STORE = "pixel-icons-editor-v1";
+const STORE = "pixel-icons-draft-v1"; // your own drawing; icons you open are never saved over it
 const KEYS = "abcdefghijmnopqrstuvwxyz";
 const BW_PALETTE = { K: "#000000", w: "#ffffff" };
 
 const blank = () => ({
   name: "my-icon",
   style: "color",
-  palette: { K: "#000000", a: "#e8243c", b: "#ffd23f", c: "#3fae49", d: "#3a8ee6", w: "#ffffff" },
+  // everyday real-world colours to start from; add more with +
+  palette: { K: "#000000", w: "#ffffff", g: "#8b8b8b", l: "#c9c9c9", r: "#e33a2f", o: "#f2932b", y: "#f7d84a", n: "#5bbd3c", b: "#3577e0", p: "#8a3fa0", t: "#8a5a32" },
   grid: Array.from({ length: N }, () => ".".repeat(N)),
 });
+
+// keep only the colours the drawing uses
+const used = (d) => {
+  const keys = new Set(d.grid.join(""));
+  return { ...d, palette: Object.fromEntries(Object.entries(d.palette).filter(([k]) => keys.has(k))) };
+};
 
 // grid rows as arrays while editing
 const toEdit = (d) => ({ ...d, palette: { ...d.palette }, grid: d.grid.map((r) => [...r]) });
 const toPlain = (d) => ({ name: d.name, style: d.style, palette: d.palette, grid: d.grid.map((r) => r.join("")) });
 
-export function initEditor(starter) {
+const TIPS = {
+  pencil: "Pencil: click or drag to draw.",
+  eraser: "Eraser: click or drag to clear pixels.",
+  fill: "Fill: click to fill an area with the colour.",
+  pick: "Pick: click a pixel to use its colour. Or hold Alt with any tool.",
+};
+
+export function initEditor() {
   const canvas = $("#ed-canvas"), ctx = canvas.getContext("2d");
   const W = canvas.width, C = W / N;
-  let docs = [], active = 0, tool = "pencil", key = "K";
+  let docs = [], active = 0, tool = "pencil", key = "K", mode = "draft";
+  $$("#editor [data-glyph]").forEach((b) => (b.innerHTML = glyph(b.dataset.glyph)));
+  const addWrap = $("#ed-add-wrap"); // lives at the end of the colour list, re-added after each redraw
   const history = new WeakMap(); // doc -> { undo: [], redo: [] }
 
   const doc = () => docs[active];
@@ -42,14 +59,15 @@ export function initEditor(starter) {
 
   // ---------- persistence (this browser only) ----------
   function save() {
-    try { localStorage.setItem(STORE, JSON.stringify({ docs: docs.map(toPlain), active })); } catch { /* storage unavailable */ }
+    if (mode !== "draft") return;
+    try { localStorage.setItem(STORE, JSON.stringify(toPlain(doc()))); } catch { /* storage unavailable */ }
   }
-  function load() {
+  function loadDraft() {
     try {
-      const s = JSON.parse(localStorage.getItem(STORE) || "null");
-      if (s && Array.isArray(s.docs) && s.docs.length) { docs = s.docs.map(toEdit); active = Math.min(s.active || 0, docs.length - 1); return; }
+      const d = JSON.parse(localStorage.getItem(STORE) || "null");
+      if (d && Array.isArray(d.grid) && d.palette) return toEdit(d);
     } catch { /* ignore */ }
-    docs = (starter ? starter() : [blank()]).map(toEdit); active = 0;
+    return toEdit(blank());
   }
 
   // ---------- drawing ----------
@@ -58,11 +76,12 @@ export function initEditor(starter) {
     const d = doc();
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
       const k = d.grid[y][x];
-      ctx.fillStyle = k === "." ? ((x + y) % 2 ? "#f4f5f7" : "#ffffff") : (d.palette[k] || "#ff00ff");
+      // empty cells are a faint grey so white pixels still show
+      ctx.fillStyle = k === "." ? "#f7f7f7" : (d.palette[k] || "#ff00ff");
       ctx.fillRect(x * C, y * C, C, C);
     }
-    ctx.fillStyle = GRID_LINE;
-    for (let i = 1; i < N; i++) { ctx.fillRect(i * C, 0, 1, W); ctx.fillRect(0, i * C, W, 1); }
+    ctx.fillStyle = "#dedede";
+    for (let i = 1; i < N; i++) { ctx.fillRect(i * C - 1, 0, 2, W); ctx.fillRect(0, i * C - 1, W, 2); }
     // mark pixels that break a rule
     ctx.strokeStyle = "#c8102e"; ctx.lineWidth = 3;
     for (const p of problems) {
@@ -73,12 +92,14 @@ export function initEditor(starter) {
 
   function renderChecks() {
     const d = toPlain(doc());
-    const [errs, warns] = check(d);
+    const [errs, allWarns] = check(d);
+    // the starting palette is a box of colours, so unused ones are expected here
+    const warns = allWarns.filter((w) => !w.startsWith("unused palette keys"));
     problems = new Set();
     for (const m of errs) for (const [, x, y] of m.matchAll(/\((\d+),(\d+)\)/g)) problems.add(`${x},${y}`);
     const empty = d.grid.every((r) => /^\.+$/.test(r));
     const items = empty
-      ? [`<li class="warn">The grid is empty. Draw something, or open an icon from the library.</li>`]
+      ? [`<li class="warn">The grid is empty. Pick a colour and start drawing.</li>`]
       : errs.length || warns.length
         ? [...errs.map((m) => `<li class="err">${esc(humanize(m))}</li>`), ...warns.map((m) => `<li class="warn">${esc(humanize(m))}</li>`)]
         : [`<li class="ok">Passes every ${d.style === "bw" ? "black & white" : "colour"} style check.</li>`];
@@ -108,8 +129,11 @@ export function initEditor(starter) {
     const pal = d.style === "bw" ? BW_PALETTE : d.palette;
     if (!(key in pal)) key = "K";
     $("#ed-swatches").innerHTML = Object.entries(pal).map(([k, v]) =>
-      `<button type="button" class="swatch" data-key="${k}" style="background:${v}" aria-pressed="${k === key}" aria-label="${k === "K" ? "Black (outline)" : v}${k !== "K" && d.style !== "bw" ? ". Click again to change it" : ""}"></button>`).join("");
-    $("#ed-add-wrap").hidden = d.style === "bw";
+      `<button type="button" class="swatch" data-key="${k}" style="background:${v}" aria-pressed="${k === key}" aria-label="${k === "K" ? "Black (outline)" : v}${k !== "K" && d.style !== "bw" ? ". Click again to change it" : ""}" title="${k === "K" ? "Black, for outlines" : `${v}. Click again to change it`}"></button>`).join("");
+    $("#ed-swatches").append(addWrap);
+    addWrap.hidden = d.style === "bw";
+    $("#ed-current").style.background = pal[key];
+    $("#ed-current").title = key === "K" ? "Black" : pal[key];
     $$("#editor [data-style]").forEach((b) => b.setAttribute("aria-checked", b.dataset.style === d.style));
   }
 
@@ -194,7 +218,12 @@ export function initEditor(starter) {
   function setTool(t) {
     tool = t;
     $$("#editor [data-tool]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tool === t));
+    $("#ed-tip").textContent = TIPS[t];
+    canvas.dataset.tool = t;
   }
+  function flip(fn) { pushUndo(); doc().grid = fn(doc().grid); refresh(); }
+  $("#ed-flip-h").addEventListener("click", () => flip((g) => g.map((r) => [...r].reverse())));
+  $("#ed-flip-v").addEventListener("click", () => flip((g) => [...g].reverse()));
   $$("#editor [data-tool]").forEach((b) => b.addEventListener("click", () => setTool(b.dataset.tool)));
   $("#ed-undo").addEventListener("click", undo);
   $("#ed-redo").addEventListener("click", redo);
@@ -286,31 +315,44 @@ export function initEditor(starter) {
     toast(`Downloaded ${name}.svg`);
   });
   $("#ed-copy-svg").addEventListener("click", async () => toast((await copyText(svg(toPlain(doc())))) ? "SVG copied." : "Couldn't copy. Your browser blocked the clipboard."));
-  $("#ed-copy-json").addEventListener("click", async () => toast((await copyText(JSON.stringify(toPlain(doc()), null, 1))) ? "JSON copied." : "Couldn't copy. Your browser blocked the clipboard."));
+  $("#ed-copy-json").addEventListener("click", async () => toast((await copyText(JSON.stringify(used(toPlain(doc())), null, 1))) ? "JSON copied." : "Couldn't copy. Your browser blocked the clipboard."));
 
   // ---------- paste from AI ----------
   const pasteDlg = $("#paste-dialog");
-  $("#ed-paste").addEventListener("click", () => { $("#paste-error").textContent = ""; pasteDlg.showModal(); $("#paste-text").focus(); });
+  $("#ed-paste").addEventListener("click", () => openPaste());
   $("#paste-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const res = parseIcons($("#paste-text").value);
     if (res.error) { $("#paste-error").textContent = res.error; return; }
-    open(res.icons, 0);
+    open(res.icons, 0, res.icons.length > 1 ? "Icons from your AI" : "Icon from your AI");
     pasteDlg.close();
     $("#paste-text").value = "";
     toast(`Opened ${res.icons.length === 1 ? "1 icon" : `${res.icons.length} icons`}.${res.fixed ? " Some rows weren't 16 long, so they were padded or cut." : ""}`);
   });
 
   // ---------- open icons from elsewhere ----------
-  function open(list, i = 0) {
+  // An opened icon is edited on its own; your saved drawing stays as it was.
+  function open(list, i = 0, title) {
+    mode = "icon";
     docs = list.map((d) => toEdit({ ...d, palette: { ...d.palette } }));
     active = Math.min(i, docs.length - 1);
+    $("#ed-title").textContent = title || (docs.length > 1 ? "Edit icons" : "Edit icon");
+    setTool("pencil");
     refresh();
   }
+  // "Draw yourself": your own drawing, blank the first time
+  function openDraft() {
+    mode = "draft";
+    docs = [loadDraft()]; active = 0;
+    $("#ed-title").textContent = "Draw yourself";
+    refresh();
+  }
+  function openPaste() { $("#paste-error").textContent = ""; pasteDlg.showModal(); $("#paste-text").focus(); }
 
-  load();
+  docs = [loadDraft()];
+  setTool("pencil");
   refresh();
-  return { open };
+  return { open, openDraft, openPaste };
 }
 
 // Find icon JSON in a chat reply: a code block, a bare array or a single object.

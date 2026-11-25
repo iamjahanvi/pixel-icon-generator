@@ -70,7 +70,7 @@
             <button class="btn small" type="button" data-chat="copy">Copy prompt</button>
           </div>
         </form>
-        <p class="hint">A new chat opens with the prompt filled in. Press send, then paste the reply into the <a href="#editor" data-open-editor>editor</a> to get the SVG. Using Gemini or another chat? Copy the prompt. Have an Anthropic API key? <a href="#make" data-open-make>Make it here</a>.</p>
+        <p class="hint">A new chat opens with the prompt filled in. Press send, then paste the reply into the <a href="#paste" data-open-paste>editor</a> to get the SVG. Using Gemini or another chat? Copy the prompt. Have an Anthropic API key? <a href="#make" data-open-make>Make it here</a>.</p>
       </div>
     </div>
 
@@ -79,10 +79,10 @@
 
   <nav class="dock" aria-label="Tools">
     <a class="dock-brand" href="#" aria-label="Pixel Icons, home">
-      <img src="favicon.svg" width="20" height="20" alt="">
+      <img src="favicon.svg" width="24" height="24" alt="">
       <span>Pixel Icons</span>
     </a>
-    <button class="dock-btn" type="button" data-open-editor>Editor</button>
+    <button class="dock-btn" type="button" data-open-draw><span class="dock-ic" id="dock-draw-ic" aria-hidden="true"></span>Draw yourself</button>
     <button class="dock-btn dark" type="button" data-open-library>Library <kbd>⌘K</kbd></button>
   </nav>
 
@@ -102,7 +102,7 @@
         <a class="btn small" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt">Open in ChatGPT</a>
         <button class="btn small" type="button" data-chat="copy">Copy prompt</button>
       </div>
-      <p class="hint">Then paste the reply into the <a href="#editor" data-open-editor>editor</a> to get the SVG. Have an Anthropic API key? <a href="#make" id="lib-empty-make">Make it here</a>.</p>
+      <p class="hint">Then paste the reply into the <a href="#paste" data-open-paste>editor</a> to get the SVG. Have an Anthropic API key? <a href="#make" id="lib-empty-make">Make it here</a>.</p>
     </div>
     <div class="palette-foot">
       <span class="keys"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move <kbd>↵</kbd> open</span>
@@ -143,27 +143,42 @@
     </div>
   </dialog>
 
-  <!-- editor -->
+  <!-- editor: draw your own icon, or edit one you opened -->
   <dialog class="sheet editor-sheet" id="editor" aria-labelledby="ed-title">
     <div class="sheet-head">
-      <h2 id="ed-title">Editor</h2>
+      <h2 id="ed-title">Draw yourself</h2>
       <span class="ed-docs" id="ed-docs"></span>
       <button class="icon-btn" type="button" data-close aria-label="Close">✕</button>
     </div>
     <div class="editor">
-      <div class="ed-tools" role="toolbar" aria-label="Drawing tools">
-        <button type="button" data-tool="pencil" aria-pressed="true" title="Pencil (P)">Pencil</button>
-        <button type="button" data-tool="eraser" aria-pressed="false" title="Eraser (E)">Eraser</button>
-        <button type="button" data-tool="fill" aria-pressed="false" title="Fill (F)">Fill</button>
-        <button type="button" data-tool="pick" aria-pressed="false" title="Pick a colour from the grid (I)">Pick</button>
-        <span class="ed-gap"></span>
-        <button type="button" id="ed-undo" title="Undo (Ctrl+Z)">Undo</button>
-        <button type="button" id="ed-redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
-        <button type="button" id="ed-clear">Clear</button>
+      <div class="ed-tools" role="toolbar" aria-label="Drawing tools" aria-orientation="vertical">
+        <div class="ed-group">
+          <button type="button" data-tool="pencil" data-glyph="pencil" aria-pressed="true" aria-label="Pencil" title="Pencil (P)"></button>
+          <button type="button" data-tool="eraser" data-glyph="eraser" aria-pressed="false" aria-label="Eraser" title="Eraser (E)"></button>
+          <button type="button" data-tool="fill" data-glyph="fill" aria-pressed="false" aria-label="Fill" title="Fill an area (F)"></button>
+          <button type="button" data-tool="pick" data-glyph="pick" aria-pressed="false" aria-label="Pick a colour" title="Pick a colour from the grid (I)"></button>
+        </div>
+        <div class="ed-group">
+          <button type="button" id="ed-flip-h" data-glyph="fliph" aria-label="Flip left to right" title="Flip left to right"></button>
+          <button type="button" id="ed-flip-v" data-glyph="flipv" aria-label="Flip upside down" title="Flip upside down"></button>
+        </div>
+        <div class="ed-group">
+          <button type="button" id="ed-undo" data-glyph="undo" aria-label="Undo" title="Undo (Ctrl+Z)"></button>
+          <button type="button" id="ed-redo" data-glyph="redo" aria-label="Redo" title="Redo (Ctrl+Shift+Z)"></button>
+          <button type="button" id="ed-clear" data-glyph="clear" aria-label="Clear the grid" title="Clear the grid"></button>
+        </div>
       </div>
-      <div class="ed-canvas-wrap">
+      <div class="ed-main">
         <canvas id="ed-canvas" width="512" height="512" aria-label="16 by 16 pixel grid. Draw with a mouse, finger or pen, or use the arrow keys and space." tabindex="0"></canvas>
-        <p class="hint">Click or drag to draw. Hold Alt to pick a colour.</p>
+        <p class="ed-tip" id="ed-tip">Pencil: click or drag to draw.</p>
+        <div class="ed-colours">
+          <span class="ed-current" id="ed-current" aria-hidden="true"></span>
+          <div class="swatches" id="ed-swatches" role="group" aria-label="Colours"></div>
+          <label class="add-colour" id="ed-add-wrap" title="Add a colour">
+            <input type="color" id="ed-add" value="#3fae49" aria-label="Add a colour">
+            <span aria-hidden="true">+</span>
+          </label>
+        </div>
       </div>
       <div class="ed-side">
         <div class="ed-block">
@@ -172,14 +187,6 @@
             <button type="button" role="radio" data-style="color" aria-checked="true">Colour</button>
             <button type="button" role="radio" data-style="bw" aria-checked="false">Black &amp; white</button>
           </div>
-        </div>
-        <div class="ed-block">
-          <h3 class="ed-h">Palette</h3>
-          <div class="swatches" id="ed-swatches"></div>
-          <label class="add-colour" id="ed-add-wrap">
-            <input type="color" id="ed-add" value="#3fae49">
-            <span>Add colour</span>
-          </label>
         </div>
         <div class="ed-block" aria-live="polite">
           <h3 class="ed-h">Checks</h3>

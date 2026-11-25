@@ -10,7 +10,10 @@ const lib = await fetch("data/icons.json").then((r) => r.json());
 const bySlug = (s) => lib.find((ic) => ic.slug === s);
 const asDoc = (ic) => ({ name: ic.slug, style: "color", ...ic.color });
 const example = bySlug("lantern") || lib[0];
-const editor = initEditor(() => [asDoc(bySlug("cat") || lib[0])]);
+const editor = initEditor();
+// a chunkier pencil drawn for the "Draw yourself" button, shown at 24px (3 device pixels per pixel on Retina)
+const DRAW_ICON = { palette: {"K": "#000000", "p": "#f39bb0", "q": "#d06a86", "m": "#cfcfcf", "g": "#8e8e8e", "y": "#f7d84a", "s": "#d9a21f", "w": "#f3cf96"}, grid: ["................", "............KK..", "...........KppK.", "..........KppqK.", ".........KmmqK..", "........KymgK...", ".......KyysK....", "......KyysK.....", ".....KyysK......", "....KyysK.......", "...KyysK........", "..KwwwK.........", "..KwwK..........", ".KKwK...........", ".KKK............", "................"] };
+$("#dock-draw-ic").innerHTML = iconSvg(DRAW_ICON, 24);
 
 // Free route: open a new chat with the prompt filled in. The visitor reviews it and presses send.
 const CHATS = {
@@ -224,13 +227,14 @@ $("#dt-png").addEventListener("click", () => {
     toast(`Downloaded ${current.slug}-${size}.png`);
   });
 });
-$("#dt-edit").addEventListener("click", () => openEditor([asDoc(current)]));
+$("#dt-edit").addEventListener("click", () => openEditor([asDoc(current)], current.label));
 
 // ---------- editor ----------
 const edDlg = $("#editor");
-function openEditor(docs) {
+// opened with an icon: edit just that icon. Opened without: your own drawing.
+function openEditor(docs, title) {
   closeAll();
-  if (docs) editor.open(docs, 0);
+  if (docs) editor.open(docs, 0, title); else editor.openDraft();
   edDlg.showModal();
 }
 
@@ -281,7 +285,7 @@ $("#mk-cancel").addEventListener("click", () => job?.abort());
 mkDlg.addEventListener("close", () => job?.abort());
 $("#mk-svg").addEventListener("click", () => { download(`${made.slug}.svg`, iconSvg(asDoc(made))); toast(`Downloaded ${made.slug}.svg`); });
 $("#mk-more").addEventListener("click", () => openDetail(made, false));
-$("#mk-edit").addEventListener("click", () => openEditor([asDoc(made)]));
+$("#mk-edit").addEventListener("click", () => openEditor([asDoc(made)], made.label));
 $("#mk-again").addEventListener("click", () => { mkView("form"); $("#mk-word").select(); $("#mk-word").focus(); });
 $("#lib-empty-make").addEventListener("click", (e) => { e.preventDefault(); openMake(search.value.trim()); });
 
@@ -292,7 +296,8 @@ document.addEventListener("click", (e) => {
   const o = t.closest("[data-open]");
   if (o) openDetail(bySlug(o.dataset.open), !!o.closest("#library"));
   if (t.closest("[data-open-library]")) { e.preventDefault(); openLibrary(); }
-  if (t.closest("[data-open-editor]")) { e.preventDefault(); openEditor(); }
+  if (t.closest("[data-open-draw]")) { e.preventDefault(); openEditor(); }
+  if (t.closest("[data-open-paste]")) { e.preventDefault(); openEditor(); editor.openPaste(); }
   if (t.closest("[data-open-make]")) { e.preventDefault(); openMake($("#prompt-word").value.trim()); }
   const c = t.closest("[data-close]");
   if (c) c.closest("dialog").close();
@@ -312,6 +317,7 @@ document.addEventListener("keydown", (e) => {
     openLibrary();
   }
 });
-if (location.hash === "#editor") openEditor();
+if (location.hash === "#editor" || location.hash === "#draw") openEditor();
+if (location.hash === "#paste") { openEditor(); editor.openPaste(); }
 if (location.hash === "#library") openLibrary();
 if (location.hash === "#make") openMake();

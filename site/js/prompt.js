@@ -28,5 +28,5 @@ Reply with one line saying which idea you drew, then one code block containing t
 EXAMPLE ("${example.label.toLowerCase()}")
 ${ex}${api ? "" : `
 
-To check the icon and download the SVG, paste the whole reply into the editor at pixelicons.iamjahanvi.com/#editor.`}`;
+To check the icon and download the SVG, paste the whole reply into the editor at pixelicons.iamjahanvi.com/#paste.`}`;
 }
