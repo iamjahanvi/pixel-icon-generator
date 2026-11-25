@@ -4,285 +4,208 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pixel Icons by Jahanvi</title>
-  <meta name="description" content="A skill for Claude, Cursor, Codex and other AI tools that turns a word into a 16×16 pixel icon in the Pixtober style, in colour and in black and white.">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="An agent skill for Claude, Cursor, Codex and other AI tools that turns a word into a 16×16 pixel icon in the Pixtober style, saved as an SVG.">
+  <meta name="theme-color" content="#f6f6f6">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="https://pixelicons.iamjahanvi.com/">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://pixelicons.iamjahanvi.com/">
   <meta property="og:title" content="Pixel Icons by Jahanvi">
-  <meta property="og:description" content="Type a word, get a 16×16 pixel icon in two styles. A skill for Claude, Cursor, Codex and more.">
+  <meta property="og:description" content="Type a word, get a 16×16 pixel icon. An agent skill for Claude, Cursor, Codex and more.">
   <meta property="og:image" content="https://pixelicons.iamjahanvi.com/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:creator" content="@me_Jahanvi">
-  <link rel="preload" href="fonts/young-serif-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/allo-friendly.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/departure-mono.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
-  <a class="skip" href="#main">Skip to content</a>
+  <a class="pill corner left" href="https://x.com/me_Jahanvi">by Jahanvi</a>
+  <a class="pill corner right" href="https://github.com/iamjahanvi/pixel-icon-generator">
+    <svg width="17" height="17" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+    GitHub
+  </a>
 
-  <header class="top">
-    <div class="wrap top-row">
-      <a class="brand" href="#top" aria-label="Pixel Icons, back to top">
-        <img src="favicon.svg" width="32" height="32" alt="">
-        <span>Pixel Icons</span>
-      </a>
-      <nav aria-label="Sections">
-        <a href="#install">Install</a>
-        <a href="#styles">Styles</a>
-        <a href="#library">Library</a>
-        <a href="#editor">Editor</a>
-        <a href="https://github.com/iamjahanvi/pixel-icon-generator">GitHub</a>
-      </nav>
-    </div>
-  </header>
+  <div class="scatter" id="scatter"></div>
 
-  <main id="main">
-    <section class="hero wrap" id="top" aria-labelledby="hero-title">
-      <div class="hero-text">
-        <h1 id="hero-title">Type a word. Get a pixel icon in two styles.</h1>
-        <p class="lede">A skill for Claude, Cursor, Codex and other AI tools. It draws 16×16 icons in the Pixtober style, one in colour and one in black and white, and saves them as SVGs for your code or Figma.</p>
-        <form class="word-form" id="word-form" autocomplete="off">
-          <label for="word">Try a word from the library</label>
-          <div class="word-row">
-            <input id="word" name="word" type="text" placeholder="cherry" spellcheck="false" maxlength="40">
-            <button class="btn primary" type="submit">Draw it</button>
-          </div>
-        </form>
-        <div class="word-status" id="word-status" aria-live="polite"></div>
-      </div>
-      <div class="hero-stage" aria-live="off">
-        <figure class="stage">
-          <canvas id="hero-color" width="320" height="320" role="img" aria-label="Colour icon"></canvas>
-          <figcaption>Colour</figcaption>
-        </figure>
-        <figure class="stage">
-          <canvas id="hero-bw" width="320" height="320" role="img" aria-label="Black and white icon"></canvas>
-          <figcaption>Black &amp; white</figcaption>
-        </figure>
-      </div>
-    </section>
+  <main class="hero" id="main">
+    <h1>Type a word.<br>Get a <span class="px">pixel icon.</span></h1>
+    <p class="sub">An agent skill that draws 16×16 icons in the style of <a href="https://jahanvi-pixtober-2024.framer.website/">Pixtober</a> by Jahanvi Singh, and saves them as SVGs for your code or Figma.</p>
 
-    <section class="section wrap" id="install" aria-labelledby="install-title">
-      <h2 id="install-title">Use it in the tool you already have</h2>
-      <p class="intro">Install the skill once, then ask for any word: "make a pixel icon of a lantern". Your AI tool picks an idea, draws both styles, checks them against the style rules and saves two SVGs.</p>
-
-      <div class="tabs" role="tablist" aria-label="Where you use AI">
-        <button role="tab" id="tab-claude" aria-controls="panel-claude" aria-selected="true">Claude app</button>
-        <button role="tab" id="tab-code" aria-controls="panel-code" aria-selected="false" tabindex="-1">Claude Code</button>
-        <button role="tab" id="tab-agents" aria-controls="panel-agents" aria-selected="false" tabindex="-1">Cursor, Codex and more</button>
+    <div class="install" id="install">
+      <div class="install-tabs" role="tablist" aria-label="Where you use AI">
+        <button role="tab" id="tab-code" aria-controls="panel-code" aria-selected="true">Claude Code</button>
+        <button role="tab" id="tab-agents" aria-controls="panel-agents" aria-selected="false" tabindex="-1">Cursor &amp; more</button>
         <button role="tab" id="tab-npm" aria-controls="panel-npm" aria-selected="false" tabindex="-1">npm</button>
-        <button role="tab" id="tab-chat" aria-controls="panel-chat" aria-selected="false" tabindex="-1">Any chatbot</button>
+        <button role="tab" id="tab-claude" aria-controls="panel-claude" aria-selected="false" tabindex="-1">Claude app</button>
+        <button role="tab" id="tab-chat" aria-controls="panel-chat" aria-selected="false" tabindex="-1">Any chat</button>
       </div>
 
-      <div class="panel tab-panel" role="tabpanel" id="panel-claude" aria-labelledby="tab-claude">
-        <p>For Claude on the web, desktop and phone.</p>
-        <ol class="steps">
-          <li><a class="btn" href="https://github.com/iamjahanvi/pixel-icon-generator/raw/main/pixel-icons.zip">Download pixel-icons.zip</a></li>
-          <li>In Claude, open <b>Customize → Skills</b>, choose <b>+</b>, then <b>Create skill → Upload a skill</b>, and pick the ZIP.</li>
-          <li>Turn the skill on and ask: "make a pixel icon of a lantern".</li>
-        </ol>
-        <p class="note">Code execution needs to be on, under Settings → Capabilities. <a href="https://support.claude.com/en/articles/12512180-use-skills-in-claude">Claude's guide to skills</a></p>
+      <div class="install-body" role="tabpanel" id="panel-code" aria-labelledby="tab-code">
+        <div class="line"><code><span class="prompt" aria-hidden="true">›</span>/plugin marketplace add iamjahanvi/pixel-icon-generator</code><button class="copy" type="button">Copy</button></div>
+        <div class="line"><code><span class="prompt" aria-hidden="true">›</span>/plugin install pixel-icons@pixel-icon-generator</code><button class="copy" type="button">Copy</button></div>
       </div>
-
-      <div class="panel tab-panel" role="tabpanel" id="panel-code" aria-labelledby="tab-code" hidden>
-        <p>Add the plugin from inside Claude Code:</p>
-        <div class="cmd"><code>/plugin marketplace add iamjahanvi/pixel-icon-generator</code><button class="copy" type="button">Copy</button></div>
-        <div class="cmd"><code>/plugin install pixel-icons@pixel-icon-generator</code><button class="copy" type="button">Copy</button></div>
-        <p class="note">Then ask for an icon, or run <code>/pixel-icons:pixel-icons lantern</code>.</p>
+      <div class="install-body" role="tabpanel" id="panel-agents" aria-labelledby="tab-agents" hidden>
+        <div class="line"><code><span class="prompt" aria-hidden="true">$</span>npx skills add iamjahanvi/pixel-icon-generator</code><button class="copy" type="button">Copy</button></div>
+        <p class="hint">For Cursor, Codex, OpenCode, Gemini CLI and dozens more. Using Copilot? <code>gh skill install iamjahanvi/pixel-icon-generator pixel-icons</code></p>
       </div>
-
-      <div class="panel tab-panel" role="tabpanel" id="panel-agents" aria-labelledby="tab-agents" hidden>
-        <p>Works with Cursor, Codex, OpenCode, Gemini CLI and dozens of other agents that read Agent Skills. Run it in your project and pick your tools when it asks:</p>
-        <div class="cmd"><code>npx skills add iamjahanvi/pixel-icon-generator</code><button class="copy" type="button">Copy</button></div>
-        <p>Using GitHub Copilot? Install with the GitHub CLI:</p>
-        <div class="cmd"><code>gh skill install iamjahanvi/pixel-icon-generator pixel-icons</code><button class="copy" type="button">Copy</button></div>
+      <div class="install-body" role="tabpanel" id="panel-npm" aria-labelledby="tab-npm" hidden>
+        <div class="line"><code><span class="prompt" aria-hidden="true">$</span>npx pixel-icon-generator init</code><button class="copy" type="button">Copy</button></div>
+        <p class="hint">Copies the skill into <code>.agents/skills/</code>. Add <code>--claude</code>, <code>--cursor</code> or <code>--global</code> to put it elsewhere.</p>
       </div>
-
-      <div class="panel tab-panel" role="tabpanel" id="panel-npm" aria-labelledby="tab-npm" hidden>
-        <p>Copy the skill into your project with one command. It needs Node 18 or newer.</p>
-        <div class="cmd"><code>npx pixel-icon-generator init</code><button class="copy" type="button">Copy</button></div>
-        <ul class="flags">
-          <li><code>--claude</code> installs into <code>.claude/skills/</code> for Claude Code</li>
-          <li><code>--cursor</code> installs into <code>.cursor/skills/</code></li>
-          <li><code>--global</code> installs into your home folder, for every project</li>
-        </ul>
-        <p class="note">Without a flag it goes into <code>.agents/skills/</code>, which Cursor, Codex and Copilot all read.</p>
+      <div class="install-body" role="tabpanel" id="panel-claude" aria-labelledby="tab-claude" hidden>
+        <div class="line split">
+          <span>Download the skill, then upload it in Claude under <b>Customize → Skills</b>.</span>
+          <a class="btn dark small" href="https://github.com/iamjahanvi/pixel-icon-generator/raw/main/pixel-icons.zip">Download .zip</a>
+        </div>
+        <p class="hint">Needs code execution on, under Settings → Capabilities. <a href="https://support.claude.com/en/articles/12512180-use-skills-in-claude">How skills work in Claude</a></p>
       </div>
-
-      <div class="panel tab-panel" role="tabpanel" id="panel-chat" aria-labelledby="tab-chat" hidden>
-        <p>No skills support? Copy the style rules as one prompt. It works in ChatGPT, Gemini, Claude or any other chat.</p>
-        <form class="word-row prompt-row" id="prompt-form" autocomplete="off">
+      <div class="install-body" role="tabpanel" id="panel-chat" aria-labelledby="tab-chat" hidden>
+        <form class="line split" id="prompt-form" autocomplete="off">
           <label class="sr" for="prompt-word">Word to draw</label>
-          <input id="prompt-word" type="text" placeholder="Your word" maxlength="40" spellcheck="false">
-          <button class="btn primary" type="submit">Copy prompt</button>
+          <input id="prompt-word" type="text" placeholder="Type a word, like kite" maxlength="40" spellcheck="false">
+          <button class="btn dark small" type="submit">Copy prompt</button>
         </form>
-        <ol class="steps">
-          <li>Paste the prompt into your chat.</li>
-          <li>Copy the whole reply.</li>
-          <li>Paste it into the <a href="#editor">editor</a> with "Paste from AI". It checks both icons and gives you the SVGs.</li>
-        </ol>
+        <p class="hint">Paste it into ChatGPT, Gemini or any chat, then paste the reply into the <a href="#editor" data-open-editor>editor</a> to get the SVG.</p>
       </div>
-    </section>
+    </div>
 
-    <section class="section wrap" id="styles" aria-labelledby="styles-title">
-      <h2 id="styles-title">Two styles from two Octobers</h2>
-      <p class="intro">Pixtober is Jahanvi Singh's pixel-icon series: one icon a day through October. The skill learned its rules from her 2024 and 2025 editions and draws every word in both.</p>
-      <div class="styles">
-        <article class="style-card">
-          <canvas class="style-art" id="style-color" width="320" height="320" role="img" aria-label="Cherries in the colour style, enlarged"></canvas>
-          <h3>Colour, from <a href="https://jahanvi-pixtober-2024.framer.website/">Pixtober 2024</a></h3>
-          <ul>
-            <li>A 1px pure black outline that always closes</li>
-            <li>The object's real colours, 2–4 plus black</li>
-            <li>One darker shade per material, and thin 1px highlights</li>
-            <li>Flat colour, no dithering</li>
-          </ul>
-        </article>
-        <article class="style-card">
-          <canvas class="style-art" id="style-bw" width="320" height="320" role="img" aria-label="Cherries in the black and white style, enlarged"></canvas>
-          <h3>Black &amp; white, from <a href="https://jahanvi-pixtober-2025.framer.website/">Pixtober 2025</a></h3>
-          <ul>
-            <li>Only pure black and white</li>
-            <li>A bold outer outline at least 2px thick, with 1px lines inside</li>
-            <li>White for the shape and light, black for shadow and dark parts</li>
-            <li>Checker patterns, only for texture</li>
-          </ul>
-        </article>
-      </div>
-    </section>
-
-    <section class="section wrap" id="library" aria-labelledby="library-title">
-      <h2 id="library-title">Browse <span id="lib-count">30</span> icons in both styles</h2>
-      <p class="intro">All drawn with the skill. Copy or download any SVG, or open it in the editor to change it.</p>
-      <div class="lib-controls">
-        <label class="search">
-          <span class="sr">Search icons</span>
-          <input id="lib-search" type="search" placeholder="Search: cat, rain, food…" spellcheck="false">
-        </label>
-        <div class="chips" id="lib-cats" role="group" aria-label="Category"></div>
-        <div class="seg" role="group" aria-label="Style to show">
-          <button type="button" data-show="both" aria-pressed="true">Both</button>
-          <button type="button" data-show="color" aria-pressed="false">Colour</button>
-          <button type="button" data-show="bw" aria-pressed="false">B&amp;W</button>
-        </div>
-      </div>
-      <ul class="lib-grid" id="lib-grid"></ul>
-      <div class="lib-empty panel" id="lib-empty" hidden>
-        <p id="lib-empty-text"></p>
-        <button class="btn primary" type="button" id="lib-empty-prompt">Copy prompt</button>
-      </div>
-    </section>
-
-    <section class="section wrap" id="editor" aria-labelledby="editor-title">
-      <h2 id="editor-title">Draw, remix and check</h2>
-      <p class="intro">Open a library icon, paste a reply from your AI tool, or start from a blank grid. The checks are the same ones the skill runs.</p>
-      <div class="editor panel">
-        <div class="ed-tools" role="toolbar" aria-label="Drawing tools">
-          <button type="button" data-tool="pencil" aria-pressed="true" title="Pencil (P)">Pencil</button>
-          <button type="button" data-tool="eraser" aria-pressed="false" title="Eraser (E)">Eraser</button>
-          <button type="button" data-tool="fill" aria-pressed="false" title="Fill (F)">Fill</button>
-          <button type="button" data-tool="pick" aria-pressed="false" title="Pick a colour from the grid (I)">Pick</button>
-          <span class="ed-gap"></span>
-          <button type="button" id="ed-undo" title="Undo (Ctrl+Z)">Undo</button>
-          <button type="button" id="ed-redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
-          <button type="button" id="ed-clear">Clear</button>
-        </div>
-        <div class="ed-canvas-wrap">
-          <div class="ed-docs" id="ed-docs" aria-label="Open icons"></div>
-          <canvas id="ed-canvas" width="512" height="512" aria-label="16 by 16 pixel grid. Draw with a mouse, finger or pen." tabindex="0"></canvas>
-          <p class="ed-hint">Click or drag to draw. Hold Alt to pick a colour.</p>
-        </div>
-        <div class="ed-side">
-          <fieldset class="ed-block">
-            <legend>Style</legend>
-            <div class="seg" role="radiogroup" aria-label="Style">
-              <button type="button" role="radio" data-style="color" aria-checked="true">Colour</button>
-              <button type="button" role="radio" data-style="bw" aria-checked="false">Black &amp; white</button>
-            </div>
-          </fieldset>
-          <fieldset class="ed-block">
-            <legend>Palette</legend>
-            <div class="swatches" id="ed-swatches"></div>
-            <label class="add-colour" id="ed-add-wrap">
-              <input type="color" id="ed-add" value="#3fae49">
-              <span>Add colour</span>
-            </label>
-          </fieldset>
-          <div class="ed-block" aria-live="polite">
-            <h3 class="ed-h">Checks</h3>
-            <ul class="checks" id="ed-checks"></ul>
-          </div>
-          <div class="ed-block">
-            <h3 class="ed-h">Preview</h3>
-            <div class="ed-preview" id="ed-preview"></div>
-          </div>
-          <div class="ed-block">
-            <h3 class="ed-h"><label for="ed-name">File name</label></h3>
-            <input id="ed-name" type="text" value="my-icon" spellcheck="false">
-            <div class="ed-actions">
-              <button class="btn primary" type="button" id="ed-download">Download SVG</button>
-              <button class="btn" type="button" id="ed-copy-svg">Copy SVG</button>
-              <button class="btn" type="button" id="ed-copy-json">Copy JSON</button>
-              <button class="btn" type="button" id="ed-paste">Paste from AI</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <p class="meta"><a href="#library" data-open-library>Browse 30 free icons</a> drawn with the skill</p>
   </main>
 
-  <footer class="foot">
-    <div class="wrap foot-row">
-      <p>Styles and reference icons by Jahanvi Singh. Code and icons are MIT licensed.</p>
-      <ul class="foot-links">
-        <li><a href="https://jahanvi-pixtober-2024.framer.website/">Pixtober 2024</a></li>
-        <li><a href="https://jahanvi-pixtober-2025.framer.website/">Pixtober 2025</a></li>
-        <li><a href="https://x.com/me_Jahanvi">@me_Jahanvi</a></li>
-        <li><a href="https://github.com/iamjahanvi/pixel-icon-generator">GitHub</a></li>
-        <li><a href="https://www.npmjs.com/package/pixel-icon-generator">npm</a></li>
-      </ul>
-    </div>
-  </footer>
+  <nav class="dock" aria-label="Tools">
+    <a class="dock-brand" href="#" aria-label="Pixel Icons, home">
+      <img src="favicon.svg" width="20" height="20" alt="">
+      <span>Pixel Icons</span>
+    </a>
+    <button class="dock-btn" type="button" data-open-editor>Editor</button>
+    <button class="dock-btn dark" type="button" data-open-library>Library <kbd>⌘K</kbd></button>
+  </nav>
 
-  <dialog class="dialog" id="icon-dialog" aria-labelledby="dlg-title">
-    <div class="dlg-head">
-      <h2 id="dlg-title">Icon</h2>
-      <button class="btn" type="button" data-close>Close</button>
+  <!-- library: a search palette -->
+  <dialog class="sheet palette" id="library" aria-label="Icon library">
+    <div class="palette-search">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="lib-search" type="search" placeholder="Search icons, or type any word…" spellcheck="false" aria-label="Search icons">
+      <button class="kbd-btn" type="button" data-close>esc</button>
     </div>
-    <div class="dlg-pair">
-      <figure>
-        <div class="dlg-art" id="dlg-color"></div>
-        <figcaption>Colour</figcaption>
-        <div class="dlg-actions">
-          <button class="btn" type="button" data-copy="color">Copy SVG</button>
-          <button class="btn" type="button" data-download="color">Download</button>
-          <button class="btn" type="button" data-edit="color">Edit</button>
-        </div>
-      </figure>
-      <figure>
-        <div class="dlg-art" id="dlg-bw"></div>
-        <figcaption>Black &amp; white</figcaption>
-        <div class="dlg-actions">
-          <button class="btn" type="button" data-copy="bw">Copy SVG</button>
-          <button class="btn" type="button" data-download="bw">Download</button>
-          <button class="btn" type="button" data-edit="bw">Edit</button>
-        </div>
-      </figure>
+    <div class="cats" id="lib-cats" role="group" aria-label="Category"></div>
+    <ul class="lib-grid" id="lib-grid"></ul>
+    <div class="lib-empty" id="lib-empty" hidden>
+      <p id="lib-empty-text"></p>
+      <button class="btn dark small" type="button" id="lib-empty-prompt">Copy prompt</button>
+      <p class="hint">Paste it into any AI chat, or install the skill and just ask.</p>
+    </div>
+    <div class="palette-foot">
+      <span class="keys"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move <kbd>↵</kbd> open</span>
+      <a class="btn small" href="downloads/pixel-icons-library.zip" download>Download all SVGs</a>
     </div>
   </dialog>
 
-  <dialog class="dialog" id="paste-dialog" aria-labelledby="paste-title">
-    <form method="dialog" id="paste-form">
-      <div class="dlg-head">
-        <h2 id="paste-title">Paste from your AI</h2>
-        <button class="btn" type="button" data-close>Close</button>
+  <!-- one icon -->
+  <dialog class="sheet detail" id="detail" aria-labelledby="dt-title">
+    <div class="sheet-head">
+      <button class="icon-btn" type="button" id="dt-back" aria-label="Back to the library">←</button>
+      <h2 id="dt-title">Icon</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="dt-stage" id="dt-stage"></div>
+    <div class="dt-row">
+      <span class="dt-label">Size</span>
+      <div class="sizes" id="dt-sizes" role="radiogroup" aria-label="Size"></div>
+    </div>
+    <div class="dt-row">
+      <span class="dt-label">Get it</span>
+      <div class="dt-actions">
+        <button class="btn small" type="button" id="dt-svg">SVG</button>
+        <button class="btn small" type="button" id="dt-png">PNG</button>
+        <button class="btn small" type="button" id="dt-edit">Open in editor</button>
       </div>
-      <label for="paste-text">Paste the whole reply. The editor finds the icons in it.</label>
-      <textarea id="paste-text" rows="10" spellcheck="false"></textarea>
+    </div>
+    <div class="code">
+      <div class="code-tabs">
+        <div role="tablist" aria-label="Code format">
+          <button role="tab" type="button" data-fmt="svg" aria-selected="true">SVG</button>
+          <button role="tab" type="button" data-fmt="react" aria-selected="false" tabindex="-1">React</button>
+          <button role="tab" type="button" data-fmt="html" aria-selected="false" tabindex="-1">HTML</button>
+        </div>
+        <button class="copy" type="button" id="dt-copy">Copy</button>
+      </div>
+      <pre><code id="dt-code"></code></pre>
+    </div>
+  </dialog>
+
+  <!-- editor -->
+  <dialog class="sheet editor-sheet" id="editor" aria-labelledby="ed-title">
+    <div class="sheet-head">
+      <h2 id="ed-title">Editor</h2>
+      <span class="ed-docs" id="ed-docs"></span>
+      <button class="icon-btn" type="button" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="editor">
+      <div class="ed-tools" role="toolbar" aria-label="Drawing tools">
+        <button type="button" data-tool="pencil" aria-pressed="true" title="Pencil (P)">Pencil</button>
+        <button type="button" data-tool="eraser" aria-pressed="false" title="Eraser (E)">Eraser</button>
+        <button type="button" data-tool="fill" aria-pressed="false" title="Fill (F)">Fill</button>
+        <button type="button" data-tool="pick" aria-pressed="false" title="Pick a colour from the grid (I)">Pick</button>
+        <span class="ed-gap"></span>
+        <button type="button" id="ed-undo" title="Undo (Ctrl+Z)">Undo</button>
+        <button type="button" id="ed-redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
+        <button type="button" id="ed-clear">Clear</button>
+      </div>
+      <div class="ed-canvas-wrap">
+        <canvas id="ed-canvas" width="512" height="512" aria-label="16 by 16 pixel grid. Draw with a mouse, finger or pen, or use the arrow keys and space." tabindex="0"></canvas>
+        <p class="hint">Click or drag to draw. Hold Alt to pick a colour.</p>
+      </div>
+      <div class="ed-side">
+        <div class="ed-block">
+          <h3 class="ed-h">Style</h3>
+          <div class="seg" role="radiogroup" aria-label="Style">
+            <button type="button" role="radio" data-style="color" aria-checked="true">Colour</button>
+            <button type="button" role="radio" data-style="bw" aria-checked="false">Black &amp; white</button>
+          </div>
+        </div>
+        <div class="ed-block">
+          <h3 class="ed-h">Palette</h3>
+          <div class="swatches" id="ed-swatches"></div>
+          <label class="add-colour" id="ed-add-wrap">
+            <input type="color" id="ed-add" value="#3fae49">
+            <span>Add colour</span>
+          </label>
+        </div>
+        <div class="ed-block" aria-live="polite">
+          <h3 class="ed-h">Checks</h3>
+          <ul class="checks" id="ed-checks"></ul>
+        </div>
+        <div class="ed-block">
+          <h3 class="ed-h">Preview</h3>
+          <div class="ed-preview" id="ed-preview"></div>
+        </div>
+        <div class="ed-block">
+          <h3 class="ed-h"><label for="ed-name">File name</label></h3>
+          <input id="ed-name" class="field" type="text" value="my-icon" spellcheck="false">
+          <div class="ed-actions">
+            <button class="btn dark small" type="button" id="ed-download">Download SVG</button>
+            <button class="btn small" type="button" id="ed-copy-svg">Copy SVG</button>
+            <button class="btn small" type="button" id="ed-copy-json">Copy JSON</button>
+            <button class="btn small" type="button" id="ed-paste">Paste from AI</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="sheet paste" id="paste-dialog" aria-labelledby="paste-title">
+    <form method="dialog" id="paste-form">
+      <div class="sheet-head">
+        <h2 id="paste-title">Paste from your AI</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Close">✕</button>
+      </div>
+      <label class="hint" for="paste-text">Paste the whole reply. The editor finds the icon in it.</label>
+      <textarea id="paste-text" class="field" rows="10" spellcheck="false"></textarea>
       <p class="paste-error" id="paste-error" role="alert"></p>
-      <button class="btn primary" type="submit" id="paste-load">Open in editor</button>
+      <button class="btn dark" type="submit" id="paste-load">Open in editor</button>
     </form>
   </dialog>
 

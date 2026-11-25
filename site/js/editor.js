@@ -205,13 +205,14 @@ export function initEditor(starter) {
     toast("Cleared. Undo brings it back.");
   });
   document.addEventListener("keydown", (e) => {
-    if (e.target.closest("input, textarea, select, dialog[open]")) return;
-    if (!$("#editor").contains(document.activeElement) && document.activeElement !== document.body) return;
+    // shortcuts only while the editor window is open and you're not typing
+    if (!$("#editor").open || $("#paste-dialog").open) return;
+    if (e.target.closest("input, textarea, select")) return;
     const mod = e.metaKey || e.ctrlKey;
     if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
     if (mod) return;
     const t = { p: "pencil", e: "eraser", f: "fill", i: "pick" }[e.key.toLowerCase()];
-    if (t && $("#editor").getBoundingClientRect().top < innerHeight) setTool(t);
+    if (t) setTool(t);
   });
 
   // ---------- palette ----------

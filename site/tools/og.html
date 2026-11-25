@@ -1,25 +1,26 @@
 <!doctype html>
-<!-- Source for og.png. Render at 1200x630: node site/tools/render-og.cjs -->
+<!-- Source for og.png. Render at 1200x630 with: node site/tools/render-og.cjs (site served on :8765) -->
 <html><head><meta charset="utf-8"><link rel="stylesheet" href="../style.css">
 <style>
-  body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
-  .og { display: grid; grid-template-columns: 1fr 560px; gap: 40px; align-items: center; height: 630px; padding: 0 64px; box-sizing: border-box; }
-  .og h1 { font-size: 92px; line-height: 0.98; margin: 0 0 28px; }
-  .og p { font-size: 30px; line-height: 1.3; margin: 0 0 30px; max-width: 15em; }
-  .og .url { font-weight: 700; font-size: 24px; }
-  .pairs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px 28px; }
-  .pair { display: flex; flex-direction: column; gap: 10px; background: #fff; box-shadow: var(--px); margin: 2px; padding: 14px; align-items: center; }
-  .pair svg { width: 96px; height: 96px; image-rendering: pixelated; }
+  body { width: 1200px; height: 630px; overflow: hidden; position: relative; }
+  .og { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .og h1 { font-size: 84px; line-height: 1.04; letter-spacing: -0.02em; margin: 0 0 22px; }
+  .og p { font-size: 26px; color: var(--muted); margin: 0; }
+  .ic { position: absolute; image-rendering: pixelated; }
+  .ic svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 </style></head>
-<body><div class="og">
-  <div><h1>Pixel Icons</h1><p>Type a word. Get a 16×16 icon in colour and in black &amp; white.</p><div class="url">pixelicons.iamjahanvi.com</div></div>
-  <div class="pairs" id="pairs"></div>
-</div>
+<body>
+<div id="ics"></div>
+<div class="og"><h1>Type a word.<br>Get a <span class="px">pixel icon.</span></h1><p>pixelicons.iamjahanvi.com</p></div>
 <script type="module">
   import { svg } from "../js/core.js";
   const lib = await fetch("../data/icons.json").then((r) => r.json());
-  const pick = ["cherry", "lantern", "cat", "rocket", "mushroom", "tulip"].map((s) => lib.find((i) => i.slug === s));
-  const top = pick.slice(0, 3), row = (ic) => `<div class="pair">${svg({ ...ic.color }, 96)}${svg({ ...ic.bw }, 96)}</div>`;
-  document.getElementById("pairs").innerHTML = top.map(row).join("");
+  const at = [["cherry", 90, 70, 96], ["cat", 60, 300, 96], ["mushroom", 150, 470, 96], ["lantern", 270, 40, 96],
+              ["rocket", 1030, 60, 96], ["heart", 1080, 280, 96], ["fish", 990, 460, 96], ["moon", 870, 40, 96]];
+  document.getElementById("ics").innerHTML = at.map(([s, x, y, z]) => {
+    const ic = lib.find((i) => i.slug === s);
+    return `<div class="ic" style="left:${x}px;top:${y}px;width:${z}px;height:${z}px">${svg({ ...ic.color }, z)}</div>`;
+  }).join("");
+  await document.fonts.ready;
   document.body.dataset.ready = "1";
 </script></body></html>

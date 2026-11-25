@@ -1,7 +1,7 @@
 {
   "name": "pixel-icons",
   "version": "1.0.0",
-  "description": "Turn a word into a 16x16 pixel icon in the Pixtober style by Jahanvi Singh, in colour and black & white, saved as Figma-ready SVGs.",
+  "description": "Turn a word into a 16x16 pixel icon in the Pixtober style by Jahanvi Singh, saved as a Figma-ready SVG.",
   "author": {
     "name": "Jahanvi Singh",
     "url": "https://x.com/me_Jahanvi"
@@ -9,5 +9,11 @@
   "homepage": "https://pixelicons.iamjahanvi.com",
   "repository": "https://github.com/iamjahanvi/pixel-icon-generator",
   "license": "MIT",
-  "keywords": ["pixel-art", "icons", "svg", "pixtober", "figma"]
+  "keywords": [
+    "pixel-art",
+    "icons",
+    "svg",
+    "pixtober",
+    "figma"
+  ]
 }

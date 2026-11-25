@@ -9,7 +9,7 @@
     {
       "name": "pixel-icons",
       "source": "./",
-      "description": "Turn a word into a 16x16 pixel icon in colour and black & white, saved as Figma-ready SVGs.",
+      "description": "Turn a word into a 16x16 pixel icon in the Pixtober style by Jahanvi Singh, saved as a Figma-ready SVG.",
       "category": "design"
     }
   ]

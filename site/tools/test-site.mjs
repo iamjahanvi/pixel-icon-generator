@@ -7,7 +7,7 @@ import * as site from "../js/core.js";
 const lib = JSON.parse(fs.readFileSync("site/data/icons.json", "utf8"));
 let bad = 0;
 for (const ic of lib) {
-  for (const style of ["color", "bw"]) {
+  for (const style of ["color"]) {
     const d = { name: ic.slug, style, ...ic[style] };
     const a = JSON.stringify(skill.check(d)), b = JSON.stringify(site.check(d));
     if (a !== b) { bad++; console.log("check differs:", ic.slug, style); }
@@ -16,5 +16,5 @@ for (const ic of lib) {
     if (errs.length) { bad++; console.log("fails:", ic.slug, style, errs); }
   }
 }
-console.log(bad ? `${bad} problem(s)` : `ok: ${lib.length * 2} icons match the skill and pass`);
+console.log(bad ? `${bad} problem(s)` : `ok: ${lib.length} icons match the skill and pass`);
 process.exit(bad ? 1 : 0);

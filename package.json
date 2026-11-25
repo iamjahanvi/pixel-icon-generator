@@ -1,7 +1,7 @@
 {
   "name": "pixel-icon-generator",
   "version": "1.0.0",
-  "description": "An agent skill that turns a word into a 16x16 pixel icon in the Pixtober style: colour and black & white SVGs.",
+  "description": "An agent skill that turns a word into a 16x16 pixel icon in the Pixtober style, saved as an SVG.",
   "type": "module",
   "bin": {
     "pixel-icon-generator": "bin/cli.mjs"
