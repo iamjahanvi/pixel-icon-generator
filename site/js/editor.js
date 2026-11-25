@@ -36,7 +36,7 @@ const TIPS = {
 export function initEditor() {
   const canvas = $("#ed-canvas"), ctx = canvas.getContext("2d");
   const W = canvas.width, C = W / N;
-  let docs = [], active = 0, tool = "pencil", key = "K", mode = "draft";
+  let docs = [], active = 0, tool = "pencil", key = "K", mode = "draft", mirrorX = false, mirrorY = false;
   $$("#editor [data-glyph]").forEach((b) => (b.innerHTML = glyph(b.dataset.glyph)));
   const addWrap = $("#ed-add-wrap"); // lives at the end of the colour list, re-added after each redraw
   const history = new WeakMap(); // doc -> { undo: [], redo: [] }
@@ -81,6 +81,13 @@ export function initEditor() {
     }
     ctx.fillStyle = "#dedede";
     for (let i = 1; i < N; i++) { ctx.fillRect(i * C - 1, 0, 2, W); ctx.fillRect(0, i * C - 1, W, 2); }
+    // dotted centre line for each mirror that's on
+    ctx.fillStyle = "#3577e0";
+    const half = (N / 2) * C;
+    for (let p = 0; p < W; p += 12) {
+      if (mirrorX) ctx.fillRect(half - 2, p, 4, 6);
+      if (mirrorY) ctx.fillRect(p, half - 2, 6, 4);
+    }
   }
 
   function renderPreview() {
@@ -127,12 +134,22 @@ export function initEditor() {
       stack.push([a + 1, b], [a - 1, b], [a, b + 1], [a, b - 1]);
     }
   }
+  // the cell plus its mirror images, for the mirrors that are on
+  function mirrored(x, y) {
+    const pts = [[x, y]];
+    if (mirrorX) pts.push([N - 1 - x, y]);
+    if (mirrorY) pts.push([x, N - 1 - y]);
+    if (mirrorX && mirrorY) pts.push([N - 1 - x, N - 1 - y]);
+    return pts;
+  }
   function apply(x, y, e) {
     const g = doc().grid;
     const t = e && e.altKey ? "pick" : tool;
     if (t === "pick") { if (g[y][x] !== ".") { key = g[y][x]; setTool("pencil"); renderPalette(); } return; }
-    if (t === "fill") { fill(x, y, key); return; }
-    g[y][x] = t === "eraser" ? "." : key;
+    for (const [a, b] of mirrored(x, y)) {
+      if (t === "fill") fill(a, b, key);
+      else g[b][a] = t === "eraser" ? "." : key;
+    }
   }
 
   let drawing = false, last = null;
@@ -180,12 +197,22 @@ export function initEditor() {
   function setTool(t) {
     tool = t;
     $$("#editor [data-tool]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tool === t));
-    $("#ed-tip").textContent = TIPS[t];
     canvas.dataset.tool = t;
+    renderTip();
   }
-  function flip(fn) { pushUndo(); doc().grid = fn(doc().grid); refresh(); }
-  $("#ed-flip-h").addEventListener("click", () => flip((g) => g.map((r) => [...r].reverse())));
-  $("#ed-flip-v").addEventListener("click", () => flip((g) => [...g].reverse()));
+  function renderTip() {
+    const m = mirrorX && mirrorY ? " Mirroring into all four quarters." : mirrorX ? " Mirroring left to right." : mirrorY ? " Mirroring top to bottom." : "";
+    $("#ed-tip").textContent = TIPS[tool] + m;
+  }
+  // mirrors: whatever you draw on one side is copied to the other, across the dotted line
+  function setMirror(axis, on) {
+    if (axis === "x") mirrorX = on; else mirrorY = on;
+    $("#ed-mirror-x").setAttribute("aria-pressed", mirrorX);
+    $("#ed-mirror-y").setAttribute("aria-pressed", mirrorY);
+    renderTip(); render();
+  }
+  $("#ed-mirror-x").addEventListener("click", () => setMirror("x", !mirrorX));
+  $("#ed-mirror-y").addEventListener("click", () => setMirror("y", !mirrorY));
   $$("#editor [data-tool]").forEach((b) => b.addEventListener("click", () => setTool(b.dataset.tool)));
   $("#ed-undo").addEventListener("click", undo);
   $("#ed-redo").addEventListener("click", redo);
