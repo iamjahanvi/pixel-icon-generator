@@ -61,12 +61,16 @@
         <p class="hint">Needs code execution on, under Settings → Capabilities. <a href="https://support.claude.com/en/articles/12512180-use-skills-in-claude">How skills work in Claude</a></p>
       </div>
       <div class="install-body" role="tabpanel" id="panel-chat" aria-labelledby="tab-chat" hidden>
-        <form class="line split" id="prompt-form" autocomplete="off">
+        <form class="chat-form" id="prompt-form" autocomplete="off">
           <label class="sr" for="prompt-word">Word to draw</label>
-          <input id="prompt-word" type="text" placeholder="Type a word, like kite" maxlength="40" spellcheck="false">
-          <button class="btn dark small" type="submit">Copy prompt</button>
+          <input id="prompt-word" class="chat-word" type="text" placeholder="Type a word, like kite" maxlength="40" spellcheck="false">
+          <div class="chat-actions">
+            <button class="btn dark small" type="submit" data-chat="claude">Open in Claude</button>
+            <button class="btn small" type="button" data-chat="chatgpt">Open in ChatGPT</button>
+            <button class="btn small" type="button" data-chat="copy">Copy prompt</button>
+          </div>
         </form>
-        <p class="hint">Paste it into ChatGPT, Gemini or any chat, then paste the reply into the <a href="#editor" data-open-editor>editor</a> to get the SVG. Have an Anthropic API key? <a href="#make" data-open-make>Make it right here</a>.</p>
+        <p class="hint">A new chat opens with the prompt filled in. Press send, then paste the reply into the <a href="#editor" data-open-editor>editor</a> to get the SVG. Using Gemini or another chat? Copy the prompt. Have an Anthropic API key? <a href="#make" data-open-make>Make it here</a>.</p>
       </div>
     </div>
 
@@ -78,7 +82,6 @@
       <img src="favicon.svg" width="20" height="20" alt="">
       <span>Pixel Icons</span>
     </a>
-    <button class="dock-btn" type="button" data-open-make>Make</button>
     <button class="dock-btn" type="button" data-open-editor>Editor</button>
     <button class="dock-btn dark" type="button" data-open-library>Library <kbd>⌘K</kbd></button>
   </nav>
@@ -95,10 +98,11 @@
     <div class="lib-empty" id="lib-empty" hidden>
       <p id="lib-empty-text"></p>
       <div class="lib-empty-actions">
-        <button class="btn dark small" type="button" id="lib-empty-make">Make it here</button>
-        <button class="btn small" type="button" id="lib-empty-prompt">Copy prompt</button>
+        <button class="btn dark small" type="button" data-chat="claude">Open in Claude</button>
+        <button class="btn small" type="button" data-chat="chatgpt">Open in ChatGPT</button>
+        <button class="btn small" type="button" data-chat="copy">Copy prompt</button>
       </div>
-      <p class="hint">Make it with your own Anthropic API key, or paste the prompt into any AI chat.</p>
+      <p class="hint">Then paste the reply into the <a href="#editor" data-open-editor>editor</a> to get the SVG. Have an Anthropic API key? <a href="#make" id="lib-empty-make">Make it here</a>.</p>
     </div>
     <div class="palette-foot">
       <span class="keys"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move <kbd>↵</kbd> open</span>

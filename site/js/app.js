@@ -12,6 +12,17 @@ const asDoc = (ic) => ({ name: ic.slug, style: "color", ...ic.color });
 const example = bySlug("lantern") || lib[0];
 const editor = initEditor(() => [asDoc(bySlug("cat") || lib[0])]);
 
+// Free route: open a new chat with the prompt filled in. The visitor reviews it and presses send.
+const CHATS = {
+  claude: (q) => `https://claude.ai/new?q=${encodeURIComponent(q)}`,
+  chatgpt: (q) => `https://chatgpt.com/?q=${encodeURIComponent(q)}`,
+};
+function openChat(where, word) {
+  if (where === "copy") return copyPrompt(word);
+  window.open(CHATS[where](buildPrompt(word, example)), "_blank", "noopener");
+  toast("When the icon comes back, paste the reply into the editor.");
+}
+
 async function copyPrompt(word) {
   const ok = await copyText(buildPrompt(word, example));
   toast(ok ? "Prompt copied. Paste it into any AI chat." : "Couldn't copy. Your browser blocked the clipboard.");
@@ -68,12 +79,14 @@ $$(".line .copy").forEach((b) => b.addEventListener("click", async () => {
   b.textContent = ok ? "Copied" : "Couldn't copy";
   setTimeout(() => (b.textContent = "Copy"), 1500);
 }));
-$("#prompt-form").addEventListener("submit", (e) => {
-  e.preventDefault();
+function chatFromForm(where) {
   const w = $("#prompt-word").value.trim();
   if (!w) { toast("Type a word first."); $("#prompt-word").focus(); return; }
-  copyPrompt(w);
-});
+  openChat(where, w);
+}
+$("#prompt-form").addEventListener("submit", (e) => { e.preventDefault(); chatFromForm(e.submitter?.dataset.chat || "claude"); });
+$$('#prompt-form [data-chat]:not([type="submit"])').forEach((b) => b.addEventListener("click", () => chatFromForm(b.dataset.chat)));
+$$("#lib-empty [data-chat]").forEach((b) => b.addEventListener("click", () => openChat(b.dataset.chat, search.value.trim())));
 
 // ---------- library palette ----------
 const libDlg = $("#library"), search = $("#lib-search"), grid = $("#lib-grid");
@@ -100,10 +113,7 @@ function renderLib() {
   if (!items.length) {
     const w = search.value.trim();
     $("#lib-empty-text").textContent = w ? `No icon for “${w}” yet. Your AI tool can draw it.` : "No icons in this category yet.";
-    $("#lib-empty-prompt").textContent = w ? `Copy prompt for “${w}”` : "Copy prompt";
-    $("#lib-empty-prompt").dataset.prompt = w;
-    $("#lib-empty-prompt").hidden = !w;
-    $("#lib-empty-make").hidden = !w;
+    $$("#lib-empty .lib-empty-actions, #lib-empty .hint").forEach((el) => (el.hidden = !w));
   }
 }
 renderLib();
@@ -121,7 +131,7 @@ libDlg.addEventListener("keydown", (e) => {
   const tiles = $$(".tile", grid);
   if (e.target === search) {
     if (e.key === "ArrowDown" && tiles.length) { e.preventDefault(); tiles[0].focus(); }
-    if (e.key === "Enter") { e.preventDefault(); if (tiles.length) tiles[0].click(); else if (search.value.trim()) copyPrompt(search.value.trim()); }
+    if (e.key === "Enter") { e.preventDefault(); if (tiles.length) tiles[0].click(); else if (search.value.trim()) openChat("claude", search.value.trim()); }
     return;
   }
   const i = tiles.indexOf(e.target);
@@ -262,19 +272,17 @@ $("#mk-svg").addEventListener("click", () => { download(`${made.slug}.svg`, icon
 $("#mk-more").addEventListener("click", () => openDetail(made, false));
 $("#mk-edit").addEventListener("click", () => openEditor([asDoc(made)]));
 $("#mk-again").addEventListener("click", () => { mkView("form"); $("#mk-word").select(); $("#mk-word").focus(); });
-$("#lib-empty-make").addEventListener("click", () => openMake(search.value.trim()));
+$("#lib-empty-make").addEventListener("click", (e) => { e.preventDefault(); openMake(search.value.trim()); });
 
 // ---------- wiring ----------
 function closeAll() { $$("dialog[open]").forEach((d) => d.close()); }
 document.addEventListener("click", (e) => {
   const t = e.target;
-  const p = t.closest("[data-prompt]");
-  if (p && p.dataset.prompt) copyPrompt(p.dataset.prompt);
   const o = t.closest("[data-open]");
   if (o) openDetail(bySlug(o.dataset.open), !!o.closest("#library"));
   if (t.closest("[data-open-library]")) { e.preventDefault(); openLibrary(); }
   if (t.closest("[data-open-editor]")) { e.preventDefault(); openEditor(); }
-  if (t.closest("[data-open-make]")) { e.preventDefault(); openMake(); }
+  if (t.closest("[data-open-make]")) { e.preventDefault(); openMake($("#prompt-word").value.trim()); }
   const c = t.closest("[data-close]");
   if (c) c.closest("dialog").close();
 });

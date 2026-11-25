@@ -58,13 +58,13 @@ npx pixel-icon-generator init --cursor   # .cursor/skills/ (Cursor only)
 
 Add `--global` to install it in your home folder for every project, and `--force` to replace an existing copy. It needs Node 18 or newer.
 
+### Any chatbot, without installing anything
+
+On [the website](https://pixelicons.iamjahanvi.com/#install), open **Any chat** and type your word. **Open in Claude** or **Open in ChatGPT** starts a new chat with the prompt filled in; press send. For Gemini or any other chat, use **Copy prompt** and paste it in. Then paste the reply into the site's editor to check the icon and download the SVG. This works on free accounts.
+
 ### On the website, with your own API key
 
 On [the website](https://pixelicons.iamjahanvi.com/#make), click **Make**, type a word and paste your [Anthropic API key](https://platform.claude.com/settings/keys). Your browser sends the request straight to Anthropic, so the key never reaches the site. The site checks the icon against the style rules, asks Claude to fix any problems, and gives you the SVG.
-
-### Any chatbot, without installing anything
-
-On [the website](https://pixelicons.iamjahanvi.com/#install), open **Any chatbot**, type your word and copy the prompt. Paste it into ChatGPT, Gemini, Claude or any other chat, then paste the reply into the site's editor to check the icon and download the SVG.
 
 ## Use it
 

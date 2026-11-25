@@ -144,6 +144,12 @@ kbd {
   font: 15px var(--font); color: var(--text); background: var(--surface);
 }
 .install .hint code { font-size: 12px; }
+.chat-form { display: flex; flex-direction: column; gap: 10px; }
+.chat-word {
+  width: 100%; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--border);
+  font: 15px var(--font); color: var(--text); background: var(--surface);
+}
+.chat-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 .meta { margin: 22px 0 0; font-size: 14px; color: var(--muted); }
 .meta a { color: var(--text); font-weight: 500; }
 
