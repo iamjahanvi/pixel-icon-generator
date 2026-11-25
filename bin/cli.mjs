@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const SKILL_SRC = path.resolve(here, "..", "pixel-icons");
+const SKILL_SRC = path.resolve(here, "..", "skills", "pixel-icons");
 const SCRIPT = path.join(SKILL_SRC, "scripts", "pixelicon.mjs");
 
 const TARGETS = {

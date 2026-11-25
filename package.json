@@ -8,7 +8,7 @@
   },
   "files": [
     "bin",
-    "pixel-icons"
+    "skills"
   ],
   "engines": {
     "node": ">=18"
@@ -30,7 +30,7 @@
     "type": "git",
     "url": "git+https://github.com/iamjahanvi/pixel-icon-generator.git"
   },
-  "homepage": "https://github.com/iamjahanvi/pixel-icon-generator#readme",
+  "homepage": "https://pixelicons.iamjahanvi.com",
   "bugs": {
     "url": "https://github.com/iamjahanvi/pixel-icon-generator/issues"
   }

@@ -1,0 +1,16 @@
+{
+  "name": "pixel-icon-generator",
+  "description": "Pixel icons in the Pixtober style by Jahanvi Singh",
+  "owner": {
+    "name": "Jahanvi Singh",
+    "url": "https://x.com/me_Jahanvi"
+  },
+  "plugins": [
+    {
+      "name": "pixel-icons",
+      "source": "./",
+      "description": "Turn a word into a 16x16 pixel icon in colour and black & white, saved as Figma-ready SVGs.",
+      "category": "design"
+    }
+  ]
+}
