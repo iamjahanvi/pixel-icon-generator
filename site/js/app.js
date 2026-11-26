@@ -420,7 +420,7 @@ function showView(name, { focus = true } = {}) {
   view = VIEWS.includes(name) ? name : null;
   $("#view-home").hidden = !!view;
   VIEWS.forEach((v) => ($("#" + v).hidden = v !== view));
-  $$(".pill-btn").forEach((b) => {
+  $$(".pill-btn[data-view]").forEach((b) => {
     const on = b.dataset.view === view;
     b.setAttribute("aria-pressed", on);
     const label = $(".pl", b).textContent;
@@ -429,7 +429,7 @@ function showView(name, { focus = true } = {}) {
   try { history.replaceState(null, "", view ? `#${view}` : location.pathname + location.search); } catch { /* sandboxed */ }
   if (focus) (view ? $("#" + view) : wordIn).focus({ preventScroll: true });
 }
-$$(".pill-btn").forEach((b) => b.addEventListener("click", () => showView(b.dataset.view === view ? null : b.dataset.view)));
+$$(".pill-btn[data-view]").forEach((b) => b.addEventListener("click", () => showView(b.dataset.view === view ? null : b.dataset.view)));
 $("[data-home]").addEventListener("click", (e) => { e.preventDefault(); showView(null); });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && view && !document.querySelector("dialog[open]")) showView(null);
@@ -471,3 +471,29 @@ if (location.hash === "#make") openMake();
 
 // show the shortcut the visitor actually has
 if (!/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) $("#kbd-k").textContent = "Ctrl K";
+
+// ---------- switches: stop the marquees, dark mode (remembered on this device) ----------
+(() => {
+  const root = document.documentElement;
+  const get = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+  const put = (k, v) => { try { localStorage.setItem(k, v); } catch { /* storage blocked */ } };
+  const motion = $("#tog-motion"), theme = $("#tog-theme");
+  const setStill = (on) => {
+    root.classList.toggle("still", on);
+    motion.setAttribute("aria-pressed", on);
+    motion.setAttribute("aria-label", on ? "Start the moving rows" : "Stop the moving rows");
+    motion.title = motion.getAttribute("aria-label");
+  };
+  const setDark = (on) => {
+    if (on) root.dataset.theme = "dark"; else delete root.dataset.theme;
+    theme.setAttribute("aria-pressed", on);
+    theme.setAttribute("aria-label", on ? "Light mode" : "Dark mode");
+    theme.title = theme.getAttribute("aria-label");
+    $('meta[name="theme-color"]')?.setAttribute("content", on ? "#121212" : "#fafafa");
+  };
+  setStill(get("pi-still") === "1");
+  const saved = get("pi-theme");
+  setDark(saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches);
+  motion.addEventListener("click", () => { const on = !root.classList.contains("still"); setStill(on); put("pi-still", on ? "1" : "0"); });
+  theme.addEventListener("click", () => { const on = root.dataset.theme !== "dark"; setDark(on); put("pi-theme", on ? "dark" : "light"); });
+})();
