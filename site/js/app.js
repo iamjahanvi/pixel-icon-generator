@@ -413,6 +413,29 @@ $("#mk-edit").addEventListener("click", () => openEditor([asDoc(made)], made.lab
 $("#mk-again").addEventListener("click", () => { mkView("form"); $("#mk-word").select(); $("#mk-word").focus(); });
 $("#lib-empty-make").addEventListener("click", (e) => { e.preventDefault(); openMake(search.value.trim()); });
 
+// ---------- views: the pills at the bottom swap the hero for another view ----------
+const VIEWS = ["icons", "install", "how"];
+let view = null;
+function showView(name, { focus = true } = {}) {
+  view = VIEWS.includes(name) ? name : null;
+  $("#view-home").hidden = !!view;
+  VIEWS.forEach((v) => ($("#" + v).hidden = v !== view));
+  $$(".pill-btn").forEach((b) => {
+    const on = b.dataset.view === view;
+    b.setAttribute("aria-pressed", on);
+    const label = $(".pl", b).textContent;
+    b.setAttribute("aria-label", on ? `Close ${label.toLowerCase()}` : label);
+  });
+  try { history.replaceState(null, "", view ? `#${view}` : location.pathname + location.search); } catch { /* sandboxed */ }
+  if (focus) (view ? $("#" + view) : wordIn).focus({ preventScroll: true });
+}
+$$(".pill-btn").forEach((b) => b.addEventListener("click", () => showView(b.dataset.view === view ? null : b.dataset.view)));
+$("[data-home]").addEventListener("click", (e) => { e.preventDefault(); showView(null); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && view && !document.querySelector("dialog[open]")) showView(null);
+});
+if (VIEWS.includes(location.hash.slice(1))) showView(location.hash.slice(1), { focus: false });
+
 // ---------- wiring ----------
 function closeAll() { $$("dialog[open]").forEach((d) => d.close()); }
 document.addEventListener("click", (e) => {

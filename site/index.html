@@ -21,13 +21,15 @@
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="#" aria-label="Pixel Icons, created by Jahanvi, home">Pixel Icons <span>Created by Jahanvi</span></a>
+    <a class="brand" href="#" data-home aria-label="Pixel Icons, home">Pixel Icons</a>
     <p class="tagline">Cute lil’ Pixel Icons drawn on a 16×16 grid. <span>Clean SVGs, editable in Figma or code.</span></p>
   </header>
 
-  <main id="main">
+  <main class="stage" id="main">
     <h1 class="sr">Type a word, get a pixel icon</h1>
 
+    <!-- one view at a time; the pills at the bottom swap them -->
+    <div class="view" id="view-home"><div class="view-in">
     <!-- the word wall: every word sits next to its icon, and one row is where you type yours -->
     <div class="wall" id="wall">
       <div class="wall-row" data-row="0"></div>
@@ -42,10 +44,9 @@
       <div class="wall-row" data-row="2"></div>
       <div class="wall-row" data-row="3"></div>
     </div>
+    </div></div>
 
-    </div>
-
-    <section class="wrap how" id="how" aria-label="How it works">
+    <section class="view" id="how" aria-label="How it works" tabindex="-1" hidden><div class="view-in wrap">
       <div class="strip">
         <div class="step"><div class="step-word">rocket</div><span>You type a word</span></div>
         <svg class="arrow" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
@@ -53,9 +54,16 @@
         <svg class="arrow" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
         <div class="step"><div class="step-icon"><span id="rocket-icon"></span><code>rocket.svg</code></div><span>You get an SVG</span></div>
       </div>
-    </section>
+      <footer class="foot">
+        <p class="credit">Icons and style by <a href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">Jahanvi Singh</a>, inspired by her <a href="https://jahanvi-pixtober-2024.framer.website/" target="_blank" rel="noopener">Pixtober</a> series. Free to use in personal and commercial work under the <a href="https://github.com/iamjahanvi/pixel-icon-generator/blob/main/LICENSE" target="_blank" rel="noopener">MIT licence</a>.</p>
+        <nav class="foot-links" aria-label="Jahanvi elsewhere">
+          <a href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">X</a>
+          <a href="https://github.com/iamjahanvi/pixel-icon-generator" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+      </footer>
+    </div></section>
 
-    <section class="wrap icons" id="icons" aria-labelledby="icons-title">
+    <section class="view" id="icons" aria-labelledby="icons-title" tabindex="-1" hidden><div class="view-in wrap icons">
       <div class="sec-head">
         <h2 class="label" id="icons-title">30 icons, free to use</h2>
         <span class="sec-actions">
@@ -63,9 +71,9 @@
         </span>
       </div>
       <div class="table" id="table"></div>
-    </section>
+    </div></section>
 
-    <section class="wrap install" id="install" aria-label="Install">
+    <section class="view" id="install" aria-label="Create your icon" tabindex="-1" hidden><div class="view-in wrap install">
       <div class="row">
         <div class="who"><strong>Claude Code</strong><small>Adds the marketplace, then installs</small></div>
         <div class="cmd" data-copy="/plugin marketplace add iamjahanvi/pixel-icon-generator&#10;/plugin install pixel-icons@pixel-icon-generator">/plugin install pixel-icons@pixel-icon-generator</div>
@@ -92,16 +100,16 @@
         <a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
       </div>
       <p class="hint">The reply comes with an SVG and a PNG. To tweak pixels, paste it into the <a href="#paste" data-open-paste>editor</a>. Using Gemini or another chat? <button type="button" class="link" data-chat="copy">Copy the prompt</button>. Have an Anthropic API key? <a href="#make" data-open-make>Make it here</a>. Or <a href="#draw" data-open-draw>draw it yourself</a>.</p>
-    </section>
+    </div></section>
   </main>
 
-  <footer class="wrap foot">
-    <p class="credit">Icons and style by <a href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">Jahanvi Singh</a>, inspired by her <a href="https://jahanvi-pixtober-2024.framer.website/" target="_blank" rel="noopener">Pixtober</a> series. Free to use in personal and commercial work under the <a href="https://github.com/iamjahanvi/pixel-icon-generator/blob/main/LICENSE" target="_blank" rel="noopener">MIT licence</a>.</p>
-    <nav class="foot-links" aria-label="Jahanvi elsewhere">
-      <a href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">X</a>
-      <a href="https://github.com/iamjahanvi/pixel-icon-generator" target="_blank" rel="noopener">GitHub</a>
-    </nav>
-  </footer>
+  <!-- floating pills: each swaps the hero for its view; the open one turns into a close button -->
+  <nav class="pills" aria-label="Sections">
+    <button class="pill-btn" type="button" data-view="icons" aria-controls="icons" aria-pressed="false"><span class="pl">Browse library</span><span class="pl short">Library</span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="pill-btn" type="button" data-view="install" aria-controls="install" aria-pressed="false"><span class="pl">Create your icon</span><span class="pl short">Create</span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="pill-btn" type="button" data-view="how" aria-controls="how" aria-pressed="false"><span class="pl">How it works</span><span class="pl short">How</span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </nav>
+
 
   <!-- library: a search palette -->
   <dialog class="sheet palette" id="library" aria-label="Icon library">
