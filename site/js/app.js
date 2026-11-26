@@ -11,9 +11,6 @@ const bySlug = (s) => lib.find((ic) => ic.slug === s);
 const asDoc = (ic) => ({ name: ic.slug, style: "color", ...ic.color });
 const example = bySlug("lantern") || lib[0];
 const editor = initEditor();
-// a chunkier pencil drawn for the "Draw yourself" button, shown at 24px (3 device pixels per pixel on Retina)
-const DRAW_ICON = { palette: {"K": "#000000", "p": "#f39bb0", "q": "#d06a86", "m": "#cfcfcf", "g": "#8e8e8e", "y": "#f7d84a", "s": "#d9a21f", "w": "#f3cf96"}, grid: ["................", "............KK..", "...........KppK.", "..........KppqK.", ".........KmmqK..", "........KymgK...", ".......KyysK....", "......KyysK.....", ".....KyysK......", "....KyysK.......", "...KyysK........", "..KwwwK.........", "..KwwK..........", ".KKwK...........", ".KKK............", "................"] };
-$("#dock-draw-ic").innerHTML = iconSvg(DRAW_ICON, 24);
 
 // Free route: open a new chat with the prompt filled in. The visitor reviews it and presses send.
 const CHATS = {
@@ -33,73 +30,91 @@ async function copyPrompt(word) {
   toast(ok ? "Prompt copied. Paste it into any AI chat." : "Couldn't copy. Your browser blocked the clipboard.");
 }
 
-// ---------- scattered icons around the headline ----------
-// [slug, left %, top %]; every icon is the same size (a whole multiple of 16). Phones get a smaller set along the top.
-const SCATTER_SIZE = { wide: 64, narrow: 48 };
-const WIDE = [
-  ["cherry", 8, 14], ["lantern", 22, 9], ["cat", 13, 40], ["pizza", 4, 64],
-  ["mushroom", 19, 72], ["tulip", 9, 86], ["rocket", 80, 13], ["heart", 91, 30],
-  ["moon", 84, 47], ["fish", 76, 68], ["camera", 90, 80], ["donut", 68, 8],
-  ["house", 30, 86], ["umbrella", 66, 86], ["ice-cream", 26, 30], ["bird", 72, 33],
+// ---------- the word wall ----------
+// [slug, word, colour, weight]: each word takes its icon's colour; weights alternate like a checkerboard.
+const WALL = [
+  [["heart", "Heart", "#e8243c", 600], ["fish", "Goldfish", "#f5861f", 300], ["tree", "Tree", "#3fae49", 600], ["donut", "Donut", "#ec6f9e", 300]],
+  [["rain", "Rain", "#3a8ee6", 300], ["key", "Key", "#d9a21a", 600], ["mushroom", "Mushroom", "#e5322d", 300], ["lantern", "Lantern", "#d4a52a", 600]],
+  [["pizza", "Pizza", "#e2a04a", 300], ["house", "House", "#d9483b", 600], ["camera", "Camera", "#4a4f57", 300], ["tulip", "Tulip", "#3a9a3e", 600]],
 ];
-const NARROW = [
-  ["cherry", 12, 9], ["lantern", 30, 15], ["cat", 50, 8], ["rocket", 70, 15], ["mushroom", 88, 9],
-];
-function renderScatter() {
-  const narrow = matchMedia("(max-width: 720px)").matches;
-  $("#scatter").innerHTML = (narrow ? NARROW : WIDE).map(([slug, x, y]) => {
-    const s = narrow ? SCATTER_SIZE.narrow : SCATTER_SIZE.wide;
-    const ic = bySlug(slug);
-    if (!ic) return "";
-    const top = narrow ? `calc(${y}vh + 24px)` : `${y}vh`;
-    return `<button class="sc" type="button" data-open="${slug}" aria-label="${esc(ic.label)}"
-      style="left:calc(${x}% - ${s / 2}px);top:calc(${top} - ${s / 2}px);width:${s}px;height:${s}px">${iconSvg(asDoc(ic), s)}</button>`;
-  }).join("");
-}
-renderScatter();
-matchMedia("(max-width: 720px)").addEventListener("change", renderScatter);
+const LEAD = ["coffee", "Coffee", "#6b3b1f", 600];
+const wordBtn = ([slug, word, color, weight]) => {
+  const ic = bySlug(slug);
+  return ic ? `<button class="w w-btn" type="button" data-open="${slug}" style="color:${color};font-weight:${weight}" aria-label="${esc(ic.label)}">${esc(word)}${iconSvg(asDoc(ic), 64)}</button>` : "";
+};
+$$(".wall-row[data-row]").forEach((row) => (row.innerHTML = WALL[+row.dataset.row].map(wordBtn).join("")));
+$("[data-lead]").outerHTML = wordBtn(LEAD).replace('class="w w-btn"', 'class="w w-btn lead"');
 
-// ---------- install box ----------
-const tabs = $$('.install-tabs [role="tab"]');
-function selectTab(tab, focus) {
-  tabs.forEach((t) => {
-    const on = t === tab;
-    t.setAttribute("aria-selected", on);
-    t.tabIndex = on ? 0 : -1;
-    document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
-  });
-  if (focus) tab.focus();
+// typing a word: the chat links follow it, and if the library already has that icon it drops into the slot
+const wordIn = $("#word"), slot = $("#slot");
+const findIcon = (w) => {
+  const q = w.toLowerCase();
+  return q && lib.find((ic) => ic.slug === q || ic.label.toLowerCase() === q || ic.keywords.includes(q));
+};
+function onWord() {
+  const w = wordIn.value.trim();
+  setChatLinks($("#under"), w);
+  setChatLinks($("#any-chat"), w || "lantern");
+  $("#chat-word").textContent = w || "lantern";
+  const ic = findIcon(w);
+  slot.classList.toggle("found", !!ic);
+  slot.disabled = !ic;
+  slot.innerHTML = ic ? iconSvg(asDoc(ic), 64) : '<span class="q" aria-hidden="true">?</span>';
+  slot.setAttribute("aria-label", ic ? `${ic.label}: already in the library` : "Your icon will appear here");
+  if (ic) slot.dataset.open = ic.slug; else delete slot.dataset.open;
 }
-tabs.forEach((t, i) => {
-  t.addEventListener("click", () => selectTab(t));
-  t.addEventListener("keydown", (e) => {
-    const d = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
-    if (d) { e.preventDefault(); selectTab(tabs[(i + d + tabs.length) % tabs.length], true); }
-  });
-});
-$$(".line .copy").forEach((b) => b.addEventListener("click", async () => {
-  const code = b.previousElementSibling.cloneNode(true);
-  code.querySelectorAll(".prompt").forEach((p) => p.remove());
-  const ok = await copyText(code.textContent.trim());
-  b.textContent = ok ? "Copied" : "Couldn't copy";
-  setTimeout(() => (b.textContent = "Copy"), 1500);
-}));
-const chatForm = $("#prompt-form");
-$("#prompt-word").addEventListener("input", (e) => setChatLinks(chatForm, e.target.value.trim()));
-chatForm.addEventListener("submit", (e) => { e.preventDefault(); $('a[data-chat="claude"]', chatForm).click(); });
+wordIn.addEventListener("input", onWord);
+onWord();
+$("#word-form").addEventListener("submit", (e) => { e.preventDefault(); $('#under a[data-chat="claude"]').click(); });
 document.addEventListener("click", (e) => {
   const a = e.target.closest("a[data-chat]");
   if (a) {
-    if (!a.dataset.word) { e.preventDefault(); toast("Type a word first."); return; }
+    if (!a.dataset.word) { e.preventDefault(); toast("Type a word first."); (a.closest("#under") ? wordIn : search).focus(); return; }
     toast("When the icon comes back, paste the reply into the editor.");
   }
   const c = e.target.closest('button[data-chat="copy"]');
   if (c) {
-    const w = c.closest("#lib-empty") ? search.value.trim() : $("#prompt-word").value.trim();
+    const w = c.closest("#lib-empty") ? search.value.trim() : wordIn.value.trim() || "lantern";
     if (!w) { toast("Type a word first."); return; }
     copyPrompt(w);
   }
 });
+
+// ---------- how it works: the rocket, as a word, a plan and an SVG ----------
+const rocket = bySlug("rocket");
+if (rocket) {
+  $("#rocket-grid").textContent = rocket.color.grid.join("\n");
+  $("#rocket-icon").innerHTML = iconSvg(asDoc(rocket), 160);
+}
+
+// ---------- icon table: pick a cell, it opens large in the middle ----------
+const TABLE = ["cherry", "lantern", "rocket", "cat", "mushroom", "heart", "fish", "donut", "coffee", "pizza", "tree", "camera", "house"];
+let featured = "cat";
+function renderTable() {
+  const f = bySlug(featured);
+  $("#table").innerHTML = `<div class="feature" aria-live="polite">${iconSvg(asDoc(f), 160)}<strong>${esc(f.label)}</strong>
+      <span class="acts"><button class="solid" type="button" data-f="svg">SVG</button><button class="ghost" type="button" data-f="png">PNG</button><button class="ghost" type="button" data-f="code">Code</button><button class="ghost" type="button" data-f="edit">Edit</button></span></div>` +
+    TABLE.map((s) => bySlug(s)).filter(Boolean).map((ic) => `<button class="cell" type="button" data-pick="${ic.slug}" aria-pressed="${ic.slug === featured}">${iconSvg(asDoc(ic), 56)}${esc(ic.slug === "fish" ? "goldfish" : ic.slug)}</button>`).join("");
+}
+renderTable();
+$("#table").addEventListener("click", (e) => {
+  const p = e.target.closest("[data-pick]");
+  if (p) { featured = p.dataset.pick; renderTable(); $('.feature [data-f="svg"]').focus(); return; }
+  const f = e.target.closest("[data-f]")?.dataset.f, ic = bySlug(featured);
+  if (f === "svg") { download(`${ic.slug}.svg`, iconSvg(asDoc(ic))); toast(`Downloaded ${ic.slug}.svg`); }
+  if (f === "png") savePng(ic, 256);
+  if (f === "code") openDetail(ic, false);
+  if (f === "edit") openEditor([asDoc(ic)], ic.label);
+});
+
+// ---------- install rows ----------
+$$("[data-copy-btn]").forEach((b) => b.addEventListener("click", async () => {
+  const cmd = $(".cmd", b.closest(".row"));
+  const ok = await copyText(cmd.dataset.copy || cmd.textContent.trim());
+  const label = b.textContent;
+  b.textContent = ok ? "Copied" : "Couldn't copy";
+  setTimeout(() => (b.textContent = label), 1500);
+}));
 
 // ---------- library palette ----------
 const libDlg = $("#library"), search = $("#lib-search"), grid = $("#lib-grid");
@@ -215,18 +230,19 @@ function openDetail(ic, fromLibrary) {
 $("#dt-back").addEventListener("click", openLibrary);
 $("#dt-copy").addEventListener("click", async () => toast((await copyText($("#dt-code").textContent)) ? "Copied." : "Couldn't copy. Your browser blocked the clipboard."));
 $("#dt-svg").addEventListener("click", () => { download(`${current.slug}.svg`, iconSvg(asDoc(current))); toast(`Downloaded ${current.slug}.svg`); });
-$("#dt-png").addEventListener("click", () => {
-  const d = asDoc(current), c = document.createElement("canvas");
-  c.width = c.height = size;
-  const ctx = c.getContext("2d"), k = size / 16;
+function savePng(ic, px) {
+  const d = asDoc(ic), c = document.createElement("canvas");
+  c.width = c.height = px;
+  const ctx = c.getContext("2d"), k = px / 16;
   d.grid.forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== ".") { ctx.fillStyle = d.palette[ch]; ctx.fillRect(x * k, y * k, k, k); } }));
   c.toBlob((blob) => {
     const url = URL.createObjectURL(blob), a = document.createElement("a");
-    a.href = url; a.download = `${current.slug}-${size}.png`; a.click();
+    a.href = url; a.download = `${ic.slug}-${px}.png`; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    toast(`Downloaded ${current.slug}-${size}.png`);
+    toast(`Downloaded ${ic.slug}-${px}.png`);
   });
-});
+}
+$("#dt-png").addEventListener("click", () => savePng(current, size));
 $("#dt-edit").addEventListener("click", () => openEditor([asDoc(current)], current.label));
 
 // ---------- editor ----------
@@ -298,7 +314,7 @@ document.addEventListener("click", (e) => {
   if (t.closest("[data-open-library]")) { e.preventDefault(); openLibrary(); }
   if (t.closest("[data-open-draw]")) { e.preventDefault(); openEditor(); }
   if (t.closest("[data-open-paste]")) { e.preventDefault(); openEditor(); editor.openPaste(); }
-  if (t.closest("[data-open-make]")) { e.preventDefault(); openMake($("#prompt-word").value.trim()); }
+  if (t.closest("[data-open-make]")) { e.preventDefault(); openMake(wordIn.value.trim()); }
   const c = t.closest("[data-close]");
   if (c) c.closest("dialog").close();
 });

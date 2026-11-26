@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pixel Icons by Jahanvi</title>
   <meta name="description" content="An agent skill for Claude, Cursor, Codex and other AI tools that turns a word into a 16×16 pixel icon in the Pixtober style, saved as an SVG.">
-  <meta name="theme-color" content="#f6f6f6">
+  <meta name="theme-color" content="#fafafa">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="https://pixelicons.iamjahanvi.com/">
   <meta property="og:type" content="website">
@@ -20,71 +20,88 @@
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
-  <a class="pill corner left" href="https://x.com/me_Jahanvi">by Jahanvi</a>
-  <a class="pill corner right" href="https://github.com/iamjahanvi/pixel-icon-generator">
-    <svg width="17" height="17" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-    GitHub
-  </a>
+  <header class="top">
+    <a class="brand" href="#" aria-label="Pixel Icons, home">Pixel Icons</a>
+  </header>
 
-  <div class="scatter" id="scatter"></div>
+  <main id="main">
+    <h1 class="sr">Type a word, get a pixel icon</h1>
 
-  <main class="hero" id="main">
-    <h1>Type a word.<br>Get a pixel icon.</h1>
-    <p class="sub">An agent skill that draws 16×16 icons in the style of <a href="https://jahanvi-pixtober-2024.framer.website/">Pixtober</a> by Jahanvi Singh, and saves them as SVGs for your code or Figma.</p>
+    <!-- the word wall: every word sits next to its icon, and one row is where you type yours -->
+    <div class="wall" id="wall">
+      <div class="wall-row" data-row="0"></div>
+      <div class="wall-row" data-row="1"></div>
+      <form class="wall-row wall-type" id="word-form" autocomplete="off">
+        <span class="w lead" data-lead></span>
+        <label class="sr" for="word">Type your word</label>
+        <span class="pill-in"><input id="word" type="text" placeholder="your word" maxlength="40" spellcheck="false" enterkeyhint="go"></span>
+        <button class="slot" type="button" id="slot" aria-label="Your icon will appear here" disabled><span class="q" aria-hidden="true">?</span></button>
+      </form>
+      <div class="wall-row" data-row="2"></div>
+    </div>
 
-    <div class="install" id="install">
-      <div class="install-tabs" role="tablist" aria-label="Where you use AI">
-        <button role="tab" id="tab-code" aria-controls="panel-code" aria-selected="true">Claude Code</button>
-        <button role="tab" id="tab-agents" aria-controls="panel-agents" aria-selected="false" tabindex="-1">Cursor &amp; more</button>
-        <button role="tab" id="tab-npm" aria-controls="panel-npm" aria-selected="false" tabindex="-1">npm</button>
-        <button role="tab" id="tab-claude" aria-controls="panel-claude" aria-selected="false" tabindex="-1">Claude app</button>
-        <button role="tab" id="tab-chat" aria-controls="panel-chat" aria-selected="false" tabindex="-1">Any chat</button>
-      </div>
-
-      <div class="install-body" role="tabpanel" id="panel-code" aria-labelledby="tab-code">
-        <div class="line"><code><span class="prompt" aria-hidden="true">›</span>/plugin marketplace add iamjahanvi/pixel-icon-generator</code><button class="copy" type="button">Copy</button></div>
-        <div class="line"><code><span class="prompt" aria-hidden="true">›</span>/plugin install pixel-icons@pixel-icon-generator</code><button class="copy" type="button">Copy</button></div>
-      </div>
-      <div class="install-body" role="tabpanel" id="panel-agents" aria-labelledby="tab-agents" hidden>
-        <div class="line"><code><span class="prompt" aria-hidden="true">$</span>npx skills add iamjahanvi/pixel-icon-generator</code><button class="copy" type="button">Copy</button></div>
-        <p class="hint">For Cursor, Codex, OpenCode, Gemini CLI and dozens more. Using Copilot? <code>gh skill install iamjahanvi/pixel-icon-generator pixel-icons</code></p>
-      </div>
-      <div class="install-body" role="tabpanel" id="panel-npm" aria-labelledby="tab-npm" hidden>
-        <div class="line"><code><span class="prompt" aria-hidden="true">$</span>npx pixel-icon-generator init</code><button class="copy" type="button">Copy</button></div>
-        <p class="hint">Copies the skill into <code>.agents/skills/</code>. Add <code>--claude</code>, <code>--cursor</code> or <code>--global</code> to put it elsewhere.</p>
-      </div>
-      <div class="install-body" role="tabpanel" id="panel-claude" aria-labelledby="tab-claude" hidden>
-        <div class="line split">
-          <span>Download the skill, then upload it in Claude under <b>Customize → Skills</b>.</span>
-          <a class="btn dark small" href="https://github.com/iamjahanvi/pixel-icon-generator/raw/main/pixel-icons.zip">Download .zip</a>
-        </div>
-        <p class="hint">Needs code execution on, under Settings → Capabilities. <a href="https://support.claude.com/en/articles/12512180-use-skills-in-claude">How skills work in Claude</a></p>
-      </div>
-      <div class="install-body" role="tabpanel" id="panel-chat" aria-labelledby="tab-chat" hidden>
-        <form class="chat-form" id="prompt-form" autocomplete="off">
-          <label class="sr" for="prompt-word">Word to draw</label>
-          <input id="prompt-word" class="chat-word" type="text" placeholder="Type a word, like kite" maxlength="40" spellcheck="false">
-          <div class="chat-actions">
-            <a class="btn dark small" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
-            <a class="btn small" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt">Open in ChatGPT</a>
-            <button class="btn small" type="button" data-chat="copy">Copy prompt</button>
-          </div>
-        </form>
-        <p class="hint">A new chat opens with the prompt filled in. Press send, then paste the reply into the <a href="#paste" data-open-paste>editor</a> to get the SVG. Using Gemini or another chat? Copy the prompt. Have an Anthropic API key? <a href="#make" data-open-make>Make it here</a>.</p>
+    <div class="wrap under" id="under">
+      <p class="lede">Type your word into the wall. Get a 16×16 pixel icon in Jahanvi Singh's <a href="https://jahanvi-pixtober-2024.framer.website/">Pixtober</a> style.</p>
+      <div class="go">
+        <span class="muted">then</span>
+        <a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
+        <a class="plain" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt">ChatGPT</a>
+        <a class="plain" href="#draw" data-open-draw>Draw it yourself</a>
       </div>
     </div>
 
-    <p class="meta"><a href="#library" data-open-library>Browse 30 free icons</a> drawn with the skill</p>
-  </main>
+    <section class="wrap how" id="how" aria-label="How it works">
+      <p class="statement">Your AI tool draws it pixel by pixel, in one consistent style, and saves a clean SVG to your project. <span>Drop it into Figma or code, and every pixel stays editable.</span></p>
+      <div class="strip">
+        <div class="step"><div class="step-word">rocket</div><span>You type a word</span></div>
+        <svg class="arrow" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+        <div class="step"><pre class="step-grid" id="rocket-grid" aria-label="The rocket as a 16 by 16 grid of letters, one letter per colour"></pre><span>It plans every pixel</span></div>
+        <svg class="arrow" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+        <div class="step"><div class="step-icon"><span id="rocket-icon"></span><code>rocket.svg</code></div><span>You get a Figma-ready SVG</span></div>
+      </div>
+    </section>
 
-  <nav class="dock" aria-label="Tools">
-    <a class="dock-brand" href="#" aria-label="Pixel Icons, home">
-      <img src="favicon.svg" width="24" height="24" alt="">
-      <span>Pixel Icons</span>
-    </a>
-    <button class="dock-btn" type="button" data-open-draw><span class="dock-ic" id="dock-draw-ic" aria-hidden="true"></span>Draw yourself</button>
-    <button class="dock-btn dark" type="button" data-open-library>Library <kbd>⌘K</kbd></button>
-  </nav>
+    <section class="wrap icons" id="icons" aria-labelledby="icons-title">
+      <div class="sec-head">
+        <h2 class="label" id="icons-title">30 icons, free to use</h2>
+        <span class="sec-actions">
+          <a class="plain" href="downloads/pixel-icons-library.zip" download>Download all (.zip)</a>
+          <a class="ghost" href="#library" data-open-library>View all 30 icons <kbd>⌘K</kbd></a>
+        </span>
+      </div>
+      <div class="table" id="table"></div>
+    </section>
+
+    <section class="wrap install" id="install" aria-labelledby="install-title">
+      <h2 class="label" id="install-title">Pick your tool, copy one line</h2>
+      <div class="row">
+        <div class="who"><strong>Claude Code</strong><small>Adds the marketplace, then installs</small></div>
+        <div class="cmd" data-copy="/plugin marketplace add iamjahanvi/pixel-icon-generator&#10;/plugin install pixel-icons@pixel-icon-generator">/plugin install pixel-icons@pixel-icon-generator</div>
+        <button type="button" class="ghost" data-copy-btn>Copy both</button>
+      </div>
+      <div class="row">
+        <div class="who"><strong>Cursor, Codex &amp; more</strong><small>Gemini CLI, OpenCode and dozens more</small></div>
+        <div class="cmd light">npx skills add iamjahanvi/pixel-icon-generator</div>
+        <button type="button" class="ghost" data-copy-btn>Copy</button>
+      </div>
+      <div class="row">
+        <div class="who"><strong>Any project</strong><small>npm, Node 18+</small></div>
+        <div class="cmd">npx pixel-icon-generator init</div>
+        <button type="button" class="ghost" data-copy-btn>Copy</button>
+      </div>
+      <div class="row">
+        <div class="who"><strong>Claude app</strong><small>Needs code execution on</small></div>
+        <div class="cmd light muted">Customize › Skills › Upload</div>
+        <a class="ghost" href="https://github.com/iamjahanvi/pixel-icon-generator/raw/main/pixel-icons.zip">Download .zip</a>
+      </div>
+      <div class="row last" id="any-chat">
+        <div class="who"><strong>Any chat</strong><small>Free, nothing to install</small></div>
+        <div class="cmd">a pixel icon of a <span id="chat-word">lantern</span>, please</div>
+        <a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
+      </div>
+      <p class="hint">Then paste the reply into the <a href="#paste" data-open-paste>editor</a> to get the SVG. Using Gemini or another chat? <button type="button" class="link" data-chat="copy">Copy the prompt</button>. Have an Anthropic API key? <a href="#make" data-open-make>Make it here</a>.</p>
+    </section>
+  </main>
 
   <!-- library: a search palette -->
   <dialog class="sheet palette" id="library" aria-label="Icon library">
