@@ -413,28 +413,66 @@ $("#mk-edit").addEventListener("click", () => openEditor([asDoc(made)], made.lab
 $("#mk-again").addEventListener("click", () => { mkView("form"); $("#mk-word").select(); $("#mk-word").focus(); });
 $("#lib-empty-make").addEventListener("click", (e) => { e.preventDefault(); openMake(search.value.trim()); });
 
-// ---------- views: the pills at the bottom swap the hero for another view ----------
+// ---------- views: the floating bar swaps the hero for another view ----------
 const VIEWS = ["icons", "install", "how"];
-let view = null;
-function showView(name, { focus = true } = {}) {
-  view = VIEWS.includes(name) ? name : null;
+const bar = $(".pills"), ind = $(".pill-ind"), viewBtns = $$(".pill-btn[data-view]");
+const CLOSED = 40; // an open section's button shrinks to a round close button this wide
+const noMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+let view = null, natural = new Map();
+// each button's own width (icon + word), measured once the font has loaded and again on resize
+function measure() {
+  viewBtns.forEach((b) => { b.style.transition = "none"; b.style.width = ""; });
+  viewBtns.forEach((b) => natural.set(b, b.getBoundingClientRect().width));
+  layoutBar(false);
+  void bar.offsetWidth;
+  viewBtns.forEach((b) => (b.style.transition = ""));
+}
+// set every button's target width, and slide the dark highlight to the open one
+function layoutBar(animate = true) {
+  if (!animate) ind.style.transition = "none";
+  let x = parseFloat(getComputedStyle(bar).paddingLeft), gap = parseFloat(getComputedStyle(bar).columnGap) || 0, target = null;
+  viewBtns.forEach((b) => {
+    const on = b.dataset.view === view, w = on ? CLOSED : natural.get(b);
+    b.style.width = `${w}px`;
+    if (on) target = { x, w };
+    x += w + gap;
+  });
+  if (target) { ind.style.width = `${target.w}px`; ind.style.transform = `translateX(${target.x}px)`; ind.style.opacity = "1"; }
+  else { ind.style.opacity = "0"; ind.style.transform = `${ind.style.transform.split(" scale")[0] || "translateX(0)"} scale(0.6)`; }
+  if (!animate) { void ind.offsetWidth; ind.style.transition = ""; }
+}
+function swap() {
   $("#view-home").hidden = !!view;
   VIEWS.forEach((v) => ($("#" + v).hidden = v !== view));
-  $$(".pill-btn[data-view]").forEach((b) => {
+}
+function showView(name, { focus = true, animate = true } = {}) {
+  const next = VIEWS.includes(name) ? name : null;
+  if (next === view && animate) return;
+  view = next;
+  viewBtns.forEach((b) => {
     const on = b.dataset.view === view;
     b.setAttribute("aria-pressed", on);
     const label = $(".pl", b).textContent;
     b.setAttribute("aria-label", on ? `Close ${label.toLowerCase()}` : label);
   });
+  layoutBar(animate);
+  // the views morph into each other where the browser supports view transitions
+  if (animate && !noMotion() && document.startViewTransition) document.startViewTransition(swap);
+  else swap();
   try { history.replaceState(null, "", view ? `#${view}` : location.pathname + location.search); } catch { /* sandboxed */ }
   if (focus) (view ? $("#" + view) : wordIn).focus({ preventScroll: true });
 }
-$$(".pill-btn[data-view]").forEach((b) => b.addEventListener("click", () => showView(b.dataset.view === view ? null : b.dataset.view)));
+if (document.startViewTransition) document.documentElement.classList.add("vt");
+viewBtns.forEach((b) => b.addEventListener("click", () => showView(b.dataset.view === view ? null : b.dataset.view)));
 $("[data-home]").addEventListener("click", (e) => { e.preventDefault(); showView(null); });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && view && !document.querySelector("dialog[open]")) showView(null);
 });
-if (VIEWS.includes(location.hash.slice(1))) showView(location.hash.slice(1), { focus: false });
+measure();
+document.fonts?.ready.then(measure);
+let rz;
+addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(measure, 120); });
+if (VIEWS.includes(location.hash.slice(1))) showView(location.hash.slice(1), { focus: false, animate: false });
 
 // ---------- wiring ----------
 function closeAll() { $$("dialog[open]").forEach((d) => d.close()); }

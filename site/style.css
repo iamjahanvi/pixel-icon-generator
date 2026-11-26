@@ -286,11 +286,11 @@ dialog.sheet:focus-visible { outline: none; }
 /* still mode: the marquees stop */
 :root.still .marquee-track { animation-play-state: paused !important; }
 .wrap, .top { padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
-.top { padding-top: clamp(28px, 4vw, 56px); padding-bottom: clamp(20px, 2.5vw, 36px); display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.top { padding-top: clamp(28px, 4vw, 56px); padding-bottom: clamp(8px, 1vw, 16px); display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
 /* the one-line pitch sits top right, opposite the name */
 .tagline { margin: 0; max-width: 24em; text-align: right; font-size: clamp(18px, 1.75vw, 26px); line-height: 1.35; font-weight: 500; letter-spacing: -0.01em; text-wrap: balance; }
 .tagline span { display: block; font-weight: 400; color: var(--faint); }
-.brand { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; text-decoration: none; }
+.brand { font-size: clamp(18px, 1.75vw, 26px); font-weight: 700; letter-spacing: -0.02em; text-decoration: none; }
 .muted { color: var(--soft); }
 .label { font-size: clamp(24px, 2.3vw, 32px); font-weight: 600; letter-spacing: -0.02em; }
 .solid, .ghost {
@@ -385,7 +385,8 @@ dialog.sheet:focus-visible { outline: none; }
 .puff .smoke { position: absolute; left: 0; top: 0; display: block; line-height: 0; }
 .puff .smoke svg { display: block; image-rendering: pixelated; }
 .under { margin-top: 56px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px 24px; }
-.brand { line-height: 1.1; }
+/* same size and line height as the tagline, so their first lines sit level */
+.brand { line-height: 1.35; }
 .foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 32px; padding-top: 28px; padding-bottom: max(32px, env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
 .foot-links { display: flex; gap: 20px; font-size: 15px; }
 .foot-links a { color: var(--soft); text-decoration: none; }
@@ -461,7 +462,7 @@ main { padding-bottom: clamp(80px, 10vw, 140px); }
 @media (max-width: 720px) {
   .sec-actions, .search-trigger { width: 100%; min-width: 0; }
   .search-trigger kbd { display: none; }
-  .brand { font-size: 20px; }
+  .brand { font-size: 14px; }
   .tagline { font-size: 14px; max-width: 15em; }
   .wall { gap: 18px; font-size: clamp(30px, 9vw, 44px); }
   .wall-row { flex-wrap: wrap; justify-content: flex-start; gap: 12px 0.6em; }
@@ -513,44 +514,68 @@ body { min-height: 0; height: 100vh; height: 100dvh; display: flex; flex-directi
 .step-icon svg { width: min(160px, 20vh); height: min(160px, 20vh); }
 .arrow { margin-top: calc(min(300px, 36vh) / 2 - 20px); }
 
+/* the floating bar: one glass pill holding the section buttons and the motion switch */
 .pills {
   position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 5;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 2px; padding: 5px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--glass);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 32px -12px rgba(0, 0, 0, 0.22);
+  view-transition-name: pills;
+}
+
+.pills { --ease: cubic-bezier(0.32, 0.72, 0, 1); --dur: 0.42s; }
+/* the dark highlight slides and stretches to whichever section is open */
+.pill-ind {
+  position: absolute; top: 5px; left: 0; height: 40px; width: 40px; border-radius: 999px; background: var(--text);
+  opacity: 0; transform: translateX(0) scale(0.6); pointer-events: none;
+  transition: transform var(--dur) var(--ease), width var(--dur) var(--ease), opacity 0.2s ease;
 }
 .pill-btn {
-  height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 20px;
-  border: 1px solid var(--line); border-radius: 999px; background: var(--glass); cursor: pointer;
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 28px -10px rgba(0, 0, 0, 0.18);
+  position: relative; z-index: 1; height: 40px; padding: 0 16px; display: inline-grid; place-items: center; place-content: center; overflow: hidden;
+  border: 0; border-radius: 999px; background: transparent; cursor: pointer;
   font: 500 15px/1 var(--font); color: var(--text); white-space: nowrap;
-  transition: width 0.2s ease, padding 0.2s ease, background 0.15s ease;
+  transition: width var(--dur) var(--ease), background 0.15s ease, color 0.25s ease;
 }
-.pill-btn:hover { border-color: #cfcfcf; background: var(--surface); }
-.pill-btn .x, .pill-btn .short { display: none; }
-/* the open view's pill becomes a round close button */
-.pill-btn[aria-pressed="true"] { width: 48px; padding: 0; background: var(--text); border-color: var(--text); color: var(--on-dark); }
-.pill-btn[aria-pressed="true"] .pl { display: none; }
-.pill-btn[aria-pressed="true"] .x { display: block; }
-.pill-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
-/* the small switch at the end of the pill bar: stop the marquees */
-.pills .sep { width: 1px; height: 24px; background: var(--line-strong); margin: 0 2px; }
-.pill-btn.tog { width: 48px; padding: 0; }
-.pill-btn.tog svg { width: 18px; height: 18px; }
+.pill-btn > * { grid-area: 1 / 1; }
+.pi { display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.2s ease, transform var(--dur) var(--ease), filter 0.2s ease; }
+.pi .ic { flex: none; }
+.pill-btn .x { opacity: 0; transform: scale(0.4) rotate(-90deg); transition: opacity 0.2s ease, transform var(--dur) var(--ease); }
+.pill-btn:not([aria-pressed="true"]):hover { background: var(--sunken); }
+/* the open section's button shrinks into a round close button */
+.pill-btn[aria-pressed="true"] { color: var(--on-dark); }
+.pill-btn[aria-pressed="true"] .pi { opacity: 0; transform: scale(0.7); filter: blur(2px); }
+.pill-btn[aria-pressed="true"] .x { opacity: 1; transform: none; transition-delay: 0.06s; }
+.pill-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+/* the small switch at the end of the bar: stop the marquees */
+.pills .sep { width: 1px; height: 22px; background: var(--line-strong); margin: 0 4px; }
+.pill-btn.tog { width: 40px; padding: 0; }
+.pill-btn.tog svg { width: 16px; height: 16px; }
 .pill-btn.tog .on { display: none; }
-.pill-btn.tog[aria-pressed="true"] { width: 48px; background: var(--glass); border-color: var(--line); color: var(--text); }
+.pill-btn.tog[aria-pressed="true"] { color: var(--text); }
 .pill-btn.tog[aria-pressed="true"] .on { display: block; }
 .pill-btn.tog[aria-pressed="true"] .off { display: none; }
+
+/* views morph into each other: the old one sinks and fades, the new one rises in */
+::view-transition-group(stage) { animation-duration: 0.45s; animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1); }
+::view-transition-old(stage) { animation: 0.25s ease both stage-out; }
+::view-transition-new(stage) { animation: 0.45s cubic-bezier(0.32, 0.72, 0, 1) 0.06s both stage-in; }
+::view-transition-old(pills) { display: none; }
+::view-transition-new(pills) { animation: none; }
+::view-transition-group(pills) { animation: none; }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+@keyframes stage-out { to { opacity: 0; transform: scale(0.97); filter: blur(6px); } }
+@keyframes stage-in { from { opacity: 0; transform: translateY(14px) scale(0.985); filter: blur(6px); } }
+.stage { view-transition-name: stage; }
+html.vt .view:not([hidden]) .view-in { animation: none; }
+@media (prefers-reduced-motion: reduce) { .pill-ind, .pill-btn, .pi, .pill-btn .x { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .view:not([hidden]) .view-in { animation: none; } .pill-btn { transition: none; } }
 
 @media (max-width: 720px) {
   .view { padding-top: 8px; }
-  .pills { gap: 8px; }
-  .pill-btn { height: 44px; padding: 0 16px; font-size: 14px; }
-  .pill-btn[aria-pressed="true"], .pill-btn.tog, .pill-btn.tog[aria-pressed="true"] { width: 44px; }
-  .pills .sep { display: none; }
-  .pill-btn .pl:not(.short) { display: none; }
-  .pill-btn .short { display: inline; }
-  .pill-btn[aria-pressed="true"] .short { display: none; }
+  .pill-btn { padding: 0 13px; font-size: 14px; }
+  .pi { gap: 6px; }
+  .pills .sep { margin: 0 2px; }
   #icons .view-in { max-width: none; }
   .step-word, .step-grid, .step-icon { height: auto; }
   .step-grid { font-size: 12px; }
