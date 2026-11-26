@@ -282,23 +282,11 @@ dialog.sheet:focus-visible { outline: none; }
 
 /* ---------- page ---------- */
 :root { --gutter: clamp(16px, 4.45vw, 64px); --line: #e6e6e6; --line-strong: #cfcfcf; --soft: #6f6f6f; --faint: #9a9a9a; --on-dark: #fff; --glass: rgba(255, 255, 255, 0.92); }
-/* dark mode: the toggle sets data-theme="dark" on <html> */
-:root[data-theme="dark"] {
-  --bg: #121212; --surface: #1c1c1c; --sunken: #242424; --border: #2f2f2f; --line: #2c2c2c; --line-strong: #444;
-  --text: #f1f1f1; --muted: #a3a3a3; --soft: #a3a3a3; --faint: #7d7d7d; --dark: #f1f1f1; --on-dark: #121212;
-  --glass: rgba(28, 28, 28, 0.88); color-scheme: dark;
-}
-:root[data-theme="dark"] .pill-in:focus-within, :root[data-theme="dark"] .search-trigger:focus-visible { box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.14); }
-:root[data-theme="dark"] .search-trigger { border-color: var(--line-strong); }
-:root[data-theme="dark"] img[src$="chatgpt.svg"] { filter: invert(1); }
-/* the two darkest wall words get a lighter tint so they stay readable */
-:root[data-theme="dark"] .w-btn[data-open="coffee"] { color: #b07a52 !important; }
-:root[data-theme="dark"] .w-btn[data-open="camera"] { color: #9aa1ab !important; }
 .brand { white-space: nowrap; }
 /* still mode: the marquees stop */
 :root.still .marquee-track { animation-play-state: paused !important; }
 .wrap, .top { padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
-.top { padding-top: clamp(20px, 2.5vw, 36px); padding-bottom: clamp(20px, 2.5vw, 36px); display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.top { padding-top: clamp(28px, 4vw, 56px); padding-bottom: clamp(20px, 2.5vw, 36px); display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
 /* the one-line pitch sits top right, opposite the name */
 .tagline { margin: 0; max-width: 24em; text-align: right; font-size: clamp(18px, 1.75vw, 26px); line-height: 1.35; font-weight: 500; letter-spacing: -0.01em; text-wrap: balance; }
 .tagline span { display: block; font-weight: 400; color: var(--faint); }
@@ -331,10 +319,8 @@ dialog.sheet:focus-visible { outline: none; }
 .w-btn:hover svg { transform: scale(1.08) rotate(-4deg); }
 .wall-type { gap: var(--pair-gap); margin: 0; justify-content: flex-start; }
 .wall-type .slot { margin-left: calc(0.34em - var(--pair-gap)); }
-.wall-type .pill-in { flex: 0 1 9.6em; }
-.wall-type .pill-in { margin-left: auto; }
-/* the field and its slot sit centred between Coffee and Book */
-.wall-type .trail { margin-left: auto; }
+/* the field stretches so it sits one word-gap from Coffee and its slot one word-gap from Book, like the other rows */
+.wall-type .pill-in { flex: 1 1 0; min-width: 0; }
 @media (max-width: 1200px) { .wall-type .trail { display: none; } }
 /* marquee rows: bleed to the screen edges, fade out at both ends, pause on hover or focus */
 .wall { --pair-gap: 0.62em; }
@@ -546,7 +532,7 @@ body { min-height: 0; height: 100vh; height: 100dvh; display: flex; flex-directi
 .pill-btn[aria-pressed="true"] .pl { display: none; }
 .pill-btn[aria-pressed="true"] .x { display: block; }
 .pill-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
-/* the two small switches at the end of the pill bar: stop the marquees, dark mode */
+/* the small switch at the end of the pill bar: stop the marquees */
 .pills .sep { width: 1px; height: 24px; background: var(--line-strong); margin: 0 2px; }
 .pill-btn.tog { width: 48px; padding: 0; }
 .pill-btn.tog svg { width: 18px; height: 18px; }

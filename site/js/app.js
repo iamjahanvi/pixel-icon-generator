@@ -472,28 +472,18 @@ if (location.hash === "#make") openMake();
 // show the shortcut the visitor actually has
 if (!/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) $("#kbd-k").textContent = "Ctrl K";
 
-// ---------- switches: stop the marquees, dark mode (remembered on this device) ----------
+// ---------- switch: stop the marquees (remembered on this device) ----------
 (() => {
   const root = document.documentElement;
   const get = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
   const put = (k, v) => { try { localStorage.setItem(k, v); } catch { /* storage blocked */ } };
-  const motion = $("#tog-motion"), theme = $("#tog-theme");
+  const motion = $("#tog-motion");
   const setStill = (on) => {
     root.classList.toggle("still", on);
     motion.setAttribute("aria-pressed", on);
     motion.setAttribute("aria-label", on ? "Start the moving rows" : "Stop the moving rows");
     motion.title = motion.getAttribute("aria-label");
   };
-  const setDark = (on) => {
-    if (on) root.dataset.theme = "dark"; else delete root.dataset.theme;
-    theme.setAttribute("aria-pressed", on);
-    theme.setAttribute("aria-label", on ? "Light mode" : "Dark mode");
-    theme.title = theme.getAttribute("aria-label");
-    $('meta[name="theme-color"]')?.setAttribute("content", on ? "#121212" : "#fafafa");
-  };
   setStill(get("pi-still") === "1");
-  const saved = get("pi-theme");
-  setDark(saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches);
   motion.addEventListener("click", () => { const on = !root.classList.contains("still"); setStill(on); put("pi-still", on ? "1" : "0"); });
-  theme.addEventListener("click", () => { const on = root.dataset.theme !== "dark"; setDark(on); put("pi-theme", on ? "dark" : "light"); });
 })();
