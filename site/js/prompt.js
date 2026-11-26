@@ -3,6 +3,7 @@
 
 export function buildPrompt(word, example, { api = false } = {}) {
   const w = (word || "").trim() || "WORD";
+  const file = w.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "icon";
   const ex = JSON.stringify({ name: example.slug, palette: example.color.palette, grid: example.color.grid }, null, 1)
     .replace(/\[\n\s+/g, "[\n  ").replace(/",\n\s+"/g, '",\n  "');
   return `Draw "${w}" as a 16x16 pixel icon in the Pixtober style by Jahanvi Singh (pixelicons.iamjahanvi.com).
@@ -23,10 +24,15 @@ STYLE
 
 Before you answer, count every row: 16 rows, 16 characters each.
 
-Reply with one line saying which idea you drew, then one code block containing the icon's JSON.
+Reply with one line saying which idea you drew, then one code block containing the icon's JSON.${api ? "" : `
+
+Then turn the JSON into files I can use right away:
+- ${file}.svg: viewBox="0 0 16 16", width and height 512, shape-rendering="crispEdges", one <rect> per run of same-colour pixels in a row, no background.
+- ${file}.png: 512x512 with a transparent background, each pixel scaled up 32x with no smoothing.
+If you can run code or create files, attach both as downloads. If you can't, put the full SVG in a second code block.`}
 
 EXAMPLE ("${example.label.toLowerCase()}")
 ${ex}${api ? "" : `
 
-To check the icon and download the SVG, paste the whole reply into the editor at pixelicons.iamjahanvi.com/#paste.`}`;
+To edit it pixel by pixel, paste the whole reply into the editor at pixelicons.iamjahanvi.com/#paste.`}`;
 }

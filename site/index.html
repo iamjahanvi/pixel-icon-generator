@@ -21,7 +21,7 @@
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="#" aria-label="Pixel Icons, home">Pixel Icons</a>
+    <a class="brand" href="#" aria-label="Pixel Icons, created by Jahanvi, home">Pixel Icons <span>Created by Jahanvi</span></a>
   </header>
 
   <main id="main">
@@ -34,30 +34,24 @@
       <form class="wall-row wall-type" id="word-form" autocomplete="off">
         <span class="w lead" data-lead></span>
         <label class="sr" for="word">Type your word</label>
-        <span class="pill-in"><input id="word" type="text" placeholder="your word" maxlength="40" spellcheck="false" enterkeyhint="go"></span>
+        <span class="pill-in"><span class="type-demo" id="type-demo" aria-hidden="true"><span id="type-demo-text"></span><i class="caret"></i></span><input id="word" type="text" placeholder="your word" maxlength="40" spellcheck="false" enterkeyhint="go"><span class="pill-cta" id="pill-cta"><a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude" tabindex="-1">Open in Claude</a><a class="ghost icon-only" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt" tabindex="-1" aria-label="Open in ChatGPT" title="Open in ChatGPT"><img src="img/chatgpt.svg" alt="" width="18" height="18"></a></span></span>
         <button class="slot" type="button" id="slot" aria-label="Your icon will appear here" disabled><span class="q" aria-hidden="true">?</span></button>
+        <span class="w trail" data-trail></span>
       </form>
       <div class="wall-row" data-row="2"></div>
+      <div class="wall-row" data-row="3"></div>
     </div>
 
-    <div class="wrap under" id="under">
-      <p class="lede">Type your word into the wall. Get a 16×16 pixel icon in Jahanvi Singh's <a href="https://jahanvi-pixtober-2024.framer.website/">Pixtober</a> style.</p>
-      <div class="go">
-        <span class="muted">then</span>
-        <a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
-        <a class="plain" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt">ChatGPT</a>
-        <a class="plain" href="#draw" data-open-draw>Draw it yourself</a>
-      </div>
     </div>
 
     <section class="wrap how" id="how" aria-label="How it works">
-      <p class="statement">Your AI tool draws it pixel by pixel, in one consistent style, and saves a clean SVG to your project. <span>Drop it into Figma or code, and every pixel stays editable.</span></p>
+      <p class="statement">Cute lil’ Pixel Icons drawn on a 16×16 grid. <span>Clean SVGs, editable in Figma or code.</span></p>
       <div class="strip">
         <div class="step"><div class="step-word">rocket</div><span>You type a word</span></div>
         <svg class="arrow" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
         <div class="step"><pre class="step-grid" id="rocket-grid" aria-label="The rocket as a 16 by 16 grid of letters, one letter per colour"></pre><span>It plans every pixel</span></div>
         <svg class="arrow" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
-        <div class="step"><div class="step-icon"><span id="rocket-icon"></span><code>rocket.svg</code></div><span>You get a Figma-ready SVG</span></div>
+        <div class="step"><div class="step-icon"><span id="rocket-icon"></span><code>rocket.svg</code></div><span>You get an SVG</span></div>
       </div>
     </section>
 
@@ -65,15 +59,13 @@
       <div class="sec-head">
         <h2 class="label" id="icons-title">30 icons, free to use</h2>
         <span class="sec-actions">
-          <a class="plain" href="downloads/pixel-icons-library.zip" download>Download all (.zip)</a>
-          <a class="ghost" href="#library" data-open-library>View all 30 icons <kbd>⌘K</kbd></a>
+          <a class="search-trigger" href="#library" data-open-library><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Search icons</span><kbd id="kbd-k">⌘K</kbd></a>
         </span>
       </div>
       <div class="table" id="table"></div>
     </section>
 
-    <section class="wrap install" id="install" aria-labelledby="install-title">
-      <h2 class="label" id="install-title">Pick your tool, copy one line</h2>
+    <section class="wrap install" id="install" aria-label="Install">
       <div class="row">
         <div class="who"><strong>Claude Code</strong><small>Adds the marketplace, then installs</small></div>
         <div class="cmd" data-copy="/plugin marketplace add iamjahanvi/pixel-icon-generator&#10;/plugin install pixel-icons@pixel-icon-generator">/plugin install pixel-icons@pixel-icon-generator</div>
@@ -99,9 +91,17 @@
         <div class="cmd">a pixel icon of a <span id="chat-word">lantern</span>, please</div>
         <a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
       </div>
-      <p class="hint">Then paste the reply into the <a href="#paste" data-open-paste>editor</a> to get the SVG. Using Gemini or another chat? <button type="button" class="link" data-chat="copy">Copy the prompt</button>. Have an Anthropic API key? <a href="#make" data-open-make>Make it here</a>.</p>
+      <p class="hint">The reply comes with an SVG and a PNG. To tweak pixels, paste it into the <a href="#paste" data-open-paste>editor</a>. Using Gemini or another chat? <button type="button" class="link" data-chat="copy">Copy the prompt</button>. Have an Anthropic API key? <a href="#make" data-open-make>Make it here</a>. Or <a href="#draw" data-open-draw>draw it yourself</a>.</p>
     </section>
   </main>
+
+  <footer class="wrap foot">
+    <p class="credit">Icons and style by <a href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">Jahanvi Singh</a>, inspired by her <a href="https://jahanvi-pixtober-2024.framer.website/" target="_blank" rel="noopener">Pixtober</a> series. Free to use in personal and commercial work under the <a href="https://github.com/iamjahanvi/pixel-icon-generator/blob/main/LICENSE" target="_blank" rel="noopener">MIT licence</a>.</p>
+    <nav class="foot-links" aria-label="Jahanvi elsewhere">
+      <a href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">X</a>
+      <a href="https://github.com/iamjahanvi/pixel-icon-generator" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </footer>
 
   <!-- library: a search palette -->
   <dialog class="sheet palette" id="library" aria-label="Icon library">
@@ -119,7 +119,7 @@
         <a class="btn small" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt">Open in ChatGPT</a>
         <button class="btn small" type="button" data-chat="copy">Copy prompt</button>
       </div>
-      <p class="hint">Then paste the reply into the <a href="#paste" data-open-paste>editor</a> to get the SVG. Have an Anthropic API key? <a href="#make" id="lib-empty-make">Make it here</a>.</p>
+      <p class="hint">The reply comes with an SVG and a PNG. To tweak pixels, paste it into the <a href="#paste" data-open-paste>editor</a>. Have an Anthropic API key? <a href="#make" id="lib-empty-make">Make it here</a>.</p>
     </div>
     <div class="palette-foot">
       <span class="keys"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move <kbd>↵</kbd> open</span>
