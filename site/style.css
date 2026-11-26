@@ -550,7 +550,7 @@ body { min-height: 0; height: 100vh; height: 100dvh; display: flex; flex-directi
 /* the small switch at the end of the bar: stop the marquees */
 .pills .sep { width: 1px; height: 22px; background: var(--line-strong); margin: 0 4px; }
 .pill-btn.tog { width: 40px; padding: 0; }
-.pill-btn.tog svg { width: 16px; height: 16px; }
+.pill-btn.tog svg { width: 18px; height: 18px; }
 .pill-btn.tog .on { display: none; }
 .pill-btn.tog[aria-pressed="true"] { color: var(--text); }
 .pill-btn.tog[aria-pressed="true"] .on { display: block; }
