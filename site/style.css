@@ -281,7 +281,7 @@ dialog.sheet:focus-visible { outline: none; }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
 
 /* ---------- page ---------- */
-:root { --gutter: clamp(16px, 4.45vw, 64px); --line: #e6e6e6; --line-strong: #cfcfcf; --soft: #6f6f6f; --faint: #9a9a9a; --on-dark: #fff; --glass: rgba(255, 255, 255, 0.92); }
+:root { --gutter: clamp(16px, 2.8vw, 40px); --line: #e6e6e6; --line-strong: #cfcfcf; --soft: #6f6f6f; --faint: #9a9a9a; --on-dark: #fff; --glass: rgba(255, 255, 255, 0.92); }
 .brand { white-space: nowrap; }
 /* still mode: the marquees stop */
 :root.still .marquee-track { animation-play-state: paused !important; }
@@ -387,6 +387,14 @@ dialog.sheet:focus-visible { outline: none; }
 .under { margin-top: 56px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px 24px; }
 /* same size and line height as the tagline, so their first lines sit level */
 .brand { line-height: 1.35; }
+.brand-col { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+/* a small pill under the name, linking to Jahanvi on X */
+.by {
+  display: inline-flex; align-items: center; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); font: 500 13px/1.2 var(--font); color: var(--soft); text-decoration: none; white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.by:hover { color: var(--text); border-color: var(--line-strong); }
 .foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 32px; padding-top: 28px; padding-bottom: max(32px, env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
 .foot-links { display: flex; gap: 20px; font-size: 15px; }
 .foot-links a { color: var(--soft); text-decoration: none; }
