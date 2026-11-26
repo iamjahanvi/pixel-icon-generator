@@ -286,7 +286,7 @@ dialog.sheet:focus-visible { outline: none; }
 /* still mode: the marquees stop */
 :root.still .marquee-track { animation-play-state: paused !important; }
 .wrap, .top { padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
-.top { padding-top: clamp(28px, 4vw, 56px); padding-bottom: clamp(8px, 1vw, 16px); display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.top { padding-top: clamp(20px, 2.8vw, 40px); padding-bottom: clamp(8px, 1vw, 16px); display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
 /* the one-line pitch sits top right, opposite the name */
 .tagline { margin: 0; max-width: 24em; text-align: right; font-size: clamp(18px, 1.75vw, 26px); line-height: 1.35; font-weight: 500; letter-spacing: -0.01em; text-wrap: balance; }
 .tagline span { display: block; font-weight: 400; color: var(--faint); }
