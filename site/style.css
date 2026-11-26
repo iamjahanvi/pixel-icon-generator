@@ -283,7 +283,10 @@ dialog.sheet:focus-visible { outline: none; }
 /* ---------- page ---------- */
 :root { --gutter: clamp(16px, 4.45vw, 64px); --line: #e6e6e6; --soft: #6f6f6f; --faint: #9a9a9a; }
 .wrap, .top { padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
-.top { padding-top: clamp(20px, 2.5vw, 36px); padding-bottom: clamp(20px, 2.5vw, 36px); }
+.top { padding-top: clamp(20px, 2.5vw, 36px); padding-bottom: clamp(20px, 2.5vw, 36px); display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+/* the one-line pitch sits top right, opposite the name */
+.tagline { margin: 0; max-width: 22em; text-align: right; font-size: 16px; line-height: 1.35; font-weight: 500; letter-spacing: -0.01em; text-wrap: balance; }
+.tagline span { display: block; font-weight: 400; color: var(--faint); }
 .brand { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; text-decoration: none; }
 .muted { color: var(--soft); }
 .label { font-size: clamp(24px, 2.3vw, 32px); font-weight: 600; letter-spacing: -0.02em; }
@@ -397,12 +400,7 @@ dialog.sheet:focus-visible { outline: none; }
 /* how it works */
 section.wrap { margin-top: clamp(120px, 14vw, 200px); }
 section.install { margin-top: clamp(48px, 5vw, 72px); }
-.statement {
-  margin: 0 auto; max-width: 1040px; text-align: center;
-  font-size: clamp(26px, 3.1vw, 44px); line-height: 1.2; letter-spacing: -0.02em; font-weight: 500; text-wrap: balance;
-}
-.statement span { display: block; color: var(--faint); }
-.strip { margin-top: clamp(56px, 6.7vw, 96px); display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: start; gap: 24px; }
+.strip { margin-top: 0; display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: start; gap: 24px; }
 .step { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; }
 .step > span { font-size: 15px; color: var(--soft); }
 .step-word, .step-grid, .step-icon { height: 300px; display: flex; align-items: center; justify-content: center; }
@@ -466,6 +464,7 @@ main { padding-bottom: clamp(80px, 10vw, 140px); }
   .sec-actions, .search-trigger { width: 100%; min-width: 0; }
   .search-trigger kbd { display: none; }
   .brand { font-size: 20px; }
+  .tagline { font-size: 13px; max-width: 15em; }
   .wall { gap: 18px; font-size: clamp(30px, 9vw, 44px); }
   .wall-row { flex-wrap: wrap; justify-content: flex-start; gap: 12px 0.6em; }
   .wall-row.marquee { flex-wrap: nowrap; }
