@@ -32,6 +32,15 @@ window.__bootStep?.(0.7); // the loading fill tracks real progress: icon data is
       pick();
       brand.addEventListener("mouseleave", () => setTimeout(pick, 400)); // the next hover gets the next colour
       brand.addEventListener("blur", () => setTimeout(pick, 400));
+      // touch screens have no hover: each tap fills the logo, and every tap after that drains it and refills it
+      // in the next colour
+      brand.addEventListener("pointerup", (e) => {
+        if (e.pointerType === "mouse") return;
+        clearTimeout(wrap._refill);
+        if (!wrap.classList.contains("filled")) { wrap.classList.add("filled"); return; }
+        wrap.classList.remove("filled");
+        wrap._refill = setTimeout(() => { pick(); wrap.classList.add("filled"); }, 380);
+      });
     }).catch(() => {});
   }
 }
