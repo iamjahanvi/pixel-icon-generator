@@ -690,6 +690,9 @@ const pile = (() => {
     if ($("#how").hidden) return;
     place();
     if (!W()) return;
+    // the layer covers the window, except while the page's entrance animation is moving it (it's then squeezed to the
+    // animating content, which would put the floor halfway up): wait for it to be full size before the first pour
+    if (!started && Math.abs(H() - innerHeight) > 2 && (waits = (waits || 0) + 1) < 60) { clearTimeout(waitT); waitT = setTimeout(wake, 60); return; }
     if (!started) { started = true; load(); return; }
     still = 0;
     if (!running) { running = true; requestAnimationFrame(loop); }
@@ -715,7 +718,10 @@ const pile = (() => {
     still = 0;
     if (!running) { running = true; requestAnimationFrame(loop); }
   }
+  let waits = 0, waitT = 0;
   addEventListener("resize", () => { if (!$("#how").hidden) wake(); });
+  // whenever the layer itself changes size (an animation ending, the window, the address bar), let the pile resettle
+  new ResizeObserver(() => { if (started && !$("#how").hidden) wake(); }).observe(box);
   $("#how").addEventListener("scroll", () => place(), { passive: true });
   const local = (e) => { const r = box.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
   box.addEventListener("pointerdown", (e) => {
