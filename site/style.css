@@ -291,7 +291,7 @@ dialog.sheet:focus-visible { outline: none; }
 .by { justify-self: start; }
 /* the one-line pitch sits top right, opposite the name */
 .tagline { margin: 0; text-align: right; font-size: var(--tag-fs); line-height: calc(var(--tag-fs) * 1.3 + 0.5px); font-weight: 500; letter-spacing: -0.01em; text-wrap: balance; }
-.tagline span { display: block; }
+.tagline > span { display: block; }
 .tagline .t2 { font-weight: 400; color: var(--faint); }
 .tagline { transition: opacity 0.2s ease; }
 .tagline.off { opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0s 0.2s; }
@@ -438,6 +438,7 @@ dialog.sheet:focus-visible { outline: none; }
    so the lines end where the tiles end, even when a search leaves only a few */
 .table > * { box-shadow: 1px 0 0 0 var(--line), 0 1px 0 0 var(--line), 1px 1px 0 0 var(--line), inset 1px 0 0 0 var(--line), inset 0 1px 0 0 var(--line); }
 .cell {
+  content-visibility: auto; contain-intrinsic-size: auto 0px; /* off-screen cells aren't laid out until scrolled to: opening the Library stays light */
   aspect-ratio: 1; min-width: 0; border: 0;
   background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   font: 12px var(--font); color: #8a8a8a; cursor: pointer; padding: 8px;
@@ -699,7 +700,7 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
 .fb-wrap > .pill-btn { flex: none; }
 .pills .fb-wrap.gone { overflow: hidden; }
 .pills > .fb-wrap.gone { transition-duration: var(--dur), 0.09s, 0.09s; } /* width, then a quick fade for icon and words together */
-.fb-wrap.open { overflow: visible; } /* the open email bubble is wider than the pill, so no clipping while it's shown */
+.fb-wrap.open, .fb-wrap.closing:not(.gone) { overflow: visible; } /* the open email bubble is wider than the pill, so no clipping while it's shown */
 .fb-tip {
   position: absolute; left: 50%; bottom: calc(100% + 12px); z-index: 4; display: flex; align-items: center; gap: 10px;
   padding: 6px 6px 6px 14px; border-radius: 999px; background: #fff; white-space: nowrap;
@@ -797,8 +798,8 @@ html.boot-quick .boot { display: none; }
 .boot-logo { position: relative; width: 228px; height: 72px; opacity: 0; transform-origin: top left; transition: opacity 0.15s ease; } /* 6px per logo pixel: crisp */
 .boot.on .boot-logo { opacity: 1; }
 .boot-logo img, .boot-fill { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; shape-rendering: crispEdges; }
-/* the glide: quick, with a tiny overshoot so the logo clicks into place */
-html.boot-out .boot-logo { transition: transform 0.42s cubic-bezier(0.3, 1.25, 0.5, 1); }
+/* the glide: an unhurried ease-out that settles into place, no overshoot */
+html.boot-out .boot-logo { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
 html.boot-out .boot-fill { opacity: 0; transition: opacity 0.3s ease 0.1s; }
 
 /* the page assembles: header, then the hero rows top to bottom, then the floating bar rises */
@@ -880,22 +881,45 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
   .top { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding-top: calc(36px + env(safe-area-inset-top, 0px)); }
   .brand-col { align-items: center; }
   .wall-row.m-row { display: flex; }
+  /* phones: the typing field sits second-from-top in the words, swapped with the row that was above it */
+  .wall > [data-row="4"] { order: 0; } .wall > [data-row="0"] { order: 1; } .wall > .wall-type { order: 2; }
+  .wall > [data-row="1"] { order: 3; } .wall > [data-row="2"] { order: 4; } .wall > [data-row="3"] { order: 5; } .wall > [data-row="5"] { order: 6; }
+  .wall-row.m-row[data-row="5"] { visibility: hidden; }
+  /* going back on phones: an even, visible morph (no fast start), with the tab labels arriving while the bar grows */
+  .pills.going-back { --spring: cubic-bezier(0.33, 0, 0.2, 1); --dur: 0.38s; } /* five rows of words on phones: the bottom one is left empty, keeping its space */
+  /* touch targets: every bar button is at least 44×44 (Apple's minimum), with slightly bigger icons and label */
+  .pills > .pill-btn, .pills .pill-ind { height: 44px; }
+  .pills > .pill-btn[data-view="icons"] { font-size: 15px; }
+  .pills > #tog-motion { width: 44px; padding: 0; } /* a fixed width, so it shrinks away and grows back smoothly */
+  .pills > #tog-motion.gone { width: 0 !important; } /* hidden in a section: takes no room */
+  /* bigger icons, keeping the desktop proportions (16 / 17 / 18) that make the three logos look the same size */
+  .pills > .icon-pill[data-for="how"] svg { width: 19px; height: 19px; }
+  .pills > .icon-pill[href*="linkedin"] svg { width: 19px; height: 19px; } /* a solid square reads big */
+  .pills > .icon-pill[href*="github"] svg { width: 23px; height: 23px; } /* a round mark reads small */
+  .pills > #tog-motion svg { width: 20px; height: 20px; }
   .by { justify-content: center; pointer-events: none; } /* By Jahanvi, centred under the logo, as plain text (no link on phones) */
   .by-x { display: none; }
   #dt-edit { display: none; } /* no editing on phones: the icon pop-up just copies and downloads */
   .top .tagline { display: none; } /* on phones the pitch sits just above the floating bar, not in the header */
   .m-tag { z-index: 5; display: block; position: fixed; left: var(--gutter); right: var(--gutter); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); margin: 0; text-align: center; font-size: 17px; line-height: 1.35; font-weight: 500; letter-spacing: -0.01em; pointer-events: none; } /* just above the floating bar */
-  .m-tag span { display: block; }
+  .m-tag > span { display: block; }
   .m-tag .t2 { font-weight: 400; color: var(--faint); }
   /* the floating bar: Library (with its icon count) | X, LinkedIn and GitHub */
-  .pills > :not(.icon-pill[data-for="how"]):not(.pill-btn[data-view="icons"]):not(.sep[data-for="how"]):not(.pill-ind):not(#tog-motion):not(.sep:not([data-for])) { display: none !important; }
+  /* phones: Library | About | pause. Use Skill and the Library's Download aren't offered here */
+  .pills > [data-view="install"], .pills > [data-for="install"], .pills > .tsep-a, .pills > #dl-btn, .pills > #dl-menu { display: none !important; }
   /* play/pause for the moving rows, at the end of the bar (home only; the library hides it like on desktop) */
-  .pills > .sep:not([data-for]) { margin: 0 6px !important; background-color: var(--line-strong) !important; } /* stays visible: a tap leaves a sticky hover on phones */
+  .pills > .sep:not([data-for]):not(.gone) { margin: 0 6px 0 3px !important; background-color: var(--line-strong) !important; }
+  .pills > .sep.gone { margin: 0 !important; } /* a hidden divider takes no room (it left a gap at the end of the bar) */ /* stays visible: a tap leaves a sticky hover on phones */
   .pills > .sep[data-for="how"] { background-color: var(--line-strong) !important; }
-  .pills > .icon-pill[data-for="how"] { width: auto !important; opacity: 1 !important; filter: none !important; pointer-events: auto !important; margin: 0 !important; padding: 0 12px !important; }
-  .pills > .sep[data-for="how"] { width: 1px !important; opacity: 1 !important; filter: none !important; margin: 0 6px !important; }
+  /* About's socials: full 44px touch targets */
+  /* About's socials: 44px touch targets with the icon in the middle (content is pinned left for the morph, so the
+     left padding does the centring: (44 - icon) / 2) */
+  .pills > .icon-pill[data-for="how"] { width: 44px; padding: 0 !important; }
+  .pills > .icon-pill[data-for="how"]:not(.gone) { padding-left: 12.5px !important; }
+  .pills > .icon-pill[data-for="how"][href*="github"]:not(.gone) { padding-left: 10.5px !important; } /* folded away they take no room */
+  .pills > .sep[data-for="how"]:not(.gone) { margin: 0 6px 0 4px !important; } /* even space either side of the line in About */
+  .pills > .pill-search input { width: min(190px, calc(100vw - 180px)); } /* the Library's search fills its bar, and shrinks on small phones */
   .m-count { display: inline-flex; }
-  .pills > .pill-btn[data-view="icons"]:not([aria-pressed="true"]) { width: auto !important; padding: 0 7px 0 16px; } /* sized by its own content, so the gap after the badge never depends on a load-time measurement */ /* the badge ends the button, so less padding after it: even gaps around the line */
 }
 
 /* phones: a soft pastel mesh drifting up from the bottom edge, behind the floating bar */
@@ -934,3 +958,99 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
   #view-home.view { padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px)); }
   .wall-row.m-row { display: none; } /* six rows don't fit: back to four */
 }
+
+/* touch screens keep a "hover" on whatever was last tapped (after going back that's the Library tab under your
+   finger): no grey there. (No pressed grey either: the back button turns into the Library tab under the finger.) */
+@media (hover: none) {
+  .pill-btn:not([aria-pressed="true"]):hover, .pill-btn.tog:hover { background: transparent; }
+}
+
+/* phones: pull-to-refresh. A small round chip with a pixel arrow slides down as you pull; the arrow flips once
+   you've pulled far enough, and letting go there reloads with a pixel spinner. Let go early and it slides back. */
+.ptr { display: none; }
+@media (max-width: 720px) {
+  .ptr {
+    display: grid; place-items: center; position: fixed; left: 50%; top: 0; z-index: 20; width: 48px; height: 48px; margin-left: -24px; /* icons at 2× (32px): every pixel crisp */
+    color: var(--text); /* no chip behind it: the pixel icons carry their own outline */
+    transform: translateY(-56px); opacity: 0; pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease;
+  }
+  .ptr.pulling { transition: none; }
+  /* pixel arrow (flips to point up once you've pulled far enough) and a pixel spinner that turns in 90° steps,
+     which keeps every pixel on the grid */
+  .ptr svg { grid-area: 1 / 1; image-rendering: pixelated; }
+  .ptr-arrow { transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1); } /* turns smoothly between down and up */
+  .ptr.ready .ptr-arrow { transform: rotate(180deg); }
+  .ptr-spin { opacity: 0; }
+  .ptr.loading .ptr-arrow { opacity: 0; }
+  .ptr.loading .ptr-spin { opacity: 1; animation: ptr-spin 0.6s steps(4) infinite; }
+  @keyframes ptr-spin { to { transform: rotate(360deg); } }
+}
+
+/* one cursor across the floating bar: the gaps between buttons, the dividers and the pills' rounded corners used to
+   flip it back to the arrow as you moved along the bar. The search field keeps its text cursor. */
+.pills, .pills * { cursor: pointer; }
+.pills .pill-search, .pills .pill-search * { cursor: text; }
+.pills .pill-search button, .pills .pill-search kbd { cursor: pointer; }
+
+/* the hero words are buttons that scroll past a resting cursor: each one's clickable area reaches halfway into
+   the gap on both sides, so the buttons meet and the cursor doesn't flip to the arrow between words */
+.marquee-group .w { padding-inline: calc(var(--pair-gap) / 2); margin-inline: calc(var(--pair-gap) / -2); }
+
+/* phones, going back: the Library tab, the pause button and the dividers start fading in at ~20% of the morph,
+   while the bar is still growing */
+@media (max-width: 720px) {
+  .pills.going-back > .pill-btn:not(.gone), .pills.going-back > .sep:not(.gone) {
+    transition: width var(--dur) var(--spring), padding var(--dur) var(--spring), margin var(--dur) var(--spring),
+      opacity 0.2s ease calc(var(--dur) * 0.2), background-color 0.15s ease, color 0.25s ease, box-shadow 0.15s ease !important;
+  }
+  .pills.going-back .pi { transition: opacity 0.2s ease calc(var(--dur) * 0.2), transform var(--dur) var(--ease) !important; }
+  .pills.going-back .tsep::before { transition-delay: calc(var(--dur) * 0.2); }
+}
+
+/* going back, the tab labels fade in while their tabs are still growing: pinned to the left so a tab uncovers its
+   label as it widens, instead of the label spilling out past the bar's edge */
+.pills.going-back > .pill-btn[data-view] { justify-content: start; justify-items: start; }
+
+/* phones: no hover effects in the bar at all (a tap leaves a "hover" behind): no grey behind tabs, no Library
+   tooltip, and the dividers stay put */
+@media (max-width: 720px) {
+  .pills .pill-btn:hover, .pills .pill-btn:active, .pills .pill-btn.tog:hover { background: transparent !important; }
+  .pills .lib-clip { display: none !important; }
+  .pills .tsep::before { opacity: 1 !important; transform: none !important; }
+  .pills:has(.pill-btn[data-view][aria-pressed="true"]) .tsep::before { opacity: 0 !important; } /* still hidden while a section is open */
+  .pills > .sep:not([data-for]) { background-color: var(--line-strong) !important; }
+}
+
+/* pull-to-refresh: the page behind the arrow blurs as you pull (in step with the pull) and stays blurred while
+   it reloads */
+.ptr-veil { display: none; }
+@media (max-width: 720px) {
+  .ptr-veil {
+    display: block; position: fixed; inset: 0; z-index: 19; pointer-events: none; opacity: 0;
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); background: rgba(250, 250, 250, 0.35);
+    transition: opacity 0.35s ease;
+  }
+  .ptr-veil.pulling { transition: none; }
+}
+
+/* phones: "Draw and drop" (the drawing grid and the wall of dropped icons) is desktop only */
+@media (max-width: 720px) {
+  #how .doodle, #how .pile, .pile { display: none !important; }
+}
+
+/* the tagline wraps only on the narrowest phones: there it breaks after the comma, not before the last word */
+@media (max-width: 359px) { .keep { white-space: nowrap; } }
+
+/* phones: the About credits skip the "Icons & Skill" row */
+@media (max-width: 720px) {
+  #how .cr-maker { display: none !important; }
+  #how .view-in { padding-top: 28px; } /* the About text sits a little further from the header on phones */
+}
+
+/* phones: the mail icon draws much smaller than the socials beside it (an outline envelope in a 24 box); sized up
+   so it draws about as wide as they do */
+@media (max-width: 720px) { .pills #fb-btn svg { width: 25px; height: 25px; } }
+
+/* phones: the About note is set at the credits' size (15px), a touch more open line spacing for the paragraphs */
+@media (max-width: 720px) { #how .note p { font-size: 15px; line-height: 1.55; } }

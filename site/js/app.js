@@ -640,7 +640,14 @@ const pile = (() => {
     for (const b of bodies) {
       if (b === drag || b.pinned) continue; // placed icons stay where they were dropped
       b.vy += 0.45; b.vx *= 0.99; b.x += b.vx; b.y += b.vy; b.a += b.va; b.va *= 0.96;
-      if (b.y > h - b.h / 2) { b.y = h - b.h / 2; b.vy *= -0.3; b.vx *= 0.8; b.va *= 0.7; b.a *= 0.9; } // on the floor it settles upright
+      // the floor: it bounces like a ball, each bounce lower than the last (55% of the speed each time), and once
+      // the bounces get tiny it simply stops: no endless little hops. Once down, it straightens up and comes to rest.
+      if (b.y > h - b.h / 2) {
+        b.y = h - b.h / 2;
+        b.vy = b.vy > 1.4 ? -b.vy * 0.55 : 0;
+        b.vx *= 0.9; b.va *= 0.75; b.a *= 0.9;
+        if (!b.vy) { b.vx *= 0.7; if (Math.abs(b.vx) < 0.08) b.vx = 0; if (Math.abs(b.a) < 0.3) { b.a = 0; b.va = 0; } }
+      }
       if (b.y < b.h / 2) { b.y = b.h / 2; b.vy *= -0.4; } // the top of the window is a ceiling: a hard throw bounces back down
       if (b.x < b.r) { b.x = b.r; b.vx *= -0.5; }
       if (b.x > w - b.r) { b.x = w - b.r; b.vx *= -0.5; }
@@ -654,10 +661,11 @@ const pile = (() => {
       const nx = dx / d, ny = dy / d, wa = fa ? 0 : fb ? 1 : 0.5, wb = fb ? 0 : fa ? 1 : 0.5;
       a.x -= nx * o * wa; a.y -= ny * o * wa; b.x += nx * o * wb; b.y += ny * o * wb;
       const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
-      if (rv < 0) { const k = rv * 0.6; a.vx += nx * k * wa * 2; a.vy += ny * k * wa * 2; b.vx -= nx * k * wb * 2; b.vy -= ny * k * wb * 2; }
+      if (rv < 0) { const k = rv * 0.75; a.vx += nx * k * wa * 2; a.vy += ny * k * wa * 2; b.vx -= nx * k * wb * 2; b.vy -= ny * k * wb * 2; }
     }
     if (chipFor && chip.classList.contains("on") && !atRest(chipFor)) hideChip(); // knocked into motion: hide its chip
     for (const b of bodies) {
+      if (b !== drag && !b.pinned && Math.abs(b.vx) + Math.abs(b.vy) < 0.12 && b.y > h - b.h * 3) { b.vx = 0; b.vy = 0; b.va *= 0.5; } // nearly still near the floor: still
       if (Math.abs(b.vx) + Math.abs(b.vy) > 0.15) moving++;
       b.el.style.transform = `translate(${b.x - b.w / 2}px, ${b.y - b.h / 2}px) rotate(${b.a}deg)`;
     }
@@ -682,13 +690,17 @@ const pile = (() => {
   async function load() {
     let list = null;
     try { const r = await fetch("/api/drops", { cache: "no-store" }); if (r.ok) list = (await r.json()).drops; } catch { /* offline or no server */ }
-    if (list) {
-      shared = true; MAX = 60;
-      const pos = positions();
-      list.slice().reverse().forEach((d, n) => add(d, { x: pos[d.id] ? pos[d.id].fx * W() : null, y: -60 - n * 30 })); // each falls in above where it last rested
-    } else saved().forEach((d, n) => add(d, { x: d.pos ? d.pos.fx * W() : null, y: -60 - n * 40 }));
+    if (list) { shared = true; MAX = 60; }
+    const items = list ? list.slice().reverse() : saved();
     // with reduced motion, settle the pile before showing it instead of letting it fall
-    if (calm.matches) { for (let i = 0; i < 600; i++) step(); return; }
+    if (calm.matches) { items.forEach((d) => add(d, { y: -60 })); for (let i = 0; i < 600; i++) step(); return; }
+    // the wall pours out from under the drawing grid, one icon after another, like fresh drops
+    const g = $("#dd-cv")?.getBoundingClientRect();
+    items.forEach((d, n) => setTimeout(() => {
+      add(d, { y: g && g.width ? g.bottom + 12 : -60 });
+      still = 0;
+      if (!running) { running = true; requestAnimationFrame(loop); }
+    }, n * 70));
     still = 0;
     if (!running) { running = true; requestAnimationFrame(loop); }
   }
@@ -848,7 +860,15 @@ function askWho(d) {
 // About: "Got feedback?" opens a bubble with the email (click again, or anywhere else, to close)
 {
   const fb = $(".fb-wrap"), fbBtn = $("#fb-btn");
-  const setFb = (on) => { fb.classList.toggle("open", on); fbBtn.setAttribute("aria-expanded", on); };
+  // closing: the bubble fades out first, and only then does its pill clip again (clipping straight away cropped it)
+  const setFb = (on) => {
+    const was = fb.classList.contains("open");
+    fb.classList.toggle("open", on); fbBtn.setAttribute("aria-expanded", on);
+    clearTimeout(fb._closing);
+    if (was && !on) { fb.classList.add("closing"); fb._closing = setTimeout(() => fb.classList.remove("closing"), 1500); } // fallback
+    else fb.classList.remove("closing");
+  };
+  $(".fb-tip").addEventListener("transitionend", (e) => { if (e.propertyName === "opacity" && !fb.classList.contains("open")) { clearTimeout(fb._closing); fb.classList.remove("closing"); } });
   fbBtn.addEventListener("click", (e) => { e.stopPropagation(); setFb(!fb.classList.contains("open")); });
   document.addEventListener("click", (e) => { if (!e.target.closest(".fb-wrap")) setFb(false); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") setFb(false); });
@@ -858,7 +878,6 @@ const phone = matchMedia("(max-width: 720px)");
 $("#m-count").textContent = `${Math.floor(lib.length / 10) * 10}+`; // the phone bar's Library badge
 const ghIcon = $('.pills > .icon-pill[data-for="how"][href*="github.com"]');
 const phoneBar = () => {
-  $$('.pills > .icon-pill[data-for="how"]').forEach((a) => { if (phone.matches) a.tabIndex = 0; });
   $(".by").tabIndex = phone.matches ? -1 : 0;
   // on phones the GitHub icon opens the skill's repo; on desktop (About) it's Jahanvi's profile
   const repo = phone.matches;
@@ -889,7 +908,7 @@ const bar = $(".pills"), ind = $(".pill-ind"), viewBtns = $$(".pill-btn[data-vie
 // views with their own actions: the bar slims to the close button and the items marked data-for that view
 const FOCUSED = ["icons", "install", "how"];
 const soloItems = $$(".pills [data-for]"), extras = [$(".pills > .sep:not([data-for])"), $("#tog-motion")];
-const CLOSED = 40; // an open section's button shrinks to a round close button this wide
+const closedW = () => (matchMedia("(max-width: 720px)").matches ? 44 : 40); // an open section's button shrinks to a round close button this wide (44 on phones: a full touch target)
 const noMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 let view = null, natural = new Map();
 // each button's own width (icon + word), measured once the font has loaded and again on resize
@@ -920,7 +939,7 @@ function layoutBar(animate = true) {
     if (f) f.tabIndex = gone ? -1 : 0;
   };
   viewBtns.forEach((b) => {
-    const on = b.dataset.view === view, w = on ? CLOSED : solo ? 0 : natural.get(b);
+    const on = b.dataset.view === view, w = on ? closedW() : solo ? 0 : natural.get(b);
     b.style.width = `${w}px`;
     hide(b, !w);
     if (on) target = { x, w };
@@ -954,6 +973,10 @@ function swap() {
   VIEWS.forEach((v) => ($("#" + v).hidden = v !== view));
   if (view === "how") requestAnimationFrame(() => pile.wake()); // the icons tumble in once About is on screen
 }
+// keyboard or pointer: decides where focus goes when a section closes
+let usingKeys = false;
+addEventListener("keydown", () => { usingKeys = true; }, true);
+addEventListener("pointerdown", () => { usingKeys = false; }, true);
 function showView(name, { focus = true, animate = true } = {}) {
   const next = VIEWS.includes(name) ? name : null;
   if (next === view && animate) return;
@@ -983,17 +1006,32 @@ function showView(name, { focus = true, animate = true } = {}) {
     ind.style.transition = "opacity 0.1s ease"; ind.style.opacity = "0";
     clearTimeout(ind._fade); ind._fade = setTimeout(() => { ind.style.transition = ""; }, 150);
   }
-  // the views morph into each other where the browser supports view transitions
-  if (animate && !noMotion() && document.startViewTransition) {
+  // the views morph into each other where the browser supports view transitions; phones skip the page snapshot
+  // (capturing it froze the bar for a moment) and use the views' own light fade-in instead
+  const vt = useVT();
+  document.documentElement.classList.toggle("vt", vt);
+  if (animate && !noMotion() && vt) {
     // the bar's frosted blur would be drawn as a square during the switch, so it's switched off until the switch ends
     const root = document.documentElement;
     root.classList.add("switching");
     document.startViewTransition(swap).finished.finally(() => root.classList.remove("switching"));
   } else swap();
+  // leaving the Library starts it fresh next time: no search, all categories, back at the top
+  if (prev === "icons" && view !== "icons") {
+    if (search.value) { search.value = ""; search.dispatchEvent(new Event("input", { bubbles: true })); }
+    pickCat("All");
+  }
   try { history.replaceState(null, "", view ? `#${HASH[view]}` : location.pathname + location.search); } catch { /* sandboxed */ }
-  if (focus) (view ? $("#" + view) : wordIn).focus({ preventScroll: true });
+  // opening a section moves focus into it; going back returns it to the tab you came from, never into the word
+  // field (on phones that popped the keyboard up)
+  if (focus) {
+    if (view) $("#" + view).focus({ preventScroll: true });
+    else if (usingKeys) viewBtns.find((x) => x.dataset.view === prev)?.focus({ preventScroll: true });
+    else document.activeElement?.blur?.(); // after a tap or click: nothing stays focused (no ring, no keyboard)
+  }
 }
-if (document.startViewTransition) document.documentElement.classList.add("vt");
+function useVT() { return !!document.startViewTransition && !matchMedia("(max-width: 720px)").matches; }
+document.documentElement.classList.toggle("vt", useVT());
 viewBtns.forEach((b) => b.addEventListener("click", () => showView(b.dataset.view === view ? null : b.dataset.view)));
 $("[data-home]").addEventListener("click", (e) => { e.preventDefault(); showView(null); });
 document.addEventListener("keydown", (e) => {
@@ -1001,6 +1039,58 @@ document.addEventListener("keydown", (e) => {
 });
 measure();
 document.fonts?.ready.then(measure);
+// phones: pull down at the top of a page to reload
+{
+  const ptr = $(".ptr"), veil = $(".ptr-veil"), PULL = 72, MAX = 120;
+  let y0 = null, x0 = 0, dy = 0, on = false;
+  const scroller = () => document.querySelector(".view:not([hidden])");
+  const set = (d) => {
+    ptr.style.transform = `translateY(${Math.min(d, MAX) - 56 + 12}px)`; ptr.style.opacity = Math.min(1, d / 40);
+    ptr.classList.toggle("ready", d >= PULL);
+    veil.style.opacity = Math.min(1, d / PULL); // the page blurs in step with the pull
+  };
+  const reset = () => { on = false; y0 = null; ptr.classList.remove("pulling", "ready"); veil.classList.remove("pulling"); ptr.style.transform = ""; ptr.style.opacity = ""; veil.style.opacity = ""; };
+  addEventListener("touchstart", (e) => {
+    const v = scroller();
+    if (!phone.matches || e.touches.length !== 1 || !v || v.scrollTop > 0 || document.querySelector("dialog[open]")
+      || e.target.closest(".pills, input, textarea, canvas, .pile")) return;
+    y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; dy = 0;
+  }, { passive: true });
+  addEventListener("touchmove", (e) => {
+    if (y0 === null) return;
+    const t = e.touches[0], raw = t.clientY - y0;
+    if (!on) {
+      if (Math.abs(t.clientX - x0) > Math.abs(raw) || raw < 0 || scroller().scrollTop > 0) { y0 = null; return; } // a sideways swipe or a scroll: not a pull
+      if (raw < 8) return;
+      on = true; ptr.classList.add("pulling"); veil.classList.add("pulling");
+    }
+    dy = raw * 0.55; // resistance: the chip moves a little slower than the finger
+    set(dy);
+  }, { passive: true });
+  const end = () => {
+    if (!on) { y0 = null; return; }
+    if (dy >= PULL) {
+      ptr.classList.remove("pulling"); ptr.classList.add("loading");
+      ptr.style.transform = "translateY(28px)"; ptr.style.opacity = "1"; veil.classList.remove("pulling"); veil.style.opacity = "1"; // stays blurred while it reloads
+      setTimeout(() => location.reload(), 350);
+    } else reset();
+  };
+  addEventListener("touchend", end, { passive: true });
+  addEventListener("touchcancel", reset, { passive: true });
+}
+
+// every marquee row moves at the same speed: each row's duration comes from its own length (rows differ in length)
+function marqueeSpeed() {
+  const em = parseFloat(getComputedStyle($("#wall")).fontSize), perSec = em * (matchMedia("(max-width: 720px)").matches ? 0.93 : 1.0);
+  document.querySelectorAll(".marquee-track").forEach((t) => { if (t.scrollWidth) t.style.animationDuration = `${t.scrollWidth / 2 / perSec}s`; });
+}
+marqueeSpeed();
+document.fonts?.ready.then(marqueeSpeed);
+{ let mt; addEventListener("resize", () => { clearTimeout(mt); mt = setTimeout(marqueeSpeed, 200); }); }
+// get the Library's first screenful of icons ready while the page is idle, so the first open doesn't stall the bar
+(window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(() => {
+  [...document.querySelectorAll("#table .cell img")].slice(0, 30).forEach((im) => im.decode?.().catch(() => {}));
+});
 
 // GitHub stars on the Use Skill pill: shown once there are any; cached for an hour so visitors don't hit the API on every load
 (async () => {
