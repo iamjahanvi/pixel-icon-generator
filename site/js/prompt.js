@@ -6,7 +6,7 @@ export function buildPrompt(word, example, { api = false } = {}) {
   const file = w.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "icon";
   const ex = JSON.stringify({ name: example.slug, palette: example.color.palette, grid: example.color.grid }, null, 1)
     .replace(/\[\n\s+/g, "[\n  ").replace(/",\n\s+"/g, '",\n  "');
-  return `Draw "${w}" as a 16x16 pixel icon in the Pixtober style by Jahanvi Singh (pixelicons.iamjahanvi.com).
+  return `Draw "${w}" as a 16x16 pixel icon in the Pixtober style by Jahanvi Singh (pixbits.iamjahanvi.com).
 
 Pick ONE idea for the word. For an abstract word, choose a clear visual metaphor.
 
@@ -34,5 +34,5 @@ If you can run code or create files, attach both as downloads. If you can't, put
 EXAMPLE ("${example.label.toLowerCase()}")
 ${ex}${api ? "" : `
 
-To edit it pixel by pixel, paste the whole reply into the editor at pixelicons.iamjahanvi.com/#paste.`}`;
+To edit it pixel by pixel, paste the whole reply into the editor at pixbits.iamjahanvi.com/#paste.`}`;
 }
