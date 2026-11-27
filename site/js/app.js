@@ -801,6 +801,9 @@ function askWho(d) {
   draw();
 })();
 
+// About: copy the feedback email from the hover bubble
+$("#fb-copy")?.addEventListener("click", async (e) => { e.preventDefault(); toast((await copyText("iamjahanvi@gmail.com")) ? "Email copied." : "Couldn't copy. It's iamjahanvi@gmail.com"); });
+
 // ---------- views: the floating bar swaps the hero for another view ----------
 const VIEWS = ["icons", "install", "how"];
 // the address bar names each view after its tab; the old names still open the right view
@@ -838,7 +841,7 @@ function layoutBar(animate = true) {
   const solo = FOCUSED.includes(view);
   const hide = (el, gone) => {
     el.classList.toggle("gone", gone);
-    const f = el.matches("button, a") ? el : $("input", el);
+    const f = el.matches("button, a") ? el : $("input, a", el); // a wrapped link (the feedback pill) gets focus too
     if (f) f.tabIndex = gone ? -1 : 0;
   };
   viewBtns.forEach((b) => {

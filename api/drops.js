@@ -3,14 +3,18 @@
 // POST   /api/drops            -> add one { palette, grid, who? }   (5 per visitor per day)
 // DELETE /api/drops?id=...     -> remove one (only with the admin token)
 //
-// Storage: Upstash Redis over its REST API (no packages). Vercel's Upstash integration sets
-// KV_REST_API_URL / KV_REST_API_TOKEN (or UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN).
+// Storage: Supabase (Postgres) through its REST API, no packages. The table is created once with the SQL
+// in api/drops.sql. Vercel's Supabase integration sets SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
+// (Upstash Redis also works: set KV_REST_API_URL / KV_REST_API_TOKEN or UPSTASH_REDIS_REST_URL / _TOKEN.)
 // ADMIN_TOKEN is a password you choose, set in Vercel's environment variables.
 import { createHash, randomBytes } from "node:crypto";
 
+const SB_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 const LIST = "pb:drops", KEEP = 200, SHOW = 60, PER_DAY = 5;
+const backend = SB_URL && SB_KEY ? "supabase" : URL_ && TOKEN ? "redis" : null;
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
@@ -24,6 +28,52 @@ async function redis(...cmds) {
   if (!r.ok) throw new Error(`redis ${r.status}`);
   return (await r.json()).map((x) => x.result);
 }
+// Supabase's REST API (PostgREST) with the service key: only this server can read or write the table
+async function sb(path, { method = "GET", body, prefer } = {}) {
+  const r = await fetch(`${SB_URL}/rest/v1/${path}`, {
+    method,
+    headers: { apikey: SB_KEY, authorization: `Bearer ${SB_KEY}`, "content-type": "application/json", ...(prefer ? { prefer } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!r.ok) throw new Error(`supabase ${r.status} ${await r.text()}`);
+  return r;
+}
+
+// ---- the three things the wall needs, for either backend ----
+const store = {
+  async list() {
+    if (backend === "supabase") return (await (await sb(`pixbits_drops?select=id,t,palette,grid,who&order=t.desc&limit=${SHOW}`)).json());
+    const [raw] = await redis(["LRANGE", LIST, 0, SHOW - 1]);
+    return (raw || []).map((s) => { try { return JSON.parse(s); } catch { return null; } }).filter(Boolean);
+  },
+  // how many this visitor has dropped today, counting the new one
+  async countToday(v) {
+    const day = new Date().toISOString().slice(0, 10);
+    if (backend === "supabase") {
+      const since = Date.parse(`${day}T00:00:00Z`);
+      const r = await sb(`pixbits_drops?select=id&visitor=eq.${v}&t=gte.${since}`, { prefer: "count=exact" });
+      return Number((r.headers.get("content-range") || "*/0").split("/")[1]) + 1;
+    }
+    const rate = `pb:rate:${v}:${day}`;
+    const [count] = await redis(["INCR", rate], ["EXPIRE", rate, 86400]);
+    return count;
+  },
+  async add(drop, v) {
+    if (backend === "supabase") return sb("pixbits_drops", { method: "POST", body: { ...drop, visitor: v }, prefer: "return=minimal" });
+    await redis(["LPUSH", LIST, JSON.stringify(drop)], ["LTRIM", LIST, 0, KEEP - 1]);
+  },
+  async remove(id) {
+    if (backend === "supabase") {
+      const r = await sb(`pixbits_drops?id=eq.${encodeURIComponent(id)}`, { method: "DELETE", prefer: "return=representation" });
+      return (await r.json()).length > 0;
+    }
+    const [raw] = await redis(["LRANGE", LIST, 0, -1]);
+    const hit = (raw || []).find((s) => { try { return JSON.parse(s).id === id; } catch { return false; } });
+    if (!hit) return false;
+    await redis(["LREM", LIST, 1, hit]);
+    return true;
+  },
+};
 
 // ---- validation: only a 16x16 grid, a few hex colours, and a clean handle get through ----
 const HEX = /^#[0-9a-f]{6}$/i;
@@ -51,33 +101,28 @@ const visitor = (req) => {
 };
 
 export async function GET() {
-  if (!URL_) return json({ error: "storage not set up" }, 503);
-  const [raw] = await redis(["LRANGE", LIST, 0, SHOW - 1]);
-  return json({ drops: (raw || []).map((s) => { try { return JSON.parse(s); } catch { return null; } }).filter(Boolean) });
+  if (!backend) return json({ error: "storage not set up" }, 503);
+  return json({ drops: await store.list() });
 }
 
 export async function POST(req) {
-  if (!URL_) return json({ error: "storage not set up" }, 503);
+  if (!backend) return json({ error: "storage not set up" }, 503);
   let body;
   try { body = await req.json(); } catch { return json({ error: "bad json" }, 400); }
   const icon = cleanIcon(body);
   if (!icon) return json({ error: "not a 16x16 drawing" }, 400);
-  const day = new Date().toISOString().slice(0, 10), rate = `pb:rate:${visitor(req)}:${day}`;
-  const [count] = await redis(["INCR", rate], ["EXPIRE", rate, 86400]);
-  if (count > PER_DAY) return json({ error: "That's 5 drops for today. Come back tomorrow!" }, 429);
+  const v = visitor(req);
+  if ((await store.countToday(v)) > PER_DAY) return json({ error: "That's 5 drops for today. Come back tomorrow!" }, 429);
   const drop = { id: randomBytes(6).toString("hex"), t: Date.now(), ...icon, who: cleanWho(body.who) };
-  await redis(["LPUSH", LIST, JSON.stringify(drop)], ["LTRIM", LIST, 0, KEEP - 1]);
+  await store.add(drop, v);
   return json({ drop }, 201);
 }
 
 export async function DELETE(req) {
-  if (!URL_) return json({ error: "storage not set up" }, 503);
+  if (!backend) return json({ error: "storage not set up" }, 503);
   const admin = process.env.ADMIN_TOKEN;
   if (!admin || req.headers.get("authorization") !== `Bearer ${admin}`) return json({ error: "not allowed" }, 401);
-  const id = new URL(req.url).searchParams.get("id");
-  const [raw] = await redis(["LRANGE", LIST, 0, -1]);
-  const hit = (raw || []).find((s) => { try { return JSON.parse(s).id === id; } catch { return false; } });
-  if (!hit) return json({ error: "not found" }, 404);
-  await redis(["LREM", LIST, 1, hit]);
-  return json({ ok: true });
+  const id = new URL(req.url).searchParams.get("id") || "";
+  if (!/^[0-9a-f]{12}$/.test(id)) return json({ error: "not found" }, 404);
+  return (await store.remove(id)) ? json({ ok: true }) : json({ error: "not found" }, 404);
 }
