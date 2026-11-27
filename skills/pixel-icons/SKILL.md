@@ -76,6 +76,7 @@ These come from the five Pixtober 2024 reference icons in section 5. The first g
 - **Highlights are thin**: a 1px curved streak, like the white line down the apple, or a few accent pixels, like the cactus tips. They are never a large blob.
 - **Corners are rounded with 1px diagonal steps** in the outline, as on the apple's curves and the cut corners of the computer case.
 - **The subject fills the canvas.** It usually spans 14–16px and can touch the canvas edge. Use the most recognisable view: side-on for fruit, plants and animals, front-on for devices and faces. Centre it.
+- **Vertical objects keep their proportions.** For things that are naturally taller than they are wide, such as an ice cream cone, a light bulb, a bottle, a candle or a lantern, use the full 16px height but **no more than 14px of width**. Don't stretch them sideways to fill the square. A slim object can be narrower than 14px if that reads truer. The SVG stays 16×16: centre the drawing, leaving the outer columns empty.
 - **Personality is welcome but optional.** A simple face is a 1px black eye or two and a short black mouth, like the smiling screen on the computer. A creature can have attitude, like the ogre. Use it when it suits the idea; never force a face onto every icon.
 
 ## 4. Workflow
@@ -87,7 +88,7 @@ These come from the five Pixtober 2024 reference icons in section 5. The first g
    - At 16px a face only works on a calm, flat area. Don't put one on top of an object's own defining line, like a bean's crease: the two lines read as a scar.
 
 2. **Plan before writing pixels.** Decide:
-   - the silhouette's bounding box, which should span 14–16px
+   - the silhouette's bounding box, which should span 14–16px; for a vertical object, up to 16px tall and at most 14px wide
    - where the black inner lines go
    - which side gets the shadow band
    - where the highlight streak goes

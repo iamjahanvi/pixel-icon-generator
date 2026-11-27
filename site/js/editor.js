@@ -282,6 +282,8 @@ export function initEditor() {
   }
   hexIn.addEventListener("input", () => { const v = normHex(hexIn.value); if (v) hexSw.value = v; $("#hex-err").textContent = ""; });
   hexSw.addEventListener("input", () => { hexIn.value = hexSw.value.toUpperCase(); });
+  // the hex field stays the default; Pick opens the system colour picker for anyone who'd rather choose by eye
+  $("#hex-pick").addEventListener("click", () => { try { hexSw.showPicker(); } catch { hexSw.click(); } });
   $("#hex-form").addEventListener("submit", (e) => { e.preventDefault(); applyPop(); });
   $("#hex-cancel").addEventListener("click", closePop);
   pop.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closePop(); } });

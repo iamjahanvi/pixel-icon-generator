@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pixel Icons by Jahanvi</title>
+  <title>Pixbits</title>
   <meta name="description" content="An agent skill for Claude, Cursor, Codex and other AI tools that turns a word into a 16×16 pixel icon in the Pixtober style, saved as an SVG.">
   <meta name="theme-color" content="#fafafa">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="https://pixelicons.iamjahanvi.com/">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://pixelicons.iamjahanvi.com/">
-  <meta property="og:title" content="Pixel Icons by Jahanvi">
+  <meta property="og:title" content="Pixbits">
   <meta property="og:description" content="Type a word, get a 16×16 pixel icon. An agent skill for Claude, Cursor, Codex and more.">
   <meta property="og:image" content="https://pixelicons.iamjahanvi.com/og.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -22,10 +22,10 @@
 <body>
   <header class="top">
     <div class="brand-col">
-      <a class="brand" href="#" data-home aria-label="Pixel Icons, home">Pixel Icons</a>
-      <a class="by" href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">By Jahanvi</a>
+      <a class="brand" href="#" data-home aria-label="Pixbits, home"><span class="brand-logo-wrap"><img class="brand-logo" src="img/logo.svg" alt="Pixbits" width="127" height="40"><img class="brand-logo brand-fill" src="img/logo-sunset.svg" alt="" aria-hidden="true" width="127" height="40"></span></a>
+      <a class="by" href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">By Jahanvi<svg class="by-x" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
     </div>
-    <p class="tagline">Lil’ Pixel Icons drawn on a 16×16 grid. <span>Clean SVGs, editable in Figma or code.</span></p>
+    <p class="tagline"><span class="t1">Lil’ Pixel Icons drawn on a 16×16 grid.</span> <span class="t2">Clean SVGs, editable in Figma or code.</span></p>
   </header>
 
   <main class="stage" id="main">
@@ -39,8 +39,8 @@
       <div class="wall-row" data-row="1"></div>
       <form class="wall-row wall-type" id="word-form" autocomplete="off">
         <span class="w lead" data-lead></span>
-        <label class="sr" for="word">Type your word</label>
-        <span class="pill-in"><span class="type-demo" id="type-demo" aria-hidden="true"><span id="type-demo-text"></span><i class="caret"></i></span><input id="word" type="text" placeholder="your word" maxlength="40" spellcheck="false" enterkeyhint="go"><span class="pill-cta" id="pill-cta"><a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude" tabindex="-1">Open in Claude</a><a class="ghost icon-only" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt" tabindex="-1" aria-label="Open in ChatGPT" title="Open in ChatGPT"><img src="img/chatgpt.svg" alt="" width="18" height="18"></a></span></span>
+        <label class="sr" for="word">Type a word</label>
+        <span class="pill-in"><span class="type-demo" id="type-demo" aria-hidden="true"><span id="type-demo-text"></span><i class="caret"></i></span><input id="word" type="text" placeholder="type a word" maxlength="40" spellcheck="false" enterkeyhint="go"><span class="pill-cta" id="pill-cta"><a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude" tabindex="-1">Open in Claude</a><a class="ghost icon-only" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt" tabindex="-1" aria-label="Open in ChatGPT" title="Open in ChatGPT"><img src="img/chatgpt.svg" alt="" width="18" height="18"></a></span></span>
         <button class="slot" type="button" id="slot" aria-label="Your icon will appear here" disabled><span class="q" aria-hidden="true">?</span></button>
         <span class="w trail" data-trail></span>
       </form>
@@ -50,41 +50,60 @@
     </div></div>
 
     <section class="view" id="how" aria-label="How it works" tabindex="-1" hidden><div class="view-in wrap">
-      <div class="strip">
-        <div class="step"><div class="step-word">rocket</div><span>You type a word</span></div>
-        <svg class="arrow" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
-        <div class="step"><pre class="step-grid" id="rocket-grid" aria-label="The rocket as a 16 by 16 grid of letters, one letter per colour"></pre><span>It plans every pixel</span></div>
-        <svg class="arrow" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
-        <div class="step"><div class="step-icon"><span id="rocket-icon"></span><code>rocket.svg</code></div><span>You get an SVG</span></div>
+      <!-- left: a short note from Jahanvi, then the credits -->
+      <div class="about-text">
+        <article class="note" aria-label="A note from Jahanvi">
+          <p>These icons started as Pixtober, my series of small pixel icons drawn one a day on a 16&times;16 grid: in colour for <a href="https://jahanvi-pixtober-2024.framer.website/" target="_blank" rel="noopener">Pixtober 2024</a>, then in black and white for <a href="https://jahanvi-pixtober-2025.framer.website/" target="_blank" rel="noopener">Pixtober 2025</a>. Along the way the style settled into a few quiet rules: a closed outline, flat colours, no stray pixels, and one clear idea you can read at a glance.</p>
+          <p>This site is those rules written down, so your AI tool can draw in the same style for any word you give it. The icons in the library are free to use in anything you make. If you make something with them, I&rsquo;d love to see it.</p>
+        </article>
+        <footer class="foot">
+          <dl class="credits">
+            <div><dt>Icons</dt><dd><a href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">Jahanvi Singh</a> <span>&middot; from Pixtober 2024 and 2025</span></dd></div>
+            <div><dt>Licence</dt><dd><a href="https://github.com/iamjahanvi/pixel-icon-generator/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a> <span>&middot; free for personal and commercial work</span></dd></div>
+            <div><dt>Typeface</dt><dd><a href="https://allo.joshpuckett.me/" target="_blank" rel="noopener">Allo, by Josh Puckett</a> <span>&middot; SIL Open Font License</span></dd></div>
+          </dl>
+        </footer>
       </div>
-      <footer class="foot">
-        <p class="credit">Icons and style by <a href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">Jahanvi Singh</a>, inspired by her <a href="https://jahanvi-pixtober-2024.framer.website/" target="_blank" rel="noopener">Pixtober</a> series. Free to use in personal and commercial work under the <a href="https://github.com/iamjahanvi/pixel-icon-generator/blob/main/LICENSE" target="_blank" rel="noopener">MIT licence</a>.</p>
-        <nav class="foot-links" aria-label="Jahanvi elsewhere">
-          <a href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">X</a>
-          <a href="https://github.com/iamjahanvi/pixel-icon-generator" target="_blank" rel="noopener">GitHub</a>
-        </nav>
-      </footer>
+      <!-- right: draw your own icon and drop it on the pile -->
+      <div class="about-make">
+        <!-- your turn: draw a 16x16 icon, then drop it on the pile below -->
+        <aside class="doodle" aria-label="Draw your own icon">
+          <div class="doodle-row">
+            <canvas id="dd-cv" width="384" height="384" aria-label="A blank 16 by 16 grid to draw on with a mouse, finger or pen"></canvas>
+            <div class="dd-sw" id="dd-sw" role="radiogroup" aria-label="Colour"></div>
+          </div>
+          <div class="dd-acts"><button class="ghost" type="button" id="dd-clear">Clear</button><button class="solid" type="button" id="dd-drop" disabled>Draw and drop for fun</button></div>
+        </aside>
+        <!-- the pile: the icons you drop, resting on the line above the credits -->
+        <div class="pile" id="pile" aria-hidden="true"><span class="pile-hint">Your icons land here</span></div>
+      </div>
     </div></section>
 
-    <section class="view" id="icons" aria-labelledby="icons-title" tabindex="-1" hidden><div class="view-in wrap icons">
-      <div class="sec-head">
-        <h2 class="label" id="icons-title">30 icons, free to use</h2>
-        <span class="sec-actions">
-          <a class="search-trigger" href="#library" data-open-library><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Search icons</span><kbd id="kbd-k">⌘K</kbd></a>
-        </span>
-      </div>
+    <section class="view" id="icons" aria-label="Icon library" tabindex="-1" hidden><div class="view-in wrap icons">
+      <div class="cat-bar" id="cat-bar"><div class="cat-chips" id="cat-chips" role="group" aria-label="Category"></div></div>
       <div class="table" id="table"></div>
+      <div class="lib-empty" id="lib-empty" hidden>
+        <p id="lib-empty-text"></p>
+        <div class="lib-empty-actions">
+          <a class="btn dark small" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
+          <a class="btn small" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt">Open in ChatGPT</a>
+          <button class="btn small" type="button" data-chat="copy">Copy prompt</button>
+        </div>
+        <p class="hint">The reply comes with an SVG and a PNG. To tweak pixels, paste it into the <a href="#paste" data-open-paste>editor</a>. Have an Anthropic API key? <a href="#make" id="lib-empty-make">Make it here</a>.</p>
+      </div>
     </div></section>
 
-    <section class="view" id="install" aria-label="Create your icon" tabindex="-1" hidden><div class="view-in wrap install">
-      <div class="row">
-        <div class="who"><strong>Claude Code</strong><small>Adds the marketplace, then installs</small></div>
-        <div class="cmd" data-copy="/plugin marketplace add iamjahanvi/pixel-icon-generator&#10;/plugin install pixel-icons@pixel-icon-generator">/plugin install pixel-icons@pixel-icon-generator</div>
-        <button type="button" class="ghost" data-copy-btn>Copy both</button>
+    <section class="view" id="install" aria-label="Get the skill" tabindex="-1" hidden><div class="view-in wrap install">
+      <div class="row steps">
+        <div class="who"><strong>Claude Code</strong><small>Run these one after the other</small></div>
+        <div class="cmd" data-copy="/plugin marketplace add iamjahanvi/pixel-icon-generator"><span class="step" aria-hidden="true">1</span>/plugin marketplace add iamjahanvi/pixel-icon-generator</div>
+        <button type="button" class="ghost" data-copy-btn>Copy</button>
+        <div class="cmd" data-copy="/plugin install pixel-icons@pixel-icon-generator"><span class="step" aria-hidden="true">2</span>/plugin install pixel-icons@pixel-icon-generator</div>
+        <button type="button" class="ghost" data-copy-btn>Copy</button>
       </div>
       <div class="row">
         <div class="who"><strong>Cursor, Codex &amp; more</strong><small>Gemini CLI, OpenCode and dozens more</small></div>
-        <div class="cmd light">npx skills add iamjahanvi/pixel-icon-generator</div>
+        <div class="cmd">npx skills add iamjahanvi/pixel-icon-generator</div>
         <button type="button" class="ghost" data-copy-btn>Copy</button>
       </div>
       <div class="row">
@@ -94,8 +113,8 @@
       </div>
       <div class="row">
         <div class="who"><strong>Claude app</strong><small>Needs code execution on</small></div>
-        <div class="cmd light muted">Customize › Skills › Upload</div>
-        <a class="ghost" href="https://github.com/iamjahanvi/pixel-icon-generator/raw/main/pixel-icons.zip">Download .zip</a>
+        <div class="cmd">Customize <span class="sep">→</span> Skills <span class="sep">→</span> Upload</div>
+        <a class="ghost" href="downloads/pixel-icons.zip" download>Download .zip</a>
       </div>
       <div class="row last" id="any-chat">
         <div class="who"><strong>Any chat</strong><small>Free, nothing to install</small></div>
@@ -109,69 +128,58 @@
   <!-- floating pills: each swaps the hero for its view; the open one turns into a close button -->
   <nav class="pills" aria-label="Sections">
     <span class="pill-ind" aria-hidden="true"></span>
-    <button class="pill-btn" type="button" data-view="icons" aria-controls="icons" aria-pressed="false"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg><span class="pl">Library</span></span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-    <button class="pill-btn" type="button" data-view="install" aria-controls="install" aria-pressed="false"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 7.5l3 3"/></svg><span class="pl">Create</span></span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-    <button class="pill-btn" type="button" data-view="how" aria-controls="how" aria-pressed="false"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><path d="M12 7.6v.1"/></svg><span class="pl">About</span></span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="pill-btn" type="button" data-view="install" aria-controls="install" aria-pressed="false"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v10"/><path d="M8 9.5l4 4 4-4"/><path d="M4.5 14.5v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"/></svg><span class="pl">Use Skill</span></span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3.5M7.5 3.5L3 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <span class="tsep tsep-a" aria-hidden="true"></span>
+    <button class="pill-btn" type="button" data-view="icons" aria-controls="icons" aria-pressed="false"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg><span class="pl">Library</span></span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3.5M7.5 3.5L3 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="lib-badge" id="lib-badge" aria-hidden="true"></span>
+    <label class="pill-search gone" data-for="icons"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input id="lib-search" type="search" placeholder="Search icons" spellcheck="false" autocomplete="off" aria-label="Search icons" tabindex="-1"></label>
+    <button class="pill-btn pill-dl gone" data-for="icons" type="button" id="dl-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="dl-menu" tabindex="-1"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg><span class="pl">Download</span><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></span></button>
+    <span class="tsep tsep-b" aria-hidden="true"></span>
+    <button class="pill-btn" type="button" data-view="how" aria-controls="how" aria-pressed="false"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><path d="M12 7.6v.1"/></svg><span class="pl">About</span></span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3.5M7.5 3.5L3 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <!-- in Use Skill: the repo, with its star count once it has stars -->
+    <a class="pill-btn pill-act first gone" id="gh-link" data-for="install" href="https://github.com/iamjahanvi/pixel-icon-generator" target="_blank" rel="noopener" tabindex="-1"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2a9.8 9.8 0 0 0-3.1 19.1c.5.1.7-.2.7-.5v-1.7c-2.7.6-3.3-1.2-3.3-1.2-.4-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.5-1.1-4.5-4.9 0-1.1.4-2 1-2.7-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.8-2.3 4.6-4.5 4.9.4.3.7.9.7 1.8v2.7c0 .3.2.6.7.5A9.8 9.8 0 0 0 12 2.2z"/></svg><span class="pl">Star on GitHub</span><span class="stars" id="gh-stars" hidden><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><span id="gh-stars-n"></span></span></span></a>
+    <!-- in About: where the icons started, and where to find Jahanvi -->
+    <button class="pill-btn pill-act first keep-label gone" data-for="how" type="button" id="px-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="px-menu" tabindex="-1"><span class="pi"><span class="pl">Pixtober</span><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></span></button>
+    <span class="sep gone" data-for="how" aria-hidden="true"></span>
+    <a class="pill-btn pill-act icon-pill gone" data-for="how" href="https://x.com/me_Jahanvi" target="_blank" rel="noopener" aria-label="Jahanvi on X" title="Jahanvi on X" tabindex="-1"><span class="pi"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span></a>
+    <a class="pill-btn pill-act icon-pill gone" data-for="how" href="https://github.com/iamjahanvi" target="_blank" rel="noopener" aria-label="Jahanvi on GitHub" title="Jahanvi on GitHub" tabindex="-1"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2a9.8 9.8 0 0 0-3.1 19.1c.5.1.7-.2.7-.5v-1.7c-2.7.6-3.3-1.2-3.3-1.2-.4-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.5-1.1-4.5-4.9 0-1.1.4-2 1-2.7-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.8-2.3 4.6-4.5 4.9.4.3.7.9.7 1.8v2.7c0 .3.2.6.7.5A9.8 9.8 0 0 0 12 2.2z"/></svg></span></a>
+    <div class="bar-menu" id="px-menu" role="menu" aria-label="Pixtober series" hidden>
+      <a role="menuitem" href="https://jahanvi-pixtober-2024.framer.website/" target="_blank" rel="noopener" tabindex="-1"><span>Pixtober 2024</span><span class="n">&nearr;</span></a>
+      <a role="menuitem" href="https://jahanvi-pixtober-2025.framer.website/" target="_blank" rel="noopener" tabindex="-1"><span>Pixtober 2025</span><span class="n">&nearr;</span></a>
+    </div>
+    <div class="bar-menu end" id="dl-menu" role="menu" aria-label="Download icons" hidden>
+      <a role="menuitem" href="downloads/pixel-icons-library.zip" download tabindex="-1" data-dl="svg"><span class="dl-l">All SVGs</span><span class="n dl-n"></span></a>
+      <button role="menuitem" type="button" tabindex="-1" data-dl="png"><span class="dl-l">All PNGs, 256px</span><span class="n dl-n"></span></button>
+    </div>
     <span class="sep" aria-hidden="true"></span>
     <button class="pill-btn tog" type="button" id="tog-motion" aria-pressed="false" aria-label="Stop the moving rows" title="Stop the moving rows"><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg></button>
   </nav>
 
 
-  <!-- library: a search palette -->
-  <dialog class="sheet palette" id="library" aria-label="Icon library">
-    <div class="palette-search">
-      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <input id="lib-search" type="search" placeholder="Search icons, or type any word…" spellcheck="false" aria-label="Search icons">
-      <button class="kbd-btn" type="button" data-close>esc</button>
-    </div>
-    <div class="cats" id="lib-cats" role="group" aria-label="Category"></div>
-    <ul class="lib-grid" id="lib-grid"></ul>
-    <div class="lib-empty" id="lib-empty" hidden>
-      <p id="lib-empty-text"></p>
-      <div class="lib-empty-actions">
-        <a class="btn dark small" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
-        <a class="btn small" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt">Open in ChatGPT</a>
-        <button class="btn small" type="button" data-chat="copy">Copy prompt</button>
-      </div>
-      <p class="hint">The reply comes with an SVG and a PNG. To tweak pixels, paste it into the <a href="#paste" data-open-paste>editor</a>. Have an Anthropic API key? <a href="#make" id="lib-empty-make">Make it here</a>.</p>
-    </div>
-    <div class="palette-foot">
-      <span class="keys"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move <kbd>↵</kbd> open</span>
-      <a class="btn small" href="downloads/pixel-icons-library.zip" download>Download all SVGs</a>
-    </div>
-  </dialog>
 
   <!-- one icon -->
   <dialog class="sheet detail" id="detail" aria-labelledby="dt-title">
     <div class="sheet-head">
-      <button class="icon-btn" type="button" id="dt-back" aria-label="Back to the library">←</button>
       <h2 id="dt-title">Icon</h2>
+      <button class="link-btn" type="button" id="dt-edit">Edit</button>
       <button class="icon-btn" type="button" data-close aria-label="Close">✕</button>
     </div>
     <div class="dt-stage" id="dt-stage"></div>
     <div class="dt-row">
       <span class="dt-label">Size</span>
-      <div class="sizes" id="dt-sizes" role="radiogroup" aria-label="Size"></div>
+      <div class="size-slider"><input type="range" id="dt-size" min="16" max="128" step="16" value="64" aria-label="Size in pixels"><output id="dt-size-out" for="dt-size">64px</output></div>
     </div>
-    <div class="dt-row">
-      <span class="dt-label">Get it</span>
-      <div class="dt-actions">
-        <button class="btn small" type="button" id="dt-svg">SVG</button>
-        <button class="btn small" type="button" id="dt-png">PNG</button>
-        <button class="btn small" type="button" id="dt-edit">Open in editor</button>
-      </div>
+    <!-- pick a format once, then copy or download it at the size on the slider -->
+    <div class="fmt-seg" id="dt-fmt" role="radiogroup" aria-label="Format">
+      <button type="button" role="radio" data-fmt="svg" aria-checked="true">SVG</button>
+      <button type="button" role="radio" data-fmt="png" aria-checked="false" tabindex="-1">PNG</button>
+      <button type="button" role="radio" data-fmt="react" aria-checked="false" tabindex="-1">React</button>
+      <button type="button" role="radio" data-fmt="html" aria-checked="false" tabindex="-1">HTML</button>
     </div>
-    <div class="code">
-      <div class="code-tabs">
-        <div role="tablist" aria-label="Code format">
-          <button role="tab" type="button" data-fmt="svg" aria-selected="true">SVG</button>
-          <button role="tab" type="button" data-fmt="react" aria-selected="false" tabindex="-1">React</button>
-          <button role="tab" type="button" data-fmt="html" aria-selected="false" tabindex="-1">HTML</button>
-        </div>
-        <button class="copy" type="button" id="dt-copy">Copy</button>
-      </div>
-      <pre><code id="dt-code"></code></pre>
+    <div class="dt-main">
+      <button class="btn dark" type="button" id="dt-copy">Copy</button>
+      <button class="btn" type="button" id="dt-dl">Download</button>
     </div>
+    <pre class="dt-code" id="dt-pre"><code id="dt-code"></code></pre>
   </dialog>
 
   <!-- editor: draw your own icon, or edit one you opened -->
@@ -212,6 +220,7 @@
                 <input type="color" id="hex-swatch" value="#3fae49" aria-label="Pick visually" title="Pick visually">
                 <label class="sr" for="hex-in">Hex code</label>
                 <input id="hex-in" class="field" type="text" value="#3FAE49" maxlength="7" spellcheck="false">
+                <button type="button" class="btn small hex-pick" id="hex-pick" title="Pick a colour visually"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/><circle cx="17" cy="10.5" r="1"/></svg>Pick</button>
               </div>
               <p class="hex-err" id="hex-err" role="alert"></p>
               <div class="hex-actions">

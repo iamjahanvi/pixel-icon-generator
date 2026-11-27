@@ -1,4 +1,4 @@
-import { iconSvg, toast, copyText, download, esc, slugify } from "./util.js";
+import { iconSvg, iconImg, toast, copyText, download, esc, slugify, makeZip } from "./util.js";
 import { makeIcon, MODELS, savedKey, rememberKey } from "./make.js";
 import { buildPrompt } from "./prompt.js";
 import { initEditor } from "./editor.js";
@@ -7,6 +7,42 @@ const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
 const lib = await fetch("data/icons.json").then((r) => r.json());
+// Logo hover: the logo fills with a light colour pixel by pixel (bottom row first, small random stagger),
+// a new colour on every hover. The colour layer is an inline SVG built from the logo's own letter pixels.
+{
+  const img = document.querySelector(".brand-fill"), brand = document.querySelector(".brand");
+  const wrap = img?.parentElement;
+  const LOGO_FILLS = ["#ffe580", "#a8dcff", "#b8f0a0", "#ffc4dc", "#d8c4ff", "#ffcf99", "#ffb0a8", "#a8f0dc"]; // lemon, sky, mint-green, pink, lilac, peach, coral, aqua
+  if (img && brand && wrap) {
+    fetch(img.getAttribute("src")).then((r) => r.text()).then((text) => {
+      const doc = new DOMParser().parseFromString(text, "image/svg+xml"), src = doc.documentElement;
+      const [, , vw, vh] = src.getAttribute("viewBox").split(/\s+/).map(Number);
+      const px = [...src.querySelectorAll("rect")].filter((r) => r.getAttribute("fill").toLowerCase() !== "#000000")
+        .map((r) => [+r.getAttribute("x"), +r.getAttribute("y")]);
+      const rects = px.map(([x, y]) => {
+        const up = (vh - 1 - y) / vh, down = y / vh; // 0 at the bottom row → 1 at the top
+        const d = (up * 0.42 + Math.random() * 0.14).toFixed(3), dr = (down * 0.24 + Math.random() * 0.08).toFixed(3);
+        return `<rect x="${x}" y="${y}" width="1" height="1" style="--d:${d}s;--dr:${dr}s"/>`;
+      }).join("");
+      const svg = `<svg class="brand-fill" viewBox="0 0 ${vw} ${vh}" aria-hidden="true">${rects}</svg>`;
+      img.outerHTML = svg;
+      let next = 0;
+      const pick = () => wrap.style.setProperty("--logo-fill", LOGO_FILLS[next++ % LOGO_FILLS.length]);
+      pick();
+      brand.addEventListener("mouseleave", () => setTimeout(pick, 400)); // the next hover gets the next colour
+      brand.addEventListener("blur", () => setTimeout(pick, 400));
+    }).catch(() => {});
+  }
+}
+// Library hover tooltip: "130+ icons" (count rounded down to the nearest 10), centred over the pill
+{
+  const badge = document.getElementById("lib-badge");
+  const libBtn = document.querySelector('.pill-btn[data-view="icons"]');
+  if (badge && libBtn) {
+    badge.innerHTML = `<span class="tip">${Math.floor(lib.length / 10) * 10}+ icons</span>`;
+    libBtn.addEventListener("mouseenter", () => { badge.style.left = `${libBtn.offsetLeft + libBtn.offsetWidth / 2}px`; /* bubble and tail centred on the tab */ });
+  }
+}
 const bySlug = (s) => lib.find((ic) => ic.slug === s);
 const asDoc = (ic) => ({ name: ic.slug, style: "color", ...ic.color });
 const example = bySlug("lantern") || lib[0];
@@ -42,7 +78,7 @@ const LEAD = ["coffee", "Coffee", "#6b3b1f", 600];
 const TRAIL = ["book", "Book", "#d93a3a", 300];
 const wordBtn = ([slug, word, color, weight]) => {
   const ic = bySlug(slug);
-  return ic ? `<button class="w w-btn" type="button" data-open="${slug}" style="color:${color};font-weight:${weight}" aria-label="${esc(ic.label)}">${esc(word)}${iconSvg(asDoc(ic), 64)}</button>` : "";
+  return ic ? `<button class="w w-btn" type="button" data-open="${slug}" style="color:${color};font-weight:${weight}" aria-label="${esc(ic.label)}">${esc(word)}${iconImg(asDoc(ic), 64, ic.slug)}</button>` : "";
 };
 // the three word rows scroll as marquees: one group of words repeated twice, the copy hidden from screen readers and Tab
 $$(".wall-row[data-row]").forEach((row) => {
@@ -178,116 +214,162 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// ---------- how it works: the rocket, as a word, a plan and an SVG ----------
-const rocket = bySlug("rocket");
-if (rocket) {
-  $("#rocket-grid").textContent = rocket.color.grid.join("\n");
-  $("#rocket-icon").innerHTML = iconSvg(asDoc(rocket), 160);
-}
-
 // ---------- icon table: pick a cell and it expands in place, its neighbours reflow around it ----------
-const TABLE = ["cherry", "lantern", "rocket", "cat", "mushroom", "heart", "fish", "donut", "coffee", "pizza", "tree", "camera", "house"];
-let featured = "cat", featCol = 4, featRow = 1;
-const vtName = (slug) => `pi-${slug}`;
+// every icon, filtered by the search field in the floating bar
+const search = $("#lib-search");
+const matches = (ic, q) => !q || ic.label.toLowerCase().includes(q) || ic.slug.includes(q) || ic.category.toLowerCase().includes(q) || ic.keywords.some((k) => k.includes(q));
+// the short name under each icon in the table; the table lists icons A to Z by it
+const CELL_NAMES = { fish: "goldfish", bird: "robin" }; // where the slug reads differently from the icon
+const cellName = (ic) => CELL_NAMES[ic.slug] || ic.slug.replace(/-/g, " ");
+const sorted = [...lib].sort((a, b) => cellName(a).localeCompare(cellName(b)));
+let cat = "All"; // the category picked from the menu in the floating bar
+const shown = () => sorted.filter((ic) => (cat === "All" || ic.category === cat) && matches(ic, search.value.toLowerCase().trim()));
+// every icon is the same plain tile; clicking one opens the icon window, as the words on the landing page do
 function renderTable() {
-  const feature = (f) => `<div class="feature" aria-live="polite" style="--fc:${featCol};--fr:${featRow};view-transition-name:${vtName(f.slug)}">${iconSvg(asDoc(f), 160)}<strong>${esc(f.label)}</strong>
-      <span class="acts"><button class="solid" type="button" data-f="svg">SVG</button><button class="ghost" type="button" data-f="png">PNG</button><button class="ghost" type="button" data-f="code">Code</button><button class="ghost" type="button" data-f="edit">Edit</button></span></div>`;
-  $("#table").innerHTML = TABLE.map((s) => bySlug(s)).filter(Boolean).map((ic) => ic.slug === featured ? feature(ic)
-    : `<button class="cell" type="button" data-pick="${ic.slug}" style="view-transition-name:${vtName(ic.slug)}">${iconSvg(asDoc(ic), 56)}${esc(ic.slug === "fish" ? "goldfish" : ic.slug)}</button>`).join("");
+  const items = shown();
+  $("#table").innerHTML = items.map((ic) => `<button class="cell" type="button" data-open="${ic.slug}" aria-label="${esc(ic.label)}">${iconImg(asDoc(ic), 56, ic.slug)}${esc(cellName(ic))}</button>`).join("");
+  // nothing matched: offer to have an AI tool draw the word
+  $("#lib-empty").hidden = items.length > 0;
+  $("#table").hidden = !items.length;
+  if (!items.length) {
+    const w = search.value.trim();
+    $("#lib-empty-text").textContent = cat !== "All" ? `No ${cat.toLowerCase()} icon for “${w}” yet. Your AI tool can draw it.` : `No icon for “${w}” yet. Your AI tool can draw it.`;
+    setChatLinks($("#lib-empty"), w);
+  }
 }
 renderTable();
-$("#table").addEventListener("click", (e) => {
-  const p = e.target.closest("[data-pick]");
-  if (p) {
-    // which column was it in? the big tile opens there (pulled in one if it was in the last column)
-    const cols = getComputedStyle($("#table")).gridTemplateColumns.split(" ").length;
-    const col = Math.round(p.offsetLeft / p.offsetWidth) + 1, row = Math.round(p.offsetTop / p.offsetHeight) + 1;
-    const rows = Math.ceil((TABLE.length + 3) / cols);
-    const swap = () => { featured = p.dataset.pick; featCol = Math.min(col, cols - 1); featRow = Math.min(row, rows - 1); renderTable(); };
-    if (document.startViewTransition && !calm.matches) document.startViewTransition(swap).finished.then(() => $('.feature [data-f="svg"]').focus({ preventScroll: true }));
-    else { swap(); $('.feature [data-f="svg"]').focus({ preventScroll: true }); }
-    return;
-  }
-  const f = e.target.closest("[data-f]")?.dataset.f, ic = bySlug(featured);
-  if (f === "svg") { download(`${ic.slug}.svg`, iconSvg(asDoc(ic))); toast(`Downloaded ${ic.slug}.svg`); }
-  if (f === "png") savePng(ic, 256);
-  if (f === "code") openDetail(ic, false);
-  if (f === "edit") openEditor([asDoc(ic)], ic.label);
-});
 
 // ---------- install rows ----------
 $$("[data-copy-btn]").forEach((b) => b.addEventListener("click", async () => {
-  const cmd = $(".cmd", b.closest(".row"));
+  const prev = b.previousElementSibling, cmd = prev && prev.classList.contains("cmd") ? prev : $(".cmd", b.closest(".row")); // each step has its own button
   const ok = await copyText(cmd.dataset.copy || cmd.textContent.trim());
   const label = b.textContent;
   b.textContent = ok ? "Copied" : "Couldn't copy";
   setTimeout(() => (b.textContent = label), 1500);
 }));
 
-// ---------- library palette ----------
-const libDlg = $("#library"), search = $("#lib-search"), grid = $("#lib-grid");
-let cat = "All";
-const cats = ["All", ...new Set(lib.map((ic) => ic.category))];
-const count = (c) => (c === "All" ? lib.length : lib.filter((ic) => ic.category === c).length);
-$("#lib-cats").innerHTML = cats.map((c) => `<button type="button" aria-pressed="${c === cat}" data-cat="${esc(c)}">${esc(c)} <span class="n">${count(c)}</span></button>`).join("");
-$$("#lib-cats button").forEach((b) => b.addEventListener("click", () => {
-  cat = b.dataset.cat;
-  $$("#lib-cats button").forEach((x) => x.setAttribute("aria-pressed", x === b));
-  renderLib();
-}));
-search.addEventListener("input", renderLib);
-
-function renderLib() {
-  const q = search.value.toLowerCase().trim();
-  const items = lib.filter((ic) =>
-    (cat === "All" || ic.category === cat) &&
-    (!q || ic.label.toLowerCase().includes(q) || ic.category.toLowerCase().includes(q) || ic.keywords.some((k) => k.includes(q))));
-  grid.innerHTML = items.map((ic) => `<li><button class="tile" type="button" data-open="${ic.slug}">
-      ${iconSvg(asDoc(ic), 48)}<span>${esc(ic.label)}</span></button></li>`).join("");
-  grid.hidden = !items.length;
-  $("#lib-empty").hidden = items.length > 0;
-  if (!items.length) {
-    const w = search.value.trim();
-    $("#lib-empty-text").textContent = w ? `No icon for “${w}” yet. Your AI tool can draw it.` : "No icons in this category yet.";
-    $$("#lib-empty .lib-empty-actions, #lib-empty .hint").forEach((el) => (el.hidden = !w));
-    setChatLinks($("#lib-empty"), w);
-  }
+// ---------- search: the field in the floating bar filters the table ----------
+search.addEventListener("input", () => renderTable());
+search.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); const first = $("#table [data-open]"); if (first) first.click(); else if (search.value.trim()) $('#lib-empty a[data-chat="claude"]').click(); }
+  if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); if (search.value) { search.value = ""; renderTable(); } else search.blur(); }
+});
+// ---------- menus that open upward from the floating bar: category and download all ----------
+const menus = [];
+function barMenu(btn, menu, onPick) {
+  const items = () => $$('[role^="menuitem"]', menu);
+  const toggle = (open, focusItem = true) => {
+    if (open) menus.forEach((m) => m !== toggle && m(false));
+    menu.hidden = !open;
+    btn.setAttribute("aria-expanded", open);
+    if (!open) return;
+    // under its pill: left edges line up; a menu at the end of the bar lines up with the bar's right edge
+    menu.style.left = `${menu.classList.contains("end") ? bar.offsetWidth - bar.clientLeft - menu.offsetWidth : btn.offsetLeft}px`; // end menus line up with the bar's right edge
+    if (focusItem) (items().find((b) => b.getAttribute("aria-checked") === "true") || items()[0]).focus();
+  };
+  menus.push(toggle);
+  btn.addEventListener("click", () => toggle(menu.hidden));
+  menu.addEventListener("click", (e) => { const it = e.target.closest('[role^="menuitem"]'); if (it) { onPick(it, e); toggle(false); btn.focus(); } });
+  menu.addEventListener("keydown", (e) => {
+    const list = items(), i = list.indexOf(document.activeElement);
+    const next = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: list.length - 1 }[e.key];
+    if (next !== undefined) { e.preventDefault(); list[(next + list.length) % list.length].focus(); }
+    if (e.key === "Escape" || e.key === "Tab") { e.preventDefault(); e.stopPropagation(); toggle(false); btn.focus(); }
+  });
+  document.addEventListener("pointerdown", (e) => { if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) toggle(false); });
+  return toggle;
 }
-renderLib();
+const closeMenus = () => menus.forEach((m) => m(false));
+
+// category: a row of chips at the top of the library (stays pinned while the grid scrolls)
+const cats = ["All", ...new Set(lib.map((ic) => ic.category))];
+const inCat = (c) => (c === "All" ? lib : lib.filter((ic) => ic.category === c));
+const chips = $("#cat-chips");
+chips.innerHTML = cats.map((c) => `<button type="button" class="chip" data-cat="${esc(c)}" aria-pressed="${c === cat}"><span>${esc(c)}</span><span class="n">${inCat(c).length}</span></button>`).join("");
+chips.addEventListener("click", (e) => { const b = e.target.closest("[data-cat]"); if (b) pickCat(b.dataset.cat); });
+// the fade under the pinned chip row only shows once the grid has scrolled
+{
+  const view = $("#icons"), catBar = $("#cat-bar");
+  view.addEventListener("scroll", () => catBar.classList.toggle("scrolled", view.scrollTop > 4), { passive: true });
+}
+function pickCat(c) {
+  cat = c;
+  $$("[data-cat]", chips).forEach((b) => b.setAttribute("aria-pressed", b.dataset.cat === c));
+  updateDlMenu();
+  renderTable();
+  $("#icons").scrollTo({ top: 0 });
+}
+// the download menu follows the chip: "All SVGs 139" or "Food SVGs 30", and downloads just those
+function updateDlMenu() {
+  const n = inCat(cat).length, name = cat === "All" ? "All" : cat;
+  $('#dl-menu [data-dl="svg"] .dl-l').textContent = `${name} SVGs`;
+  $('#dl-menu [data-dl="png"] .dl-l').textContent = `${name} PNGs, 256px`;
+  $$("#dl-menu .dl-n").forEach((s) => (s.textContent = n));
+}
+updateDlMenu();
+barMenu($("#dl-btn"), $("#dl-menu"), (it, e) => {
+  if (it.dataset.dl === "svg") {
+    if (cat === "All") { toast(`Downloading all ${lib.length} SVGs.`); return; } // the prebuilt zip (with licence); the link does it
+    e.preventDefault();
+    downloadSvgs(cat);
+    return;
+  }
+  e.preventDefault();
+  downloadPngs(cat, 256);
+});
+// Pixtober: both years, as links (the menu just closes; the link opens the site)
+barMenu($("#px-btn"), $("#px-menu"), () => {});
+let zipping = false;
+const zipName = (c, kind) => `pixel-icons-${c === "All" ? "" : slugify(c) + "-"}${kind}`;
+function downloadSvgs(c) {
+  const list = inCat(c), dir = zipName(c, "svg"), enc = new TextEncoder();
+  const files = list.map((ic) => ({ name: `${dir}/${ic.slug}.svg`, data: enc.encode(iconSvg(asDoc(ic), 16)) }));
+  download(`${dir}.zip`, makeZip(files), "application/zip");
+  toast(`Downloaded ${list.length} ${c.toLowerCase()} SVGs.`);
+}
+async function downloadPngs(c, px) {
+  if (zipping) return;
+  zipping = true;
+  const list = inCat(c), dir = zipName(c, "png");
+  toast(`Preparing ${list.length} PNGs…`);
+  try {
+    const files = await Promise.all(list.map(async (ic) => ({ name: `${dir}/${ic.slug}.png`, data: new Uint8Array(await (await pngBlob(ic, px)).arrayBuffer()) })));
+    download(`${dir}.zip`, makeZip(files), "application/zip");
+    toast(`Downloaded ${list.length} PNGs.`);
+  } catch {
+    toast("Couldn't make the PNGs. Try again, or download the SVGs.");
+  } finally { zipping = false; }
+}
 
 function openLibrary() {
   closeAll();
-  libDlg.showModal();
+  if (view !== "icons") showView("icons", { focus: false });
   search.focus();
   search.select();
 }
 
-// arrow keys move between tiles; down from the search box enters the grid
-libDlg.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { e.preventDefault(); libDlg.close(); return; }
-  const tiles = $$(".tile", grid);
-  if (e.target === search) {
-    if (e.key === "ArrowDown" && tiles.length) { e.preventDefault(); tiles[0].focus(); }
-    if (e.key === "Enter") { e.preventDefault(); if (tiles.length) tiles[0].click(); else if (search.value.trim()) $('#lib-empty a[data-chat="claude"]').click(); }
-    return;
-  }
-  const i = tiles.indexOf(e.target);
-  if (i < 0) return;
-  const cols = Math.max(1, tiles.filter((t) => t.offsetTop === tiles[0].offsetTop).length);
-  const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[e.key];
-  if (step === undefined) return;
-  e.preventDefault();
-  const j = i + step;
-  if (j < 0) search.focus(); else if (j < tiles.length) tiles[j].focus();
-});
-
 // ---------- one icon ----------
 const dtDlg = $("#detail");
-const SIZES = [16, 32, 48, 64, 96, 128];
-let current = null, size = 64, fmt = "svg", cameFromLibrary = false;
-$("#dt-sizes").innerHTML = SIZES.map((s) => `<button type="button" role="radio" data-size="${s}" aria-checked="${s === size}">${s}</button>`).join("");
-$$("#dt-sizes button").forEach((b) => b.addEventListener("click", () => { size = +b.dataset.size; renderDetail(); }));
-$$(".code-tabs [role='tab']").forEach((b) => b.addEventListener("click", () => { fmt = b.dataset.fmt; renderDetail(); }));
+let current = null, size = 64, fmt = "svg";
+// size: a slider in 16px steps, so every size is a whole multiple of the grid and the pixels stay crisp
+$("#dt-size").addEventListener("input", (e) => { size = +e.target.value; renderDetail(); });
+// format: one picker for everything below it (radio-group keys: arrows move and pick)
+const fmtBtns = $$("#dt-fmt [data-fmt]");
+fmtBtns.forEach((b) => b.addEventListener("click", () => { fmt = b.dataset.fmt; renderDetail(); }));
+$("#dt-fmt").addEventListener("keydown", (e) => {
+  const i = fmtBtns.findIndex((b) => b.dataset.fmt === fmt), step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+  if (step === undefined) return;
+  e.preventDefault();
+  const b = fmtBtns[(i + step + fmtBtns.length) % fmtBtns.length];
+  fmt = b.dataset.fmt; renderDetail(); b.focus();
+});
+// what Copy and Download do for each format
+const FMT = {
+  svg: { copy: "Copy SVG", dl: "Download .svg" },
+  png: { copy: "Copy PNG", dl: "Download .png" },
+  react: { copy: "Copy React", dl: "Download .jsx" },
+  html: { copy: "Copy HTML", dl: "Download .html" },
+};
 
 const pascal = (s) => s.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join("");
 function paths(d) {
@@ -308,7 +390,8 @@ function paths(d) {
 function codeFor(ic) {
   const d = asDoc(ic);
   if (fmt === "svg") return iconSvg(d, size);
-  if (fmt === "html") return `<img src="${ic.slug}.svg" width="${size}" height="${size}" alt="${ic.label}" style="image-rendering: pixelated">`;
+  // self-contained: the SVG is embedded in the tag, so it works pasted anywhere with no separate file
+  if (fmt === "html") return `<img src="data:image/svg+xml,${encodeURIComponent(iconSvg(d, size))}" width="${size}" height="${size}" alt="${ic.label}" style="image-rendering: pixelated">`;
   const body = paths(d).map(([c, p]) => `      <path fill="${c}" d="${p}" />`).join("\n");
   return `export function ${pascal(ic.slug)}Icon({ size = ${size}, ...props }) {
   return (
@@ -321,36 +404,54 @@ ${body}
 function renderDetail() {
   if (!current) return;
   $("#dt-title").textContent = current.label;
-  $("#dt-stage").innerHTML = iconSvg(asDoc(current), size);
-  $$("#dt-sizes button").forEach((b) => b.setAttribute("aria-checked", +b.dataset.size === size));
-  $$(".code-tabs [role='tab']").forEach((b) => { const on = b.dataset.fmt === fmt; b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1; });
-  $("#dt-code").textContent = codeFor(current);
+  $("#dt-stage").innerHTML = `<div class="px-grid">${iconSvg(asDoc(current), size)}</div>`;
+  $("#dt-size").value = size; $("#dt-size-out").textContent = `${size}px`;
+  $("#dt-size").style.setProperty("--fill", `${((size - 16) / 112) * 100}%`);
+  fmtBtns.forEach((b) => { const on = b.dataset.fmt === fmt; b.setAttribute("aria-checked", on); b.tabIndex = on ? 0 : -1; });
+  $("#dt-copy").textContent = FMT[fmt].copy; $("#dt-dl").textContent = FMT[fmt].dl;
+  // a code preview for the text formats; PNG is the picture above
+  $("#dt-pre").hidden = fmt === "png";
+  if (fmt !== "png") $("#dt-code").textContent = codeFor(current);
 }
-function openDetail(ic, fromLibrary) {
+function openDetail(ic) {
   if (!ic) return;
   current = ic;
-  cameFromLibrary = fromLibrary;
-  $("#dt-back").hidden = !fromLibrary;
   closeAll();
   renderDetail();
   dtDlg.showModal();
 }
-$("#dt-back").addEventListener("click", openLibrary);
-$("#dt-copy").addEventListener("click", async () => toast((await copyText($("#dt-code").textContent)) ? "Copied." : "Couldn't copy. Your browser blocked the clipboard."));
-$("#dt-svg").addEventListener("click", () => { download(`${current.slug}.svg`, iconSvg(asDoc(current))); toast(`Downloaded ${current.slug}.svg`); });
-function savePng(ic, px) {
+const blocked = "Couldn't copy. Your browser blocked the clipboard.";
+$("#dt-copy").addEventListener("click", async () => {
+  if (fmt !== "png") { toast((await copyText(codeFor(current))) ? `Copied the ${FMT[fmt].copy.slice(5)} (${size}px).` : blocked); return; }
+  // the PNG goes on the clipboard as an image; the blob is passed as a promise so Safari keeps the click's permission while it's drawn
+  try {
+    if (!window.ClipboardItem || !navigator.clipboard?.write) throw new Error("no image clipboard");
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": pngBlob(current, size) })]);
+    toast(`Copied the PNG (${size}px).`);
+  } catch { toast("Couldn't copy the image here. Use Download instead."); }
+});
+$("#dt-dl").addEventListener("click", () => {
+  if (fmt === "png") return savePng(current, size);
+  if (fmt === "react") { const name = `${pascal(current.slug)}Icon.jsx`; download(name, codeFor(current), "text/javascript"); toast(`Downloaded ${name}`); return; }
+  if (fmt === "html") { const name = `${current.slug}.html`; download(name, codeFor(current) + "\n", "text/html"); toast(`Downloaded ${name}`); return; }
+  download(`${current.slug}.svg`, iconSvg(asDoc(current), size)); toast(`Downloaded ${current.slug}.svg (${size}px)`);
+});
+// an icon drawn crisp onto a transparent canvas, px wide, as a PNG blob
+function pngBlob(ic, px) {
   const d = asDoc(ic), c = document.createElement("canvas");
   c.width = c.height = px;
   const ctx = c.getContext("2d"), k = px / 16;
   d.grid.forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== ".") { ctx.fillStyle = d.palette[ch]; ctx.fillRect(x * k, y * k, k, k); } }));
-  c.toBlob((blob) => {
+  return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error("png"))), "image/png"));
+}
+function savePng(ic, px) {
+  pngBlob(ic, px).then((blob) => {
     const url = URL.createObjectURL(blob), a = document.createElement("a");
     a.href = url; a.download = `${ic.slug}-${px}.png`; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast(`Downloaded ${ic.slug}-${px}.png`);
   });
 }
-$("#dt-png").addEventListener("click", () => savePng(current, size));
 $("#dt-edit").addEventListener("click", () => openEditor([asDoc(current)], current.label));
 
 // ---------- editor ----------
@@ -413,37 +514,238 @@ $("#mk-edit").addEventListener("click", () => openEditor([asDoc(made)], made.lab
 $("#mk-again").addEventListener("click", () => { mkView("form"); $("#mk-word").select(); $("#mk-word").focus(); });
 $("#lib-empty-make").addEventListener("click", (e) => { e.preventDefault(); openMake(search.value.trim()); });
 
+// ---------- About: draw your own icon and drop it on the pile ----------
+// The pile holds only the visitor's own drawings (kept in this browser). It's a layer under the drawing grid
+// that reaches down to the bottom of the screen, so drops fall all the way to the floor of the window.
+// Each drop is trimmed to the pixels actually drawn, so it rests right on the floor. Drag to toss them around.
+const pile = (() => {
+  const box = $("#pile"), PX = 3, KEY = "pi-pile", MAX = 18;
+  const bodies = [];
+  let running = false, still = 0, started = false, drag = null, last = null;
+  const W = () => box.clientWidth, H = () => box.clientHeight;
+  // the layer: the drawing column's width, from just under its buttons to the bottom of the window
+  function place() {
+    const col = $(".about-make").getBoundingClientRect(), acts = $(".dd-acts").getBoundingClientRect();
+    Object.assign(box.style, { left: `${col.left}px`, width: `${col.width}px`, top: `${acts.bottom + 12}px` });
+  }
+  // only the drawn pixels, as a small SVG at PX screen pixels per icon pixel
+  function trimmed(d) {
+    const ys = d.grid.map((r, y) => (/[^.]/.test(r) ? y : -1)).filter((y) => y >= 0);
+    const xs = d.grid.flatMap((r) => [...r].map((c, x) => (c !== "." ? x : -1))).filter((x) => x >= 0);
+    const x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0 + 1, h = Math.max(...ys) - y0 + 1;
+    let rects = "";
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const k = d.grid[y0 + y][x0 + x]; if (k !== ".") rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${d.palette[k]}"/>`; }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w * PX}" height="${h * PX}" shape-rendering="crispEdges">${rects}</svg>`;
+    return { src: `data:image/svg+xml,${encodeURIComponent(svg)}`, w: w * PX, h: h * PX };
+  }
+  function add(d, { x = null, y = null } = {}) {
+    const t = trimmed(d), el = document.createElement("img");
+    el.src = t.src; el.alt = ""; el.draggable = false; el.width = t.w; el.height = t.h;
+    box.append(el);
+    box.classList.add("has-icons");
+    const r = Math.max(t.w, t.h) / 2 * 0.9;
+    const b = { el, w: t.w, h: t.h, r, x: x ?? r + Math.random() * Math.max(1, W() - 2 * r), y: y ?? -t.h, vx: (Math.random() - 0.5) * 2, vy: 0, a: (Math.random() - 0.5) * 30, va: (Math.random() - 0.5) * 6 };
+    bodies.push(b);
+    return b;
+  }
+  const saved = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { return []; } };
+  function step() {
+    const w = W(), h = H();
+    let moving = 0;
+    for (const b of bodies) {
+      if (b === drag) continue;
+      b.vy += 0.45; b.vx *= 0.99; b.x += b.vx; b.y += b.vy; b.a += b.va; b.va *= 0.96;
+      if (b.y > h - b.h / 2) { b.y = h - b.h / 2; b.vy *= -0.3; b.vx *= 0.8; b.va *= 0.7; b.a *= 0.9; } // on the floor it settles upright
+      if (b.x < b.r) { b.x = b.r; b.vx *= -0.5; }
+      if (b.x > w - b.r) { b.x = w - b.r; b.vx *= -0.5; }
+    }
+    for (let it = 0; it < 3; it++) for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++) {
+      const a = bodies[i], b = bodies[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 0.01, o = a.r + b.r - d;
+      if (o <= 0) continue;
+      // a dragged icon doesn't move; the other one takes the whole push
+      const nx = dx / d, ny = dy / d, wa = a === drag ? 0 : b === drag ? 1 : 0.5, wb = b === drag ? 0 : a === drag ? 1 : 0.5;
+      a.x -= nx * o * wa; a.y -= ny * o * wa; b.x += nx * o * wb; b.y += ny * o * wb;
+      const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+      if (rv < 0) { const k = rv * 0.6; a.vx += nx * k * wa * 2; a.vy += ny * k * wa * 2; b.vx -= nx * k * wb * 2; b.vy -= ny * k * wb * 2; }
+    }
+    for (const b of bodies) {
+      if (Math.abs(b.vx) + Math.abs(b.vy) > 0.15) moving++;
+      b.el.style.transform = `translate(${b.x - b.w / 2}px, ${b.y - b.h / 2}px) rotate(${b.a}deg)`;
+    }
+    return moving;
+  }
+  // run while anything moves; sleep once the pile settles, so a still page costs nothing
+  function loop() {
+    if (!running) return;
+    still = step() || drag ? 0 : still + 1;
+    if (still > 40 || $("#how").hidden) { running = false; return; }
+    requestAnimationFrame(loop);
+  }
+  function wake() {
+    if ($("#how").hidden) return;
+    place();
+    if (!W()) return;
+    if (!started) {
+      started = true;
+      saved().forEach((d, n) => add(d, { y: -60 - n * 40 }));
+      // with reduced motion, settle the pile before showing it instead of letting it fall
+      if (calm.matches) { for (let i = 0; i < 600; i++) step(); return; }
+    }
+    still = 0;
+    if (!running) { running = true; requestAnimationFrame(loop); }
+  }
+  addEventListener("resize", () => { if (!$("#how").hidden) wake(); });
+  $("#how").addEventListener("scroll", () => place(), { passive: true });
+  const local = (e) => { const r = box.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  box.addEventListener("pointerdown", (e) => {
+    const { x, y } = local(e);
+    drag = [...bodies].reverse().find((b) => Math.hypot(b.x - x, b.y - y) < b.r + 2) || null;
+    if (!drag) return;
+    box.setPointerCapture(e.pointerId);
+    drag.el.classList.add("dragging");
+    last = { x, y, t: performance.now() };
+    wake();
+  });
+  box.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const { x, y } = local(e), t = performance.now(), dt = Math.max(16, t - last.t);
+    drag.vx = ((x - last.x) / dt) * 16; drag.vy = ((y - last.y) / dt) * 16;
+    drag.x = Math.min(W() - drag.r, Math.max(drag.r, x)); drag.y = Math.min(H() - drag.h / 2, y);
+    last = { x, y, t };
+  });
+  const release = () => {
+    if (!drag) return;
+    drag.el.classList.remove("dragging");
+    drag = null;
+    wake();
+  };
+  box.addEventListener("pointerup", release);
+  box.addEventListener("pointercancel", release);
+  return {
+    wake,
+    // a drawn icon falls in from the top of the layer, under where it was drawn
+    drop(d) {
+      // keep the latest few; the oldest one leaves the pile when it's full
+      const list = saved(); list.push(d); try { localStorage.setItem(KEY, JSON.stringify(list.slice(-MAX))); } catch { /* storage blocked */ }
+      if (bodies.length >= MAX) bodies.shift().el.remove();
+      place();
+      const r = box.getBoundingClientRect(), from = $("#dd-cv").getBoundingClientRect();
+      add(d, { x: from.left + from.width / 2 - r.left, y: 0 });
+      wake();
+    },
+  };
+})();
+
+// the drawing grid: click or drag to paint, pick a colour, then drop it on the pile
+(() => {
+  const cv = $("#dd-cv"), ctx = cv.getContext("2d"), C = cv.width / 16;
+  const PAL = { K: "#000000", w: "#ffffff", r: "#e8243c", o: "#f28c28", y: "#ffd23f", g: "#3fa34d", b: "#3b82f6", p: "#f7a1c4", n: "#8b5a2b" };
+  const NAMES = { K: "Black", w: "White", r: "Red", o: "Orange", y: "Yellow", g: "Green", b: "Blue", p: "Pink", n: "Brown", ".": "Eraser" };
+  const ERASER = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 21h13"/><path d="M5.6 14.4l8.5-8.5a2 2 0 0 1 2.8 0l2.6 2.6a2 2 0 0 1 0 2.8L12 18.8 9.4 21H7.5l-1.9-1.9a2 2 0 0 1 0-2.8z"/><path d="M10.5 9.5l5 5"/></svg>';
+  const grid = Array.from({ length: 16 }, () => Array(16).fill("."));
+  let ink = "K", painting = false;
+  $("#dd-sw").innerHTML = [...Object.keys(PAL), "."].map((k) => `<button type="button" role="radio" aria-checked="${k === ink}" aria-label="${NAMES[k]}" title="${NAMES[k]}" data-ink="${k}"${k === "." ? ' class="eraser"' : ` style="background:${PAL[k]}"`}>${k === "." ? ERASER : ""}</button>`).join("");
+  $$("#dd-sw button").forEach((b) => b.addEventListener("click", () => { ink = b.dataset.ink; $$("#dd-sw button").forEach((x) => x.setAttribute("aria-checked", x === b)); }));
+  const empty = () => grid.every((r) => r.every((k) => k === "."));
+  function draw() {
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
+    grid.forEach((row, y) => row.forEach((k, x) => { if (k !== ".") { ctx.fillStyle = PAL[k]; ctx.fillRect(x * C, y * C, C, C); } }));
+    ctx.strokeStyle = "#eceef2"; ctx.lineWidth = 1; ctx.beginPath();
+    for (let i = 1; i < 16; i++) { ctx.moveTo(i * C + 0.5, 0); ctx.lineTo(i * C + 0.5, cv.height); ctx.moveTo(0, i * C + 0.5); ctx.lineTo(cv.width, i * C + 0.5); }
+    ctx.stroke();
+    $("#dd-drop").disabled = empty();
+  }
+  const paintAt = (e) => {
+    const r = cv.getBoundingClientRect(), x = Math.floor(((e.clientX - r.left) / r.width) * 16), y = Math.floor(((e.clientY - r.top) / r.height) * 16);
+    if (x < 0 || x > 15 || y < 0 || y > 15 || grid[y][x] === ink) return;
+    grid[y][x] = ink; draw();
+  };
+  cv.addEventListener("pointerdown", (e) => { painting = true; cv.setPointerCapture(e.pointerId); paintAt(e); });
+  cv.addEventListener("pointermove", (e) => painting && paintAt(e));
+  cv.addEventListener("pointerup", () => (painting = false));
+  cv.addEventListener("pointercancel", () => (painting = false));
+  $("#dd-clear").addEventListener("click", () => { grid.forEach((r) => r.fill(".")); draw(); });
+  $("#dd-drop").addEventListener("click", () => {
+    if (empty()) return;
+    const used = new Set(grid.flat().filter((k) => k !== "."));
+    pile.drop({ name: "my-icon", style: "color", palette: Object.fromEntries([...used].map((k) => [k, PAL[k]])), grid: grid.map((r) => r.join("")) });
+    grid.forEach((r) => r.fill(".")); draw();
+    toast("Dropped on the pile.");
+  });
+  draw();
+})();
+
 // ---------- views: the floating bar swaps the hero for another view ----------
 const VIEWS = ["icons", "install", "how"];
 const bar = $(".pills"), ind = $(".pill-ind"), viewBtns = $$(".pill-btn[data-view]");
+// in the library view only its close button and a search pill stay in the bar
+// views with their own actions: the bar slims to the close button and the items marked data-for that view
+const FOCUSED = ["icons", "install", "how"];
+const soloItems = $$(".pills [data-for]"), extras = [$(".pills > .sep:not([data-for])"), $("#tog-motion")];
 const CLOSED = 40; // an open section's button shrinks to a round close button this wide
 const noMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 let view = null, natural = new Map();
 // each button's own width (icon + word), measured once the font has loaded and again on resize
 function measure() {
-  viewBtns.forEach((b) => { b.style.transition = "none"; b.style.width = ""; });
-  viewBtns.forEach((b) => natural.set(b, b.getBoundingClientRect().width));
+  const all = [...viewBtns, ...soloItems];
+  all.forEach((b) => { b.style.transition = "none"; b.style.width = ""; b.classList.remove("gone"); });
+  all.forEach((b) => natural.set(b, b.getBoundingClientRect().width));
   layoutBar(false);
   void bar.offsetWidth;
-  viewBtns.forEach((b) => (b.style.transition = ""));
+  all.forEach((b) => (b.style.transition = ""));
+}
+// one item's label changed: animate it to its new natural width
+function remeasure(el) {
+  const was = el.style.width;
+  el.style.transition = "none"; el.style.width = "";
+  natural.set(el, el.getBoundingClientRect().width);
+  el.style.width = was; void el.offsetWidth; el.style.transition = "";
+  layoutBar();
 }
 // set every button's target width, and slide the dark highlight to the open one
 function layoutBar(animate = true) {
   if (!animate) ind.style.transition = "none";
   let x = parseFloat(getComputedStyle(bar).paddingLeft), gap = parseFloat(getComputedStyle(bar).columnGap) || 0, target = null;
+  const solo = FOCUSED.includes(view);
+  const hide = (el, gone) => {
+    el.classList.toggle("gone", gone);
+    const f = el.matches("button, a") ? el : $("input", el);
+    if (f) f.tabIndex = gone ? -1 : 0;
+  };
   viewBtns.forEach((b) => {
-    const on = b.dataset.view === view, w = on ? CLOSED : natural.get(b);
+    const on = b.dataset.view === view, w = on ? CLOSED : solo ? 0 : natural.get(b);
     b.style.width = `${w}px`;
+    hide(b, !w);
     if (on) target = { x, w };
-    x += w + gap;
+    if (w) x += w + gap; // a folded button's -2px margin cancels the gap after it, so it takes no room
   });
+  soloItems.forEach((el) => { const show = el.dataset.for === view; el.style.width = `${show ? natural.get(el) : 0}px`; hide(el, !show); });
+  extras.forEach((el) => hide(el, solo));
+  closeMenus(); // a view change closes any open bar menu
   if (target) { ind.style.width = `${target.w}px`; ind.style.transform = `translateX(${target.x}px)`; ind.style.opacity = "1"; }
   else { ind.style.opacity = "0"; ind.style.transform = `${ind.style.transform.split(" scale")[0] || "translateX(0)"} scale(0.6)`; }
   if (!animate) { void ind.offsetWidth; ind.style.transition = ""; }
 }
+// the top-right pitch changes with the view; views without their own keep the default
+const TAGLINES = {
+  icons: [`${lib.length} icons, open source and free to use.`, "MIT licence, for personal and commercial work."],
+};
+const TAG_HIDDEN = ["install", "how"]; // Use Skill and About show no pitch top right
+const tagDefault = [$(".tagline .t1").textContent, $(".tagline .t2").textContent];
+function setTagline() {
+  const tag = $(".tagline"), off = TAG_HIDDEN.includes(view);
+  tag.classList.toggle("off", off); // hidden but still taking its space, so the header doesn't jump
+  if (off) return;
+  const [a, b] = TAGLINES[view] || tagDefault, t1 = $(".tagline .t1"), t2 = $(".tagline .t2");
+  if (t1.textContent === a && t2.textContent === b) return;
+  t1.textContent = a; t2.textContent = b;
+  [t1, t2].forEach((t) => { t.classList.remove("swap"); void t.offsetWidth; t.classList.add("swap"); });
+}
 function swap() {
+  setTagline();
   $("#view-home").hidden = !!view;
   VIEWS.forEach((v) => ($("#" + v).hidden = v !== view));
+  if (view === "how") requestAnimationFrame(() => pile.wake()); // the icons tumble in once About is on screen
 }
 function showView(name, { focus = true, animate = true } = {}) {
   const next = VIEWS.includes(name) ? name : null;
@@ -453,12 +755,16 @@ function showView(name, { focus = true, animate = true } = {}) {
     const on = b.dataset.view === view;
     b.setAttribute("aria-pressed", on);
     const label = $(".pl", b).textContent;
-    b.setAttribute("aria-label", on ? `Close ${label.toLowerCase()}` : label);
+    b.setAttribute("aria-label", on ? "Back" : label); // the open view's button takes you back to the start
   });
   layoutBar(animate);
   // the views morph into each other where the browser supports view transitions
-  if (animate && !noMotion() && document.startViewTransition) document.startViewTransition(swap);
-  else swap();
+  if (animate && !noMotion() && document.startViewTransition) {
+    // the bar's frosted blur would be drawn as a square during the switch, so it's switched off until the switch ends
+    const root = document.documentElement;
+    root.classList.add("switching");
+    document.startViewTransition(swap).finished.finally(() => root.classList.remove("switching"));
+  } else swap();
   try { history.replaceState(null, "", view ? `#${view}` : location.pathname + location.search); } catch { /* sandboxed */ }
   if (focus) (view ? $("#" + view) : wordIn).focus({ preventScroll: true });
 }
@@ -470,6 +776,29 @@ document.addEventListener("keydown", (e) => {
 });
 measure();
 document.fonts?.ready.then(measure);
+
+// GitHub stars on the Use Skill pill: shown once there are any; cached for an hour so visitors don't hit the API on every load
+(async () => {
+  const KEY = "pi-gh-stars", HOUR = 36e5;
+  let n;
+  try {
+    const c = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (c && Date.now() - c.t < HOUR) n = c.n;
+  } catch { /* storage blocked */ }
+  if (n === undefined) {
+    try {
+      const r = await fetch("https://api.github.com/repos/iamjahanvi/pixel-icon-generator");
+      if (!r.ok) return;
+      n = (await r.json()).stargazers_count;
+      try { localStorage.setItem(KEY, JSON.stringify({ n, t: Date.now() })); } catch { /* storage blocked */ }
+    } catch { return; }
+  }
+  if (!(n > 0)) return;
+  $("#gh-stars-n").textContent = n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k` : n;
+  $("#gh-stars").hidden = false;
+  $("#gh-link").setAttribute("aria-label", `Star on GitHub, ${n} stars`);
+  remeasure($("#gh-link"));
+})();
 let rz;
 addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(measure, 120); });
 if (VIEWS.includes(location.hash.slice(1))) showView(location.hash.slice(1), { focus: false, animate: false });
@@ -479,7 +808,7 @@ function closeAll() { $$("dialog[open]").forEach((d) => d.close()); }
 document.addEventListener("click", (e) => {
   const t = e.target;
   const o = t.closest("[data-open]");
-  if (o) openDetail(bySlug(o.dataset.open), !!o.closest("#library"));
+  if (o) openDetail(bySlug(o.dataset.open));
   if (t.closest("[data-open-library]")) { e.preventDefault(); openLibrary(); }
   if (t.closest("[data-open-draw]")) { e.preventDefault(); openEditor(); }
   if (t.closest("[data-open-paste]")) { e.preventDefault(); openEditor(); editor.openPaste(); }
@@ -496,7 +825,7 @@ $$("dialog.sheet").forEach((d) => d.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
     e.preventDefault();
-    libDlg.open ? libDlg.close() : openLibrary();
+    document.activeElement === search ? search.blur() : openLibrary();
   } else if (e.key === "/" && !e.target.closest("input, textarea, dialog[open]")) {
     e.preventDefault();
     openLibrary();
@@ -504,11 +833,10 @@ document.addEventListener("keydown", (e) => {
 });
 if (location.hash === "#editor" || location.hash === "#draw") openEditor();
 if (location.hash === "#paste") { openEditor(); editor.openPaste(); }
-if (location.hash === "#library") openLibrary();
+if (location.hash === "#library") showView("icons", { focus: false, animate: false });
 if (location.hash === "#make") openMake();
 
 // show the shortcut the visitor actually has
-if (!/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) $("#kbd-k").textContent = "Ctrl K";
 
 // ---------- switch: stop the marquees (remembered on this device) ----------
 (() => {

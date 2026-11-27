@@ -37,6 +37,14 @@ export function filledCount(d) {
 }
 
 export const iconSvg = (d, size) => svg(d, size);
+// the same icon as one <img>: the browser lays out and paints a single element instead of hundreds of <rect>s,
+// which keeps view switches smooth on pages that show dozens of icons at once
+const imgCache = new Map();
+export function iconImg(d, size, key, attrs = "") {
+  const k = `${key}@${size}`;
+  if (!imgCache.has(k)) imgCache.set(k, `data:image/svg+xml,${encodeURIComponent(svg(d, size))}`);
+  return `<img class="ico" src="${imgCache.get(k)}" width="${size}" height="${size}" alt="" draggable="false"${attrs ? " " + attrs : ""}>`;
+}
 
 let toastTimer;
 export function toast(msg) {
@@ -83,3 +91,31 @@ export const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: r
 export const slugify = (s) => (s || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "my-icon";
 
 export const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// a plain .zip (stored, not compressed: PNGs are already compressed) from [{ name, data: Uint8Array }]
+const CRC_TABLE = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+const crc32 = (b) => { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+export function makeZip(files) {
+  const enc = new TextEncoder(), now = new Date();
+  const time = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+  const date = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  const parts = [], central = [];
+  let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), crc = crc32(f.data), n = f.data.length;
+    const head = new DataView(new ArrayBuffer(30));
+    [[0, 0x04034b50, 4], [4, 20, 2], [6, 0, 2], [8, 0, 2], [10, time, 2], [12, date, 2], [14, crc, 4], [18, n, 4], [22, n, 4], [26, name.length, 2], [28, 0, 2]]
+      .forEach(([o, v, w]) => (w === 4 ? head.setUint32(o, v, true) : head.setUint16(o, v, true)));
+    parts.push(head, name, f.data);
+    const dir = new DataView(new ArrayBuffer(46));
+    [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0, 2], [10, 0, 2], [12, time, 2], [14, date, 2], [16, crc, 4], [20, n, 4], [24, n, 4], [28, name.length, 2], [30, 0, 2], [32, 0, 2], [34, 0, 2], [36, 0, 2], [38, 0, 4], [42, offset, 4]]
+      .forEach(([o, v, w]) => (w === 4 ? dir.setUint32(o, v, true) : dir.setUint16(o, v, true)));
+    central.push(dir, name);
+    offset += 30 + name.length + n;
+  }
+  const size = central.reduce((s, p) => s + p.byteLength, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  [[0, 0x06054b50, 4], [4, 0, 2], [6, 0, 2], [8, files.length, 2], [10, files.length, 2], [12, size, 4], [16, offset, 4], [20, 0, 2]]
+    .forEach(([o, v, w]) => (w === 4 ? end.setUint32(o, v, true) : end.setUint16(o, v, true)));
+  return new Blob([...parts, ...central, end], { type: "application/zip" });
+}

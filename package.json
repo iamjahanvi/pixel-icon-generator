@@ -1,6 +1,6 @@
 {
   "name": "pixel-icon-generator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An agent skill that turns a word into a 16x16 pixel icon in the Pixtober style, saved as an SVG.",
   "type": "module",
   "bin": {
