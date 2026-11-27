@@ -7,6 +7,7 @@ const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
 const lib = await fetch("data/icons.json").then((r) => r.json());
+window.__bootStep?.(0.7); // the loading fill tracks real progress: icon data is in
 // Logo hover: the logo fills with a light colour pixel by pixel (bottom row first, small random stagger),
 // a new colour on every hover. The colour layer is an inline SVG built from the logo's own letter pixels.
 {
@@ -69,10 +70,10 @@ async function copyPrompt(word) {
 // ---------- the word wall ----------
 // [slug, word, colour, weight]: each word takes its icon's colour; weights alternate like a checkerboard.
 const WALL = [
-  [["heart", "Heart", "#e8243c", 600], ["fish", "Goldfish", "#f5861f", 300], ["tree", "Tree", "#3fae49", 600], ["donut", "Donut", "#ec6f9e", 300]],
-  [["rain", "Rain", "#3a8ee6", 300], ["key", "Key", "#d9a21a", 600], ["mushroom", "Mushroom", "#e5322d", 300], ["lantern", "Lantern", "#d4a52a", 600]],
-  [["pizza", "Pizza", "#e2a04a", 300], ["house", "House", "#d9483b", 600], ["camera", "Camera", "#4a4f57", 300], ["tulip", "Tulip", "#3a9a3e", 600]],
-  [["sunset", "Sunset", "#2a6f9e", 600], ["pencil", "Pencil", "#e09a12", 300], ["clock", "Clock", "#e23b3b", 600], ["ice-cream", "Ice cream", "#e0679b", 300]],
+  [["heart", "Heart", "#e8243c", 600], ["fish", "Goldfish", "#f5861f", 300], ["tree", "Tree", "#3fae49", 600], ["watermelon", "Watermelon", "#e23a4f", 300]],
+  [["rain", "Rain", "#3a8ee6", 300], ["key", "Key", "#d9a21a", 600], ["mushroom", "Mushroom", "#e5322d", 300], ["frog", "Frog", "#3f9e3a", 600]],
+  [["pizza", "Pizza", "#e2a04a", 300], ["house", "House", "#d9483b", 600], ["cat", "Cat", "#e8862a", 300], ["tulip", "Tulip", "#3a9a3e", 600]],
+  [["whale", "Whale", "#2f7fd8", 600], ["pencil", "Pencil", "#e09a12", 300], ["rocket", "Rocket", "#e23b3b", 600], ["ice-cream", "Ice cream", "#e0679b", 300]],
 ];
 const LEAD = ["coffee", "Coffee", "#6b3b1f", 600];
 const TRAIL = ["book", "Book", "#d93a3a", 300];
@@ -107,7 +108,7 @@ function onWord() {
   showSlot(findIcon(w));
 }
 
-// the slot beside the field: an icon poofs in when a word matches, and poofs out when it stops matching
+// the slot beside the field: an icon poofs in (with smoke) when a word matches, and shrinks away when it stops matching
 let slotSlug = null, slotJob = 0;
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
 // pixel smoke: little 16-bit puffs, drawn on the same pixel grid as the icons, that pop out from the edges and shrink away in steps
@@ -149,7 +150,7 @@ async function showSlot(ic) {
   const job = ++slotJob, was = slotSlug && bySlug(slotSlug), old = $("svg", slot);
   slotSlug = slug;
   if (old && was && !calm.matches) {
-    puff();
+    // leaving: just a quick stepped shrink, no smoke (the smoke is only for an icon arriving)
     await old.animate([{ transform: "scale(1)", opacity: 1 }, { transform: "scale(0.4)", opacity: 0 }],
       { duration: 240, easing: "steps(4, end)", fill: "forwards" }).finished;
     if (job !== slotJob) return;
@@ -174,7 +175,7 @@ wordIn.addEventListener("input", onWord);
 (() => {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // all from the library, so each one has an icon to poof into the slot
-  const WORDS = ["rocket", "umbrella", "cat", "lightning", "snail", "lightbulb", "cherry", "envelope", "moon", "bird"];
+  const WORDS = ["trophy", "umbrella", "koala", "lightning", "snail", "lightbulb", "cherry", "envelope", "moon", "bird"]; // none of these are in the hero rows
   const pill = $(".pill-in"), demo = $("#type-demo"), out = $("#type-demo-text");
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const live = () => !wordIn.value && document.activeElement !== wordIn;
@@ -519,7 +520,8 @@ $("#lib-empty-make").addEventListener("click", (e) => { e.preventDefault(); open
 // that reaches down to the bottom of the screen, so drops fall all the way to the floor of the window.
 // Each drop is trimmed to the pixels actually drawn, so it rests right on the floor. Drag to toss them around.
 const pile = (() => {
-  const box = $("#pile"), PX = 3, KEY = "pi-pile", MAX = 18;
+  const box = $("#pile"), PX = 3, KEY = "pi-pile-2", MAX = 18;
+  try { localStorage.removeItem("pi-pile"); } catch { /* storage blocked */ } // fresh start: drop piles saved before the reset
   const bodies = [];
   let running = false, still = 0, started = false, drag = null, last = null;
   const W = () => box.clientWidth, H = () => box.clientHeight;
