@@ -1061,3 +1061,8 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
 
 /* phones: the About note is set at the credits' size (15px), a touch more open line spacing for the paragraphs */
 @media (max-width: 720px) { #how .note p { font-size: 15px; line-height: 1.55; } }
+
+/* phones, keyboard open: the bar, the note above it and the glow step aside (unless you're typing in the bar) */
+@media (max-width: 720px) {
+  html.kb:not(.kb-bar) .pills, html.kb .m-tag, html.kb .bar-glow { opacity: 0 !important; pointer-events: none !important; visibility: hidden; }
+}

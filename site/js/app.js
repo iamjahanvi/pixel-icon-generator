@@ -1088,6 +1088,25 @@ document.fonts?.ready.then(measure);
   addEventListener("touchcancel", reset, { passive: true });
 }
 
+// phones: while the keyboard is open, the floating bar, the note above it and the glow stay out of the way (the
+// page shrinks above the keyboard, so they'd otherwise ride up over the hero). Typing in the bar's own search
+// keeps the bar.
+{
+  let full = innerHeight, w = innerWidth;
+  const kb = () => {
+    if (innerWidth !== w) { w = innerWidth; full = innerHeight; } // turned the phone: start over
+    full = Math.max(full, innerHeight);
+    const a = document.activeElement, typing = a && (a.matches("input, textarea") || a.isContentEditable);
+    const open = phone.matches && typing && full - innerHeight > 120;
+    document.documentElement.classList.toggle("kb", !!open);
+    document.documentElement.classList.toggle("kb-bar", !!open && !!a.closest(".pills"));
+  };
+  addEventListener("resize", kb);
+  visualViewport?.addEventListener("resize", kb);
+  addEventListener("focusin", () => setTimeout(kb, 50));
+  addEventListener("focusout", () => setTimeout(kb, 50));
+}
+
 // every marquee row moves at the same speed: each row's duration comes from its own length (rows differ in length)
 function marqueeSpeed() {
   const em = parseFloat(getComputedStyle($("#wall")).fontSize), perSec = em * (matchMedia("(max-width: 720px)").matches ? 0.93 : 1.0);
