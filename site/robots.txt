@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: https://pixbits.iamjahanvi.com/sitemap.xml

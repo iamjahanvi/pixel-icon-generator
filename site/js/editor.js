@@ -1,4 +1,4 @@
-import { N, svg } from "./core.js";
+import { N, svg, check } from "./core.js";
 import { toast, copyText, download, slugify, esc } from "./util.js";
 import { glyph } from "./glyphs.js";
 
@@ -21,7 +21,7 @@ const blank = () => ({
   name: nextName(),
   style: "color",
   // everyday real-world colours to start from; add more with +
-  palette: { K: "#000000", w: "#ffffff", g: "#8b8b8b", l: "#c9c9c9", r: "#e33a2f", o: "#f2932b", y: "#f7d84a", n: "#5bbd3c", b: "#3577e0", p: "#8a3fa0", t: "#8a5a32" },
+  palette: { K: "#000000", w: "#ffffff", g: "#8b8b8b", r: "#e33a2f", o: "#f2932b", y: "#f7d84a", n: "#5bbd3c", b: "#3577e0", t: "#8a5a32" }, // one row of swatches with the + button
   grid: Array.from({ length: N }, () => ".".repeat(N)),
 });
 
@@ -35,6 +35,30 @@ const used = (d) => {
 const toEdit = (d) => ({ ...d, palette: { ...d.palette }, grid: d.grid.map((r) => [...r]) });
 const toPlain = (d) => ({ name: d.name, style: d.style, palette: d.palette, grid: d.grid.map((r) => r.join("")) });
 
+// the editor's tool icons: Lucide (lucide.dev, ISC License), rounded line icons
+const ico = (d) => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const LINE = {
+  pencil: ico('<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>'),
+  eraser: ico('<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>'),
+  fill: ico('<path d="M4 7.5h16l-1.6 11.4A2.4 2.4 0 0 1 16 21H8a2.4 2.4 0 0 1-2.4-2.1L4 7.5Z"/><path d="M4 7.5a8 3.2 0 0 1 16 0"/><path d="M5.2 12.5c2.3 1.2 4.5 1.2 6.8 0s4.5-1.2 6.8 0"/>'), // a paint bucket, upright: clearer than a tipped one at this size
+  pick: ico('<path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/>'),
+  fliph: ico('<path d="m3 7 5 5-5 5V7"/><path d="m21 7-5 5 5 5V7"/><path d="M12 20v2"/><path d="M12 14v2"/><path d="M12 8v2"/><path d="M12 2v2"/>'),
+  flipv: ico('<path d="m17 3-5 5-5-5h10"/><path d="m17 21-5-5-5 5h10"/><path d="M4 12H2"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/>'),
+  undo: ico('<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>'),
+  redo: ico('<path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13"/>'),
+  clear: ico('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>'),
+};
+
+// a rough name for a colour, so the palette rows read as words ("Red #E33A2F")
+function colourName(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+  if (d < 0.08) return l > 0.85 ? "White" : l < 0.15 ? "Black" : l > 0.6 ? "Light grey" : "Grey";
+  let h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360;
+  const base = h < 15 ? "Red" : h < 40 ? (l < 0.45 ? "Brown" : "Orange") : h < 65 ? "Yellow" : h < 165 ? "Green" : h < 195 ? "Teal" : h < 255 ? "Blue" : h < 290 ? "Purple" : h < 340 ? "Pink" : "Red";
+  return (l > 0.75 && base !== "Yellow" ? "Light " + base.toLowerCase() : l < 0.3 && base !== "Brown" ? "Dark " + base.toLowerCase() : base);
+}
+
 const TIPS = {
   pencil: "Pencil: click or drag to draw.",
   eraser: "Eraser: click or drag to clear pixels.",
@@ -46,7 +70,12 @@ export function initEditor() {
   const canvas = $("#ed-canvas"), ctx = canvas.getContext("2d");
   const W = canvas.width, C = W / N;
   let docs = [], active = 0, tool = "pencil", key = "K", mode = "draft", mirrorX = false, mirrorY = false;
-  $$("#editor [data-glyph]").forEach((b) => (b.innerHTML = glyph(b.dataset.glyph)));
+  $$("#editor [data-glyph]").forEach((b) => (b.innerHTML = LINE[b.dataset.glyph] || glyph(b.dataset.glyph)));
+  // undo/redo show the standard shortcut for this computer
+  if (!/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) {
+    $("#ed-undo").dataset.k = "Ctrl Z"; $("#ed-undo").title = "Undo (Ctrl+Z)";
+    $("#ed-redo").dataset.k = "Ctrl Y"; $("#ed-redo").title = "Redo (Ctrl+Y or Ctrl+Shift+Z)";
+  }
   const addWrap = $("#ed-add-wrap"); // lives at the end of the colour list, re-added after each redraw
   const history = new WeakMap(); // doc -> { undo: [], redo: [] }
 
@@ -74,7 +103,12 @@ export function initEditor() {
   function loadDraft() {
     try {
       const d = JSON.parse(localStorage.getItem(STORE) || "null");
-      if (d && Array.isArray(d.grid) && d.palette) return toEdit(d);
+      if (d && Array.isArray(d.grid) && d.palette) {
+        // drafts saved before the palette got shorter: drop the old light grey and purple if the drawing doesn't use them
+        const inUse = d.grid.join("");
+        for (const [k, v] of [["l", "#c9c9c9"], ["p", "#8a3fa0"]]) if (d.palette[k] === v && !inUse.includes(k)) delete d.palette[k];
+        return toEdit(d);
+      }
     } catch { /* ignore */ }
     return toEdit(blank());
   }
@@ -108,8 +142,12 @@ export function initEditor() {
     const d = doc();
     const pal = d.style === "bw" ? BW_PALETTE : d.palette;
     if (!(key in pal)) key = "K";
-    $("#ed-swatches").innerHTML = Object.entries(pal).map(([k, v]) =>
-      `<button type="button" class="swatch" data-key="${k}" style="background:${v}" aria-pressed="${k === key}" aria-label="${k === "K" ? "Black (outline)" : v}${k !== "K" && d.style !== "bw" ? ". Click again to change it" : ""}" title="${k === "K" ? "Black, for outlines" : `${v}. Click again to change it`}"></button>`).join("");
+    // one row per colour: its hex and how many pixels use it, so unused ones are easy to spot
+    const count = {}; d.grid.forEach((row) => row.forEach((c) => { if (c !== ".") count[c] = (count[c] || 0) + 1; }));
+    $("#ed-swatches").innerHTML = Object.entries(pal).map(([k, v]) => {
+      const n = count[k] || 0, name = k === "K" ? "Outline" : v.toLowerCase() === "#ffffff" ? "White" : colourName(v);
+      return `<button type="button" class="swatch" data-key="${k}" style="background:${v}" aria-pressed="${k === key}" aria-label="${name} ${v}, ${n} pixels${k !== "K" && d.style !== "bw" ? ". Click again to change it" : ""}" title="${k === "K" ? "Black, for outlines" : `${v.toUpperCase()} · click again to change it`}"></button>`;
+    }).join("");
     $("#ed-swatches").append(addWrap);
     addWrap.hidden = d.style === "bw";
     $$("#editor [data-style]").forEach((b) => b.setAttribute("aria-checked", b.dataset.style === d.style));
@@ -122,8 +160,25 @@ export function initEditor() {
     $("#ed-name").value = doc().name;
   }
 
+  // the skill's own style rules, live, plus centring
+  function renderChecks() {
+    const d = toPlain(doc()), list = $("#ed-checks"), badge = $("#ed-check-n");
+    if (d.grid.every((r) => /^\.+$/.test(r))) { list.innerHTML = '<li class="warn">Start drawing to see the checks.</li>'; badge.hidden = true; return; }
+    const [errs, warns] = check(used(d));
+    const rows = [], cols = [];
+    d.grid.forEach((r, y) => [...r].forEach((c, x) => { if (c !== ".") { rows.push(y); cols.push(x); } }));
+    const t = Math.min(...rows), b = N - 1 - Math.max(...rows), l = Math.min(...cols), r = N - 1 - Math.max(...cols);
+    if (Math.abs(l - r) > 1) warns.push(`Off-centre by ${Math.floor(Math.abs(l - r) / 2)}px: move it ${l > r ? "left" : "right"}.`);
+    if (Math.abs(t - b) > 1) warns.push(`Off-centre by ${Math.floor(Math.abs(t - b) / 2)}px: move it ${t > b ? "up" : "down"}.`);
+    const nice = (m) => m.replace(/^outline gap: coloured pixel touches transparency\/edge at/, "Outline gap at").replace(/^stray pixel at/, "Stray pixel at").replace(/^unused palette keys: .*/, "Some colours aren't used.");
+    list.innerHTML = [...errs.map((m) => `<li class="err">${esc(nice(m))}</li>`), ...warns.map((m) => `<li class="warn">${esc(nice(m))}</li>`)].join("")
+      || '<li class="ok">Ready: closed outline, no stray pixels, centred.</li>';
+    badge.hidden = !(errs.length || warns.length);
+    badge.textContent = errs.length || warns.length;
+    badge.classList.toggle("warn", !errs.length);
+  }
   function refresh() {
-    render(); renderPreview(); renderPalette(); renderDocs(); save();
+    render(); renderPreview(); renderPalette(); renderDocs(); renderChecks(); save();
   }
 
   // ---------- tools ----------
@@ -179,6 +234,13 @@ export function initEditor() {
     refreshCanvasOnly();
   });
   const end = () => { if (drawing || last) { drawing = false; last = null; refresh(); } };
+  // status line: the cell under the pointer and the colour you're drawing with
+  canvas.addEventListener("pointermove", (e) => {
+    const c = cellAt(e); if (!c) return;
+    const v = (doc().style === "bw" ? BW_PALETTE : doc().palette)[key] || "#000000";
+    $("#ed-pos").innerHTML = `x ${c[0]}, y ${c[1]} · <i style="background:${v}"></i>${key === "K" ? "Outline" : v.toUpperCase()}`;
+  });
+  canvas.addEventListener("pointerleave", () => { $("#ed-pos").textContent = "Hover the grid"; });
   canvas.addEventListener("pointerup", end);
   canvas.addEventListener("pointercancel", end);
   function refreshCanvasOnly() { render(); }
@@ -239,7 +301,9 @@ export function initEditor() {
     if (e.target.closest("input, textarea, select")) return;
     const mod = e.metaKey || e.ctrlKey;
     if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+    if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); redo(); return; } // Windows-style redo
     if (mod) return;
+    if (e.key.toLowerCase() === "m") { setMirror("x", !mirrorX); return; }
     const t = { p: "pencil", e: "eraser", f: "fill", i: "pick" }[e.key.toLowerCase()];
     if (t) setTool(t);
   });
@@ -311,7 +375,6 @@ export function initEditor() {
       }
       d.grid = d.grid.map((row) => row.map((c) => (c === "." ? "." : map[c] || "K")));
       d.palette = { ...BW_PALETTE };
-      toast("Switched to black & white: dark colours became black, the rest white. Undo switches back.");
     } else {
       d.palette = { ...blank().palette, ...d.palette };
     }
@@ -328,14 +391,42 @@ export function initEditor() {
   $("#ed-name").addEventListener("input", (e) => { doc().name = e.target.value; renderDocs(); save(); });
   $("#ed-name").addEventListener("change", (e) => { doc().name = slugify(e.target.value); refresh(); });
 
-  // ---------- export ----------
-  $("#ed-download").addEventListener("click", () => {
-    const d = toPlain(doc()), name = slugify(d.name);
-    download(`${name}.svg`, svg(d));
-    toast(`Downloaded ${name}.svg`);
+  // ---------- export: pick a format, then Copy or Download (same as the library's icon window) ----------
+  let fmt = "svg";
+  $$("#editor [data-efmt]").forEach((b) => b.addEventListener("click", () => {
+    fmt = b.dataset.efmt;
+    $$("#editor [data-efmt]").forEach((x) => x.setAttribute("aria-checked", x === b));
+    $(".ed-ext").textContent = `.${fmt}`;
+  }));
+  const pngBlob = (d) => new Promise((res) => {
+    const c = document.createElement("canvas"), s = 16; c.width = c.height = N * s; const x = c.getContext("2d");
+    d.grid.forEach((row, y) => [...row].forEach((k, i) => { if (k !== ".") { x.fillStyle = d.palette[k]; x.fillRect(i * s, y * s, s, s); } }));
+    c.toBlob(res, "image/png");
   });
-  $("#ed-copy-svg").addEventListener("click", async () => toast((await copyText(svg(toPlain(doc())))) ? "SVG copied." : "Couldn't copy. Your browser blocked the clipboard."));
-  $("#ed-copy-json").addEventListener("click", async () => toast((await copyText(JSON.stringify(used(toPlain(doc())), null, 1))) ? "JSON copied." : "Couldn't copy. Your browser blocked the clipboard."));
+  const jsonText = (d) => JSON.stringify(used(d), null, 1);
+  $("#ed-download").addEventListener("click", async () => {
+    const d = toPlain(doc()), name = slugify(d.name);
+    if (fmt === "png") {
+      const b = await pngBlob(d), a = document.createElement("a");
+      a.href = URL.createObjectURL(b); a.download = `${name}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    } else if (fmt === "json") download(`${name}.json`, jsonText(d), "application/json");
+    else download(`${name}.svg`, svg(d));
+    toast(`Downloaded ${name}.${fmt}`);
+  });
+  $("#ed-copy").addEventListener("click", async () => {
+    const d = toPlain(doc());
+    let ok = false;
+    if (fmt === "png") {
+      try { await navigator.clipboard.write([new ClipboardItem({ "image/png": pngBlob(d) })]); ok = true; } catch { ok = false; }
+    } else ok = await copyText(fmt === "json" ? jsonText(d) : svg(d));
+    toast(ok ? `${fmt.toUpperCase()} copied.` : "Couldn't copy. Your browser blocked the clipboard.");
+  });
+
+  // inspector tabs
+  $$("#editor [data-tab]").forEach((t) => t.addEventListener("click", () => {
+    $$("#editor [data-tab]").forEach((b) => b.setAttribute("aria-selected", b === t));
+    $$("#editor [data-panel]").forEach((p) => (p.hidden = p.dataset.panel !== t.dataset.tab));
+  }));
 
   // ---------- paste from AI ----------
   const pasteDlg = $("#paste-dialog");
@@ -364,7 +455,7 @@ export function initEditor() {
   function openDraft() {
     mode = "draft";
     docs = [loadDraft()]; active = 0;
-    $("#ed-title").textContent = "Draw yourself";
+    $("#ed-title").textContent = "Draw it";
     refresh();
   }
   function openPaste() { $("#paste-error").textContent = ""; pasteDlg.showModal(); $("#paste-text").focus(); }

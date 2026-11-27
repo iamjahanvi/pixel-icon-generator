@@ -1,0 +1,176 @@
+# Pixbits
+
+> 150 free, open-source 16×16 pixel icons by Jahanvi Singh (MIT licence), and an agent skill that draws new icons in the same style for any word, in Claude, Cursor, Codex and other AI tools.
+
+The style comes from Pixtober, Jahanvi's daily pixel-icon series: a closed 1px black outline, flat colours, no stray pixels, one clear idea per icon. Every icon is a 16×16 grid exported as a crisp SVG (one rect per pixel) or PNG.
+
+## Use it
+- Website: https://pixbits.iamjahanvi.com/
+- Download every icon: https://pixbits.iamjahanvi.com/downloads/pixel-icons-library.zip
+- Claude Code: `/plugin marketplace add iamjahanvi/pixel-icon-generator` then `/plugin install pixel-icons@pixel-icon-generator`
+- Cursor, Codex, Gemini CLI and more: `npx skills add iamjahanvi/pixel-icon-generator`
+- Any project (npm, Node 18+): `npx pixel-icon-generator init`
+- Claude app: upload https://pixbits.iamjahanvi.com/downloads/pixel-icons.zip under Customize → Skills
+- Source: https://github.com/iamjahanvi/pixel-icon-generator
+
+## Icons (150)
+
+### Food
+- Coffee mug: coffee, mug, cup, latte, espresso, cafe, hot drink, tea, caffeine, morning, beverage
+- Pizza slice: pizza, pizza slice, pepperoni, cheese, italian, fast food, slice, food, party, takeaway
+- Cherries: cherry, cherries, red cherry, fruit, berry, sweet, summer, food, stem, healthy
+- Ice cream cone: ice cream, cone, ice cream cone, dessert, sweet, summer, gelato, strawberry, pink, treat
+- Donut: donut, doughnut, sprinkles, pink frosting, dessert, sweet, pastry, bakery, snack, treat
+- Watermelon slice: watermelon, melon, watermelon slice, fruit, summer, red, juicy, healthy, picnic, food
+- Avocado: avocado, guacamole, fruit, green, healthy, vegan, toast, food, superfood, half avocado
+- Burger: burger, hamburger, cheeseburger, fast food, lunch, beef, sandwich, junk food, food, takeaway
+- Cheese: cheese, cheese wedge, dairy, yellow cheese, swiss cheese, holes, mouse, food, snack, cheddar
+- Cheesecake: cheesecake, cake, cake slice, dessert, strawberry, sweet, bakery, pastry, birthday, treat
+- Chocolate bar: chocolate, chocolate bar, candy, sweet, cocoa, dessert, snack, treat, sugar, food
+- Cookie: cookie, biscuit, chocolate chip, snack, sweet, baking, dessert, treat, bakery, food
+- Cupcake: cupcake, muffin, cake, birthday, sweet, dessert, frosting, bakery, party, treat
+- Fries: fries, french fries, chips, fast food, potato, snack, junk food, takeaway, food, side
+- Lemonade: lemonade, lemon, drink, juice, summer, glass, cold drink, refreshing, beverage, citrus
+- Noodles: noodles, instant noodles, ramen, bowl, cup noodles, pasta, soup, asian food, lunch, food
+- Masala dosa: masala dosa, dosa, indian, south indian, breakfast, crepe, indian food, food, potato, tiffin
+- Red apple: apple, red apple, fruit, healthy, teacher, school, food, snack, fresh, nutrition
+- Bunch of grapes: grapes, grape, purple grapes, bunch, fruit, wine, vineyard, food, healthy, berry
+- Hot dog: hot dog, sausage, bun, fast food, picnic, mustard, frankfurter, street food, food, barbecue
+- Fried egg: egg, fried egg, breakfast, yolk, sunny side up, brunch, cooking, protein, food, morning
+- Bowl of ramen: ramen, noodles, soup, bowl, japanese, noodle soup, egg, chopsticks, asian food, food
+- Sushi: sushi, nigiri, japanese, fish, salmon, seafood, rice, asian food, japanese food, food
+- Corn on the cob: corn, maize, corncob, cob, vegetable, yellow, harvest, farm, sweetcorn, food
+- Pineapple: pineapple, fruit, tropical, yellow, summer, ananas, healthy, food, beach, exotic
+- Stack of pancakes: pancakes, pancake, stack, breakfast, syrup, maple syrup, brunch, butter, hotcakes, food
+- Pear: pear, green pear, fruit, healthy, autumn, fresh, food, snack, nutrition, orchard
+- Chili pepper: chili, chilli, chili pepper, red pepper, spicy, hot, pepper, vegetable, mexican, food
+- Mango: mango, fruit, tropical, summer, yellow, orange, sweet, juicy, healthy, food
+- Popsicle: popsicle, ice lolly, ice pop, summer, dessert, pink, frozen treat, ice cream, cold, sweet
+
+### Nature
+- Sunset over the sea: sunset, sunrise, sun, sea, ocean, beach, evening, horizon, dusk, nature, travel
+- Tree: tree, oak, green tree, nature, forest, park, plant, leaves, garden, eco, outdoors
+- Mushroom: mushroom, toadstool, red mushroom, fungi, fungus, forest, nature, spotted, fairy, power up
+- Tulip: tulip, red tulip, flower, spring, garden, plant, bloom, floral, nature, bouquet
+- Moon and stars: moon, crescent moon, stars, night, sleep, dream, bedtime, dark mode, sky, space, astronomy
+- Rain cloud: rain, rain cloud, raining, weather, cloud, rainy, storm, monsoon, drizzle, forecast, wet
+- Cactus: cactus, desert, saguaro, plant, succulent, green, houseplant, western, dry, nature
+- Cloud: cloud, cloudy, weather, sky, overcast, white cloud, cloud storage, forecast, fluffy, nature
+- Fire: fire, flame, hot, burn, campfire, trending, lit, heat, danger, blaze
+- Storm cloud: storm, thunderstorm, thunder, lightning, storm cloud, weather, rain, forecast, bad weather, grey cloud
+- Rainbow: rainbow, colourful, colorful, weather, sky, pride, hope, rain, magic, clouds
+- Snowman: snowman, snow, winter, christmas, cold, holiday, frosty, carrot nose, festive, scarf
+- Water drop: water, water drop, drop, droplet, raindrop, rain, liquid, blue, hydration, aqua
+- Cherry blossom: cherry blossom, sakura, flower, spring, pink flower, blossom, japan, floral, bloom, nature
+- Planet: planet, saturn, space, ring, astronomy, galaxy, solar system, universe, science, cosmos
+- Sprout: sprout, seedling, plant, grow, growth, spring, seed, garden, eco, new beginning
+- Wave: wave, ocean, sea, surf, surfing, beach, water, tide, blue, summer
+- Mountain: mountain, peak, snowy mountain, hiking, snow, outdoors, landscape, climb, adventure, alps
+- Pine tree: pine, pine tree, christmas tree, fir, forest, evergreen, tree, winter, nature, woods
+- Bamboo: bamboo, panda, forest, plant, green, zen, asia, stalk, garden, nature
+- Earth: earth, planet, globe, world, climate, international, global, environment, geography, travel
+- Acorn: acorn, oak, autumn, fall, nut, squirrel, seed, forest, nature, harvest
+- Campfire: campfire, fire, bonfire, camping, outdoors, logs, flame, warmth, scouts, wood
+- Hibiscus: hibiscus, flower, red flower, tropical, hawaii, floral, bloom, summer, exotic, garden
+- Island: island, beach, palm tree, palm, tropical, holiday, vacation, paradise, ocean, travel
+- Icicles: icicles, ice, winter, frozen, cold, freeze, frost, snow, chilly, weather
+- Sun: sun, sunny, sunshine, weather, summer, bright, hot, day, light mode, warm
+- Lily pad: lily pad, water lily, lotus, pond, frog, water, green, leaf, flower, nature
+- Seaweed: seaweed, kelp, ocean, sea, underwater, aquarium, algae, marine, plant, coral reef
+- Sunflower: sunflower, flower, yellow flower, yellow, summer, garden, bloom, floral, sunny, nature
+
+### Objects
+- Oil lantern: lantern, oil lantern, lamp, light, camping, diwali, festival, glow, vintage, outdoors
+- Key: key, gold key, lock, unlock, door, security, password, access, open, home
+- Camera: camera, photo, photography, picture, snapshot, lens, capture, travel, tech, selfie
+- Book: book, red book, read, reading, library, study, novel, education, school, learning
+- Pencil: pencil, write, draw, edit, school, sketch, stationery, yellow pencil, art, education
+- Light bulb: light bulb, bulb, idea, lamp, light, bright, innovation, think, creative, electricity
+- Envelope: envelope, mail, letter, email, message, post, inbox, contact, send, correspondence
+- Umbrella: umbrella, red umbrella, rain, monsoon, weather, parasol, protection, rainy day, insurance, wet
+- Headphones: headphones, headset, music, audio, listen, sound, podcast, earphones, dj, tech
+- Alarm clock: clock, alarm clock, red clock, alarm, time, wake up, morning, schedule, reminder, deadline
+- Padlock: padlock, lock, locked, security, private, safe, password, protection, privacy, secure
+- Floppy disk: floppy disk, floppy, save, disk, diskette, retro, storage, computer, backup, file
+- Hourglass: hourglass, sand timer, timer, time, wait, deadline, loading, countdown, patience, sand
+- Bell: bell, ring, notification, alert, school bell, gold bell, reminder, alarm, christmas, ding
+- Candle: candle, flame, light, birthday, cosy, cozy, candlelight, wax, relax, prayer
+- Calendar: calendar, date, schedule, plan, month, event, agenda, deadline, appointment, day
+- Sticky note: sticky note, note, reminder, memo, to do, yellow note, office, notes, task, stationery
+- Ruler: ruler, measure, measurement, school, office, length, scale, stationery, geometry, inches
+- Computer mouse: mouse, computer mouse, click, computer, office, cursor, tech, device, peripheral, scroll
+- Desk lamp: desk lamp, lamp, light, desk, study, work, reading lamp, office, lighting, homework
+- Paperclip: paperclip, clip, attach, attachment, office, stationery, file, document, paper, fastener
+- Printer: printer, print, paper, office, document, printing, copy, tech, ink, device
+- Gift box: gift, present, gift box, birthday, box, celebration, christmas, surprise, party, reward
+- Magnet: magnet, horseshoe magnet, attract, magnetic, magnetism, physics, science, attraction, pull, red magnet
+- Watering can: watering can, garden, water, plants, gardening, green, grow, watering, garden tool, spring
+- Sunglasses: sunglasses, shades, summer, cool, glasses, sunnies, eyewear, beach, fashion, style
+- Handheld game: game, gaming, video game, console, handheld, retro, play, gamer, games, arcade
+- Landline phone: landline, phone, telephone, call, retro, contact, ring, receiver, office phone, hotline
+- Laptop: laptop, computer, notebook, work, retro, tech, coding, office, remote work, screen
+- Mobile phone: mobile, phone, mobile phone, cell phone, smartphone, call, retro, text message, contact, device
+- Radio: radio, music, fm, speaker, retro, boombox, broadcast, audio, vintage, sound
+- Television: television, tv, screen, retro, watch, broadcast, show, media, vintage tv, entertainment
+
+### Creatures
+- Ginger cat: cat, ginger cat, orange cat, kitten, kitty, pet, animal, meow, cute, feline
+- Goldfish: fish, goldfish, orange fish, pet, aquarium, sea, water, animal, swim, fishbowl
+- Snail: snail, slow, garden, shell, bug, slug, creature, nature, patience, spiral shell
+- Robin: bird, robin, spring, tweet, garden, songbird, animal, wildlife, chirp, nature
+- Dog: dog, puppy, pet, animal, woof, doggo, pup, cute, canine, brown dog
+- Frog: frog, toad, pond, animal, green, amphibian, ribbit, nature, jump, cute
+- Bee: bee, honey bee, honey, bug, insect, buzz, bumblebee, nature, pollen, garden
+- Butterfly: butterfly, orange butterfly, monarch, insect, bug, spring, wings, nature, garden, transformation
+- Penguin: penguin, bird, antarctic, cold, animal, winter, ice, south pole, cute, arctic
+- Owl: owl, bird, night, wise, wisdom, hoot, night owl, nocturnal, forest, animal
+- Ladybug: ladybug, ladybird, bug, insect, beetle, red, spots, garden, luck, nature
+- Turtle: turtle, tortoise, shell, slow, reptile, sea turtle, green, animal, patience, nature
+- Fox: fox, animal, forest, wild, orange, red fox, clever, wildlife, woodland, cute
+- Pig: pig, piggy, pink pig, farm, animal, oink, pork, hog, piglet, cute
+- Crab: crab, red crab, beach, sea, ocean, claws, seafood, crustacean, marine, summer
+- Whale: whale, blue whale, ocean, sea, animal, spout, marine, mammal, swim, big
+- Duck: duck, bird, pond, farm, quack, white duck, animal, waterfowl, goose, cute
+- Bear: bear, teddy bear, brown bear, teddy, animal, forest, cub, wildlife, grizzly, cute
+- Starfish: starfish, sea star, beach, ocean, star, marine, orange, sea creature, summer, underwater
+- Koala: koala, australia, animal, bear, koala bear, cute, grey, marsupial, wildlife, sleepy
+- Jellyfish: jellyfish, jelly, sea, ocean, tentacles, pink, marine, sting, underwater, sea creature
+- Seahorse: seahorse, sea horse, sea, ocean, fish, reef, marine, underwater, sea creature, orange
+- Cow: cow, farm, milk, dairy, moo, animal, cattle, spots, livestock, countryside
+- Deer: deer, antlers, forest, reindeer, animal, stag, wildlife, fawn, woodland, nature
+- Alien: alien, ufo, space, extraterrestrial, martian, green alien, sci fi, monster, invader, outer space
+- Giraffe: giraffe, safari, tall, africa, animal, zoo, wildlife, spots, long neck, savanna
+- Hippo: hippo, hippopotamus, animal, river, africa, safari, zoo, wildlife, purple, cute
+- Lobster: lobster, red lobster, sea, seafood, claws, ocean, crustacean, marine, dinner, shellfish
+- Squirrel: squirrel, nuts, acorn, forest, tail, animal, wildlife, autumn, rodent, woodland
+- Snake: snake, serpent, reptile, slither, python, green snake, viper, danger, animal, cobra
+
+### Miscellaneous
+- Heart: heart, red heart, love, like, favourite, favorite, valentine, romance, health, kindness, emotion
+- House: house, home, building, real estate, homepage, cottage, property, residence, red roof, place
+- Rocket: rocket, spaceship, space, launch, startup, travel, galaxy, boost, science, astronaut
+- Lightning bolt: lightning, lightning bolt, bolt, thunder, power, energy, electric, fast, flash, charge, storm
+- Map pin: map pin, location, place, marker, gps, pin, map, address, navigation, destination
+- Music note: music, music note, note, song, melody, sound, audio, tune, musical, notation
+- Star: star, gold star, favorite, favourite, rating, review, shine, sparkle, bookmark, achievement
+- Trophy: trophy, gold trophy, cup, award, winner, champion, prize, win, victory, achievement
+- Speech bubble: speech bubble, chat, message, talk, comment, conversation, dialogue, reply, chat bubble, communication
+- Castle: castle, fort, fortress, kingdom, palace, medieval, tower, fairy tale, royal, knight
+- Sparkles: sparkles, sparkle, shine, magic, new, stars, glitter, shiny, clean, ai
+- Flag: flag, red flag, goal, finish, banner, milestone, report, checkpoint, warning, flag pole
+- Smiley: smiley, smiley face, smile, happy, face, emoji, grin, joy, positive, emotion
+- Igloo: igloo, snow, ice, home, winter, arctic, eskimo house, cold, shelter, snow house
+- Hospital: hospital, health, medical, doctor, clinic, healthcare, emergency, red cross, building, medicine
+- Shop: shop, store, market, retail, storefront, shopping, boutique, small business, awning, building
+- Bridge: bridge, red bridge, suspension bridge, city, travel, landmark, river, architecture, crossing, san francisco
+- Anchor: anchor, sea, boat, ship, sailor, harbour, harbor, nautical, marine, navy, port
+- Ace of hearts: ace of hearts, playing card, card, ace, hearts, poker, casino, card game, red ace, gambling, game
+- Chess pawn: chess, pawn, chess piece, game, strategy, board game, piece, tactics, checkmate, play
+- Ace of spades: ace of spades, playing card, card, ace, spades, poker, casino, card game, black ace, gambling, game
+- Ace of diamonds: ace of diamonds, playing card, card, ace, diamonds, poker, casino, card game, red ace, gambling, game
+- Ace of clubs: ace of clubs, playing card, card, ace, clubs, poker, casino, card game, black ace, gambling, game
+- Medal gold: gold medal, medal, gold, first place, winner, champion, award, prize, 1st, number one, sports
+- Medal silver: silver medal, medal, silver, second place, runner up, award, prize, 2nd, sports, achievement
+- Medal bronze: bronze medal, medal, bronze, third place, award, prize, 3rd, sports, podium, achievement
+- Warning sign: warning, warning sign, caution, alert, danger, exclamation, attention, hazard, error, yellow triangle
+- Hot air balloon: hot air balloon, balloon, travel, sky, flight, adventure, festival, fly, journey, basket

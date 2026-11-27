@@ -49,6 +49,9 @@ export function iconImg(d, size, key, attrs = "") {
 let toastTimer;
 export function toast(msg) {
   const el = document.getElementById("toast");
+  // an open pop-up sits in the browser's top layer, above the page; move the toast into it so it's never hidden behind
+  const top = [...document.querySelectorAll("dialog[open]")].pop() || document.body;
+  if (el.parentElement !== top) top.append(el);
   el.textContent = msg;
   el.classList.add("show");
   clearTimeout(toastTimer);

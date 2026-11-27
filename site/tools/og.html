@@ -4,19 +4,21 @@
 <style>
   body { width: 1200px; height: 630px; overflow: hidden; position: relative; }
   .og { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .og h1 { font-size: 84px; line-height: 1.04; letter-spacing: -0.02em; margin: 0 0 22px; }
-  .og p { font-size: 26px; color: var(--muted); margin: 0; }
+  .og .logo { display: block; width: 380px; height: 120px; image-rendering: pixelated; margin: 0 0 34px; }
+  .og h1 { font-size: 64px; line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 20px; }
+  .og p { font-size: 24px; color: var(--muted); margin: 0; }
   .ic { position: absolute; image-rendering: pixelated; }
   .ic svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 </style></head>
 <body>
 <div id="ics"></div>
-<div class="og"><h1>Type a word.<br>Get a pixel icon.</h1><p>pixbits.iamjahanvi.com</p></div>
+<div class="og"><img class="logo" src="../img/logo.svg" alt="Pixbits" width="380" height="120"><h1>Type a word.<br>Get a pixel icon.</h1><p>150 free 16×16 icons, and a skill for your AI &middot; pixbits.iamjahanvi.com</p></div>
 <script type="module">
   import { svg } from "../js/core.js";
   const lib = await fetch("../data/icons.json").then((r) => r.json());
-  const at = [["cherry", 90, 70, 96], ["cat", 60, 300, 96], ["mushroom", 150, 470, 96], ["lantern", 270, 40, 96],
-              ["rocket", 1030, 60, 96], ["heart", 1080, 280, 96], ["fish", 990, 460, 96], ["moon", 870, 40, 96]];
+  const at = [["cherry", 80, 60, 88], ["cat", 56, 270, 96], ["watermelon", 150, 470, 88], ["frog", 250, 70, 80],
+              ["rocket", 1050, 60, 88], ["heart", 1076, 280, 88], ["whale", 990, 470, 96], ["medal-gold", 900, 70, 80],
+              ["mushroom", 300, 500, 72], ["hot-air-balloon", 850, 500, 72]];
   document.getElementById("ics").innerHTML = at.map(([s, x, y, z]) => {
     const ic = lib.find((i) => i.slug === s);
     return `<div class="ic" style="left:${x}px;top:${y}px;width:${z}px;height:${z}px">${svg({ ...ic.color }, z)}</div>`;

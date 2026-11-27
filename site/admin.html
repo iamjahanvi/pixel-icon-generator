@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Pixbits · wall admin</title>
+<style>
+@font-face { font-family: "Allo"; src: url("fonts/allo-friendly.woff2") format("woff2"); font-weight: 100 900; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #fafafa; color: #161616; font: 15px/1.4 "Allo", system-ui, sans-serif; padding: 32px; max-width: 960px; }
+h1 { font-size: 20px; margin: 0 0 6px; } p { color: #6f6f6f; margin: 0 0 18px; }
+.key { display: flex; gap: 8px; margin-bottom: 24px; }
+input { font: inherit; padding: 9px 12px; border: 1px solid #e6e6e6; border-radius: 10px; width: 280px; background: #fff; }
+button { font: 500 14px "Allo", system-ui; padding: 9px 16px; border-radius: 999px; border: 1px solid #cfcfcf; background: #fff; cursor: pointer; }
+button.del { border-color: #f0c4c0; color: #c2372b; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.card { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.card img { width: 64px; height: 64px; image-rendering: pixelated; background: #f3f3f3; border-radius: 8px; padding: 4px; }
+.who, .when { font-size: 13px; color: #6f6f6f; overflow-wrap: anywhere; } .who a { color: #161616; }
+.msg { margin: 0 0 16px; }
+</style></head>
+<body>
+<h1>Wall admin</h1>
+<p>Everything dropped on the About page, newest first. Delete removes it for everyone. Your password is the ADMIN_TOKEN set in Vercel; it's kept only in this browser.</p>
+<div class="key"><input id="key" type="password" placeholder="Admin password" autocomplete="current-password"><button id="save">Save</button></div>
+<p class="msg" id="msg"></p>
+<div class="grid" id="grid"></div>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+$("#key").value = localStorage.getItem("pb-admin") || "";
+$("#save").onclick = () => { localStorage.setItem("pb-admin", $("#key").value); load(); };
+const icon = (d) => { let r = ""; d.grid.forEach((row, y) => [...row].forEach((k, x) => { if (k !== ".") r += `<rect x="${x}" y="${y}" width="1" height="1" fill="${d.palette[k]}"/>`; }));
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">${r}</svg>`)}`; };
+const who = (w) => !w ? "Not signed" : w.kind === "x" ? `<a href="https://x.com/${encodeURIComponent(w.handle)}" target="_blank" rel="noopener">@${esc(w.handle)}</a> on X`
+  : `<a href="https://www.linkedin.com/in/${encodeURIComponent(w.handle)}" target="_blank" rel="noopener">${esc(w.name || w.handle)}</a> on LinkedIn`;
+async function load() {
+  const r = await fetch("/api/drops", { cache: "no-store" });
+  if (!r.ok) { $("#msg").textContent = r.status === 503 ? "The wall's storage isn't set up yet." : `Couldn't load (${r.status}).`; return; }
+  const { drops } = await r.json();
+  $("#msg").textContent = `${drops.length} on the wall.`;
+  $("#grid").innerHTML = drops.map((d) => `<div class="card"><img src="${icon(d)}" alt=""><div class="who">${who(d.who)}</div><div class="when">${new Date(d.t).toLocaleString()}</div><button class="del" data-id="${esc(d.id)}">Delete</button></div>`).join("");
+}
+$("#grid").addEventListener("click", async (e) => {
+  const b = e.target.closest(".del"); if (!b) return;
+  b.disabled = true; b.textContent = "Deleting…";
+  const r = await fetch(`/api/drops?id=${encodeURIComponent(b.dataset.id)}`, { method: "DELETE", headers: { authorization: `Bearer ${localStorage.getItem("pb-admin") || ""}` } });
+  if (r.ok) b.closest(".card").remove(); else { b.disabled = false; b.textContent = r.status === 401 ? "Wrong password" : "Try again"; }
+});
+load();
+</script>
+</body></html>

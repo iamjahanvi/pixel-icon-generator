@@ -4,7 +4,7 @@ An agent skill that turns a single word into a **16×16 pixel icon** in the styl
 
 Ask your AI tool for "a pixel icon of a lantern" and you get `lantern.svg` in your project, ready for code or Figma.
 
-**Website:** [pixbits.iamjahanvi.com](https://pixbits.iamjahanvi.com) has a library of 30 icons to download, an editor, a way to make icons with your own API key, and the copy-and-paste prompt.
+**Website:** [pixbits.iamjahanvi.com](https://pixbits.iamjahanvi.com) has a library of 150 icons to download, an editor, a way to make icons with your own API key, and the copy-and-paste prompt.
 
 ## What you get
 
@@ -60,7 +60,7 @@ Add `--global` to install it in your home folder for every project, and `--force
 
 ### Any chatbot, without installing anything
 
-On [the website](https://pixbits.iamjahanvi.com/#install), open **Any chat** and type your word. **Open in Claude** or **Open in ChatGPT** starts a new chat with the prompt filled in; press send. For Gemini or any other chat, use **Copy prompt** and paste it in. Then paste the reply into the site's editor to check the icon and download the SVG. This works on free accounts.
+On [the website](https://pixbits.iamjahanvi.com/#skill), open **Any chat** and type your word. **Open in Claude** or **Open in ChatGPT** starts a new chat with the prompt filled in; press send. For Gemini or any other chat, use **Copy prompt** and paste it in. Then paste the reply into the site's editor to check the icon and download the SVG. This works on free accounts.
 
 ### On the website, with your own API key
 

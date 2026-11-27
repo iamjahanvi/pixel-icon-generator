@@ -104,6 +104,7 @@ function onWord() {
   $(".pill-in").classList.toggle("has-word", !!w);
   $$("#pill-cta a").forEach((a) => (a.tabIndex = w ? 0 : -1));
   setChatLinks($("#any-chat"), w || "lantern");
+  setChatLinks($("#paste-dialog"), w || "lantern"); // the paste box's "No reply yet? Open in Claude"
   $("#chat-word").textContent = w || "lantern";
   showSlot(findIcon(w));
 }
@@ -318,8 +319,6 @@ barMenu($("#dl-btn"), $("#dl-menu"), (it, e) => {
   e.preventDefault();
   downloadPngs(cat, 256);
 });
-// Pixtober: both years, as links (the menu just closes; the link opens the site)
-barMenu($("#px-btn"), $("#px-menu"), () => {});
 let zipping = false;
 const zipName = (c, kind) => `pixel-icons-${c === "All" ? "" : slugify(c) + "-"}${kind}`;
 function downloadSvgs(c) {
@@ -516,20 +515,18 @@ $("#mk-again").addEventListener("click", () => { mkView("form"); $("#mk-word").s
 $("#lib-empty-make").addEventListener("click", (e) => { e.preventDefault(); openMake(search.value.trim()); });
 
 // ---------- About: draw your own icon and drop it on the pile ----------
-// The pile holds only the visitor's own drawings (kept in this browser). It's a layer under the drawing grid
-// that reaches down to the bottom of the screen, so drops fall all the way to the floor of the window.
-// Each drop is trimmed to the pixels actually drawn, so it rests right on the floor. Drag to toss them around.
+// The pile holds only the visitor's own drawings (kept in this browser). It's a layer over the whole About page:
+// a new drop falls from the drawing grid to the floor of the window; pick any icon up, drag it anywhere on
+// the page, and it falls back down when you let go (where each one rests is remembered). Each drop is trimmed to the pixels actually drawn.
 const pile = (() => {
-  const box = $("#pile"), PX = 3, KEY = "pi-pile-2", MAX = 18;
+  const box = $("#pile"), PX = 3, KEY = "pi-pile-2", POS = "pb-pos";
+  let MAX = 18, shared = false; // shared: the wall comes from /api/drops (everyone's drops); otherwise this browser's own pile
   try { localStorage.removeItem("pi-pile"); } catch { /* storage blocked */ } // fresh start: drop piles saved before the reset
   const bodies = [];
-  let running = false, still = 0, started = false, drag = null, last = null;
+  let running = false, still = 0, started = false, drag = null, last = null, down = null;
   const W = () => box.clientWidth, H = () => box.clientHeight;
-  // the layer: the drawing column's width, from just under its buttons to the bottom of the window
-  function place() {
-    const col = $(".about-make").getBoundingClientRect(), acts = $(".dd-acts").getBoundingClientRect();
-    Object.assign(box.style, { left: `${col.left}px`, width: `${col.width}px`, top: `${acts.bottom + 12}px` });
-  }
+  // the layer covers the whole window (fixed, inset 0), so there's nothing to place
+  function place() {}
   // only the drawn pixels, as a small SVG at PX screen pixels per icon pixel
   function trimmed(d) {
     const ys = d.grid.map((r, y) => (/[^.]/.test(r) ? y : -1)).filter((y) => y >= 0);
@@ -540,24 +537,72 @@ const pile = (() => {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w * PX}" height="${h * PX}" shape-rendering="crispEdges">${rects}</svg>`;
     return { src: `data:image/svg+xml,${encodeURIComponent(svg)}`, w: w * PX, h: h * PX };
   }
-  function add(d, { x = null, y = null } = {}) {
+  function add(d, { x = null, y = null, pinned = false } = {}) {
     const t = trimmed(d), el = document.createElement("img");
-    el.src = t.src; el.alt = ""; el.draggable = false; el.width = t.w; el.height = t.h;
+    el.src = t.src; el.alt = d.who ? `Drawn by ${d.who.kind === "x" ? "@" + d.who.handle : d.who.name || d.who.handle}` : ""; el.draggable = false; el.width = t.w; el.height = t.h;
     box.append(el);
     box.classList.add("has-icons");
     const r = Math.max(t.w, t.h) / 2 * 0.9;
-    const b = { el, w: t.w, h: t.h, r, x: x ?? r + Math.random() * Math.max(1, W() - 2 * r), y: y ?? -t.h, vx: (Math.random() - 0.5) * 2, vy: 0, a: (Math.random() - 0.5) * 30, va: (Math.random() - 0.5) * 6 };
+    const b = { el, w: t.w, h: t.h, r, x: x ?? r + Math.random() * Math.max(1, W() - 2 * r), y: y ?? -t.h, vx: (Math.random() - 0.5) * 2, vy: 0, a: (Math.random() - 0.5) * 30, va: (Math.random() - 0.5) * 6, d, pinned };
+    if (pinned) { b.a = 0; b.va = 0; }
+    if (d.who) {
+      el.classList.add("signed");
+      el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse" && !drag) showChip(b); });
+      el.addEventListener("pointerleave", hideSoon);
+    }
     bodies.push(b);
     return b;
   }
   const saved = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { return []; } };
+  const positions = () => { try { return JSON.parse(localStorage.getItem(POS) || "{}"); } catch { return {}; } };
+  // remember where icons were placed by hand (as a share of the window, so it survives resizes).
+  // On the shared wall only the spots are kept here; the drops themselves live on the server.
+  const save = () => {
+    try {
+      if (shared) {
+        const p = positions();
+        bodies.forEach((b) => { if (!b.d.id) return; if (b.pinned) p[b.d.id] = { fx: b.x / W(), fy: b.y / H() }; else delete p[b.d.id]; });
+        localStorage.setItem(POS, JSON.stringify(p));
+      } else localStorage.setItem(KEY, JSON.stringify(bodies.map((b) => ({ ...b.d, pos: b.pinned ? { fx: b.x / W(), fy: b.y / H() } : undefined }))));
+    } catch { /* storage blocked */ }
+  };
+  // ---- who drew it: a chip with their picture, name and a link, over a signed icon ----
+  const chip = document.createElement("a");
+  chip.className = "who-chip"; chip.target = "_blank"; chip.rel = "noopener noreferrer";
+  box.append(chip);
+  let chipFor = null, chipT = 0;
+  const X_LOGO = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
+  const GO = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>';
+  function showChip(b) {
+    clearTimeout(chipT);
+    const w = b.d.who, x = w.kind === "x";
+    const name = x ? `@${w.handle}` : w.name || w.handle, ini = esc((x ? w.handle : w.name || w.handle).charAt(0).toUpperCase());
+    if (chipFor !== b) {
+      chip.href = x ? `https://x.com/${encodeURIComponent(w.handle)}` : `https://www.linkedin.com/in/${encodeURIComponent(w.handle)}`;
+      chip.setAttribute("aria-label", `${name} on ${x ? "X" : "LinkedIn"}`);
+      chip.innerHTML = `<span class="who-av">${x ? `<img src="https://unavatar.io/x/${encodeURIComponent(w.handle)}?fallback=false" alt="" referrerpolicy="no-referrer">` : `<span class="ini li">${ini}</span>`}<span class="who-badge ${x ? "x" : "li"}">${x ? X_LOGO : "in"}</span></span><span class="who-name">${esc(name)}<small>${x ? "on X" : "on LinkedIn"}</small></span><span class="who-go">${GO}</span>`;
+      const img = $("img", chip);
+      if (img) img.addEventListener("error", () => { img.outerHTML = `<span class="ini">${ini}</span>`; }); // no picture: their initial instead
+      chipFor = b;
+    }
+    chip.style.left = "0px"; chip.style.top = "0px";
+    const cw = chip.offsetWidth || 180;
+    chip.style.left = `${Math.min(W() - cw / 2 - 8, Math.max(cw / 2 + 8, b.x))}px`;
+    chip.style.top = `${Math.max(chip.offsetHeight + 8, b.y - b.h / 2 - 6)}px`;
+    chip.classList.add("on");
+  }
+  const hideChip = () => { clearTimeout(chipT); chip.classList.remove("on"); };
+  function hideSoon() { clearTimeout(chipT); chipT = setTimeout(hideChip, 300); }
+  chip.addEventListener("pointerenter", () => clearTimeout(chipT));
+  chip.addEventListener("pointerleave", hideSoon);
   function step() {
     const w = W(), h = H();
     let moving = 0;
     for (const b of bodies) {
-      if (b === drag) continue;
+      if (b === drag || b.pinned) continue; // placed icons stay where they were dropped
       b.vy += 0.45; b.vx *= 0.99; b.x += b.vx; b.y += b.vy; b.a += b.va; b.va *= 0.96;
       if (b.y > h - b.h / 2) { b.y = h - b.h / 2; b.vy *= -0.3; b.vx *= 0.8; b.va *= 0.7; b.a *= 0.9; } // on the floor it settles upright
+      if (b.y < b.h / 2) { b.y = b.h / 2; b.vy *= -0.4; } // the top of the window is a ceiling: a hard throw bounces back down
       if (b.x < b.r) { b.x = b.r; b.vx *= -0.5; }
       if (b.x > w - b.r) { b.x = w - b.r; b.vx *= -0.5; }
     }
@@ -565,7 +610,9 @@ const pile = (() => {
       const a = bodies[i], b = bodies[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 0.01, o = a.r + b.r - d;
       if (o <= 0) continue;
       // a dragged icon doesn't move; the other one takes the whole push
-      const nx = dx / d, ny = dy / d, wa = a === drag ? 0 : b === drag ? 1 : 0.5, wb = b === drag ? 0 : a === drag ? 1 : 0.5;
+      const fa = a === drag || a.pinned, fb = b === drag || b.pinned; // dragged and placed icons don't get pushed
+      if (fa && fb) continue;
+      const nx = dx / d, ny = dy / d, wa = fa ? 0 : fb ? 1 : 0.5, wb = fb ? 0 : fa ? 1 : 0.5;
       a.x -= nx * o * wa; a.y -= ny * o * wa; b.x += nx * o * wb; b.y += ny * o * wb;
       const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
       if (rv < 0) { const k = rv * 0.6; a.vx += nx * k * wa * 2; a.vy += ny * k * wa * 2; b.vx -= nx * k * wb * 2; b.vy -= ny * k * wb * 2; }
@@ -580,19 +627,28 @@ const pile = (() => {
   function loop() {
     if (!running) return;
     still = step() || drag ? 0 : still + 1;
-    if (still > 40 || $("#how").hidden) { running = false; return; }
+    if (still > 40 || $("#how").hidden) { running = false; bodies.forEach((b) => (b.pinned = true)); save(); bodies.forEach((b) => (b.pinned = false)); return; }
     requestAnimationFrame(loop);
   }
   function wake() {
     if ($("#how").hidden) return;
     place();
     if (!W()) return;
-    if (!started) {
-      started = true;
-      saved().forEach((d, n) => add(d, { y: -60 - n * 40 }));
-      // with reduced motion, settle the pile before showing it instead of letting it fall
-      if (calm.matches) { for (let i = 0; i < 600; i++) step(); return; }
-    }
+    if (!started) { started = true; load(); return; }
+    still = 0;
+    if (!running) { running = true; requestAnimationFrame(loop); }
+  }
+  // the shared wall if the server has one; otherwise this browser's own pile
+  async function load() {
+    let list = null;
+    try { const r = await fetch("/api/drops", { cache: "no-store" }); if (r.ok) list = (await r.json()).drops; } catch { /* offline or no server */ }
+    if (list) {
+      shared = true; MAX = 60;
+      const pos = positions();
+      list.slice().reverse().forEach((d, n) => add(d, { x: pos[d.id] ? pos[d.id].fx * W() : null, y: -60 - n * 30 })); // each falls in above where it last rested
+    } else saved().forEach((d, n) => add(d, { x: d.pos ? d.pos.fx * W() : null, y: -60 - n * 40 }));
+    // with reduced motion, settle the pile before showing it instead of letting it fall
+    if (calm.matches) { for (let i = 0; i < 600; i++) step(); return; }
     still = 0;
     if (!running) { running = true; requestAnimationFrame(loop); }
   }
@@ -603,22 +659,29 @@ const pile = (() => {
     const { x, y } = local(e);
     drag = [...bodies].reverse().find((b) => Math.hypot(b.x - x, b.y - y) < b.r + 2) || null;
     if (!drag) return;
+    hideChip(); down = { x, y, moved: false };
     box.setPointerCapture(e.pointerId);
-    drag.el.classList.add("dragging");
+    drag.el.classList.add("dragging"); drag.pinned = false; drag.a = 0; drag.va = 0;
     last = { x, y, t: performance.now() };
     wake();
   });
   box.addEventListener("pointermove", (e) => {
     if (!drag) return;
     const { x, y } = local(e), t = performance.now(), dt = Math.max(16, t - last.t);
+    if (down && Math.hypot(x - down.x, y - down.y) > 5) down.moved = true;
     drag.vx = ((x - last.x) / dt) * 16; drag.vy = ((y - last.y) / dt) * 16;
-    drag.x = Math.min(W() - drag.r, Math.max(drag.r, x)); drag.y = Math.min(H() - drag.h / 2, y);
+    drag.x = Math.min(W() - drag.w / 2, Math.max(drag.w / 2, x)); drag.y = Math.min(H() - drag.h / 2, Math.max(drag.h / 2, y));
     last = { x, y, t };
   });
   const release = () => {
     if (!drag) return;
     drag.el.classList.remove("dragging");
-    drag = null;
+    const b = drag, tap = down && !down.moved;
+    drag = null; down = null;
+    if (tap) { if (b.d.who) showChip(b); wake(); return; } // a tap (no drag) shows who drew it; on touch that's the only way
+    b.pinned = false; // let go: it falls back down, keeping the speed of the throw (capped, so it can't fly off)
+    b.vx = Math.max(-24, Math.min(24, b.vx)); b.vy = Math.max(-24, Math.min(24, b.vy));
+    save();
     wake();
   };
   box.addEventListener("pointerup", release);
@@ -628,15 +691,67 @@ const pile = (() => {
     // a drawn icon falls in from the top of the layer, under where it was drawn
     drop(d) {
       // keep the latest few; the oldest one leaves the pile when it's full
-      const list = saved(); list.push(d); try { localStorage.setItem(KEY, JSON.stringify(list.slice(-MAX))); } catch { /* storage blocked */ }
       if (bodies.length >= MAX) bodies.shift().el.remove();
       place();
-      const r = box.getBoundingClientRect(), from = $("#dd-cv").getBoundingClientRect();
-      add(d, { x: from.left + from.width / 2 - r.left, y: 0 });
+      const from = $("#dd-cv").getBoundingClientRect();
+      add(d, { x: from.left + from.width / 2, y: from.bottom }); // falls from under the grid where it was drawn
+      save();
       wake();
     },
   };
 })();
+
+// sign a drop: ask for an X handle or LinkedIn profile, or skip. Resolves to the handle, null (skip) or undefined (closed).
+function askWho(d) {
+  const dlg = $("#who-dialog"), form = $("#who-form"), err = $("#who-err");
+  let kind = "x";
+  const pick = (k) => {
+    kind = k;
+    $$(".who-seg button", dlg).forEach((b) => b.setAttribute("aria-checked", b.dataset.kind === k));
+    $$("[data-kind]", form).forEach((el) => { if (!el.matches("button")) el.hidden = el.dataset.kind !== k; });
+    err.textContent = "";
+  };
+  let last = {};
+  try { last = JSON.parse(localStorage.getItem("pb-who") || "{}"); } catch { /* storage blocked */ }
+  $("#who-x").value = last.x || ""; $("#who-li").value = last.li || ""; $("#who-name").value = last.name || "";
+  pick(last.kind || "x");
+  // a preview of what's being signed
+  let rects = "";
+  d.grid.forEach((row, y) => [...row].forEach((k, x) => { if (k !== ".") rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${d.palette[k]}"/>`; }));
+  $("#who-icon").src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">${rects}</svg>`)}`;
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (v) => { if (done) return; done = true; cleanup(); if (dlg.open) dlg.close(); resolve(v); };
+    const onSeg = (e) => { const b = e.target.closest(".who-seg button"); if (b) pick(b.dataset.kind); };
+    const onSkip = () => finish(null);
+    const onClose = () => finish(undefined);
+    const onSubmit = (e) => {
+      e.preventDefault();
+      let who = null;
+      if (kind === "x") {
+        const v = $("#who-x").value.trim(), m = v.match(/(?:x|twitter)\.com\/@?([A-Za-z0-9_]{1,15})/i), h = (m ? m[1] : v).replace(/^@/, "");
+        if (!h) { err.textContent = "Add your handle, or skip."; return; }
+        if (!/^[A-Za-z0-9_]{1,15}$/.test(h)) { err.textContent = "That doesn't look like an X handle (letters, numbers and _ only, up to 15)."; return; }
+        who = { kind: "x", handle: h };
+      } else {
+        const v = $("#who-li").value.trim(), m = v.match(/linkedin\.com\/in\/([A-Za-z0-9\-_%]+)/i), h = m ? m[1] : v.replace(/\/+$/, "");
+        if (!h) { err.textContent = "Add your profile link, or skip."; return; }
+        if (!/^[A-Za-z0-9\-_%]{3,100}$/.test(h)) { err.textContent = "Paste your profile link, like linkedin.com/in/your-name."; return; }
+        who = { kind: "li", handle: h, name: $("#who-name").value.trim().slice(0, 40) || null };
+      }
+      try { localStorage.setItem("pb-who", JSON.stringify({ kind, x: $("#who-x").value.trim(), li: $("#who-li").value.trim(), name: $("#who-name").value.trim() })); } catch { /* storage blocked */ }
+      finish(who);
+    };
+    function cleanup() {
+      dlg.removeEventListener("click", onSeg); $("#who-skip").removeEventListener("click", onSkip);
+      form.removeEventListener("submit", onSubmit); dlg.removeEventListener("close", onClose);
+    }
+    dlg.addEventListener("click", onSeg); $("#who-skip").addEventListener("click", onSkip);
+    form.addEventListener("submit", onSubmit); dlg.addEventListener("close", onClose);
+    dlg.showModal();
+    (kind === "x" ? $("#who-x") : $("#who-li")).focus();
+  });
+}
 
 // the drawing grid: click or drag to paint, pick a colour, then drop it on the pile
 (() => {
@@ -667,18 +782,30 @@ const pile = (() => {
   cv.addEventListener("pointerup", () => (painting = false));
   cv.addEventListener("pointercancel", () => (painting = false));
   $("#dd-clear").addEventListener("click", () => { grid.forEach((r) => r.fill(".")); draw(); });
-  $("#dd-drop").addEventListener("click", () => {
+  $("#dd-drop").addEventListener("click", async () => {
     if (empty()) return;
     const used = new Set(grid.flat().filter((k) => k !== "."));
-    pile.drop({ name: "my-icon", style: "color", palette: Object.fromEntries([...used].map((k) => [k, PAL[k]])), grid: grid.map((r) => r.join("")) });
+    const d = { name: "my-icon", style: "color", palette: Object.fromEntries([...used].map((k) => [k, PAL[k]])), grid: grid.map((r) => r.join("")) };
+    const who = await askWho(d); // a handle, null if skipped, undefined if closed
+    if (who === undefined) return; // closed: keep drawing
+    let saved = null;
+    try {
+      const r = await fetch("/api/drops", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ palette: d.palette, grid: d.grid, who }) });
+      if (r.status === 429) { toast((await r.json()).error || "That's enough drops for today."); return; }
+      if (r.ok) saved = (await r.json()).drop;
+    } catch { /* no server: it stays on this browser's pile */ }
+    pile.drop(saved ? { ...d, ...saved } : { ...d, who });
     grid.forEach((r) => r.fill(".")); draw();
-    toast("Dropped on the pile.");
+    toast(saved ? "Dropped on the wall for everyone." : "Dropped on your pile.");
   });
   draw();
 })();
 
 // ---------- views: the floating bar swaps the hero for another view ----------
 const VIEWS = ["icons", "install", "how"];
+// the address bar names each view after its tab; the old names still open the right view
+const HASH = { icons: "library", install: "skill", how: "about" };
+const FROM_HASH = { library: "icons", skill: "install", about: "how", icons: "icons", install: "install", how: "how" };
 const bar = $(".pills"), ind = $(".pill-ind"), viewBtns = $$(".pill-btn[data-view]");
 // in the library view only its close button and a search pill stay in the bar
 // views with their own actions: the bar slims to the close button and the items marked data-for that view
@@ -767,7 +894,7 @@ function showView(name, { focus = true, animate = true } = {}) {
     root.classList.add("switching");
     document.startViewTransition(swap).finished.finally(() => root.classList.remove("switching"));
   } else swap();
-  try { history.replaceState(null, "", view ? `#${view}` : location.pathname + location.search); } catch { /* sandboxed */ }
+  try { history.replaceState(null, "", view ? `#${HASH[view]}` : location.pathname + location.search); } catch { /* sandboxed */ }
   if (focus) (view ? $("#" + view) : wordIn).focus({ preventScroll: true });
 }
 if (document.startViewTransition) document.documentElement.classList.add("vt");
@@ -798,12 +925,12 @@ document.fonts?.ready.then(measure);
   if (!(n > 0)) return;
   $("#gh-stars-n").textContent = n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k` : n;
   $("#gh-stars").hidden = false;
-  $("#gh-link").setAttribute("aria-label", `Star on GitHub, ${n} stars`);
+  $("#gh-link").setAttribute("aria-label", `GitHub, ${n} stars`);
   remeasure($("#gh-link"));
 })();
 let rz;
 addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(measure, 120); });
-if (VIEWS.includes(location.hash.slice(1))) showView(location.hash.slice(1), { focus: false, animate: false });
+{ const v = FROM_HASH[location.hash.slice(1).toLowerCase()]; if (v) showView(v, { focus: false, animate: false }); }
 
 // ---------- wiring ----------
 function closeAll() { $$("dialog[open]").forEach((d) => d.close()); }
@@ -835,7 +962,6 @@ document.addEventListener("keydown", (e) => {
 });
 if (location.hash === "#editor" || location.hash === "#draw") openEditor();
 if (location.hash === "#paste") { openEditor(); editor.openPaste(); }
-if (location.hash === "#library") showView("icons", { focus: false, animate: false });
 if (location.hash === "#make") openMake();
 
 // show the shortcut the visitor actually has
