@@ -713,6 +713,12 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
     opacity 0.24s ease 0.08s, background-color 0.15s ease, color 0.25s ease, box-shadow 0.15s ease;
 }
 .pills > .gone { transition-delay: 0s; transition-duration: var(--dur), var(--dur), var(--dur), 0.12s, 0.15s, 0.25s, 0.15s; }
+/* a view's own items (About's feedback + socials, Use Skill's GitHub + Draw icon, Library's search + Download)
+   stay invisible while the bar resizes, then fade in once it has reached its final width */
+.pills > [data-for]:not(.gone) {
+  transition: width var(--dur) var(--ease), padding var(--dur) var(--ease), margin var(--dur) var(--ease),
+    opacity 0.18s ease var(--dur), background-color 0.15s ease, color 0.25s ease, box-shadow 0.15s ease;
+}
 .pills .sep.gone { margin: 0 0 0 -2px; }
 
 /* views morph into each other: the old one sinks and fades, the new one rises in */
