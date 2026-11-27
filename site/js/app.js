@@ -897,7 +897,14 @@ const phoneBar = () => {
 phone.addEventListener?.("change", () => { phoneBar(); if (!phone.matches) layoutBar(false); });
 setTimeout(phoneBar, 0);
 // About: copy the feedback email
-$("#fb-copy")?.addEventListener("click", async (e) => { e.preventDefault(); toast((await copyText("iamjahanvi@gmail.com")) ? "Email copied." : "Couldn't copy. It's iamjahanvi@gmail.com"); });
+// Copy → "Copied" right in the pill for a moment (no toast); if copying fails, the address is shown instead
+$("#fb-copy")?.addEventListener("click", async (e) => {
+  e.preventDefault();
+  const b = e.currentTarget;
+  if (!(await copyText("iamjahanvi@gmail.com"))) { toast("Couldn't copy. It's iamjahanvi@gmail.com"); return; }
+  b.textContent = "Copied";
+  clearTimeout(b._reset); b._reset = setTimeout(() => { b.textContent = "Copy"; }, 1500);
+});
 
 // the hero is centred on the whole screen: the CSS needs the header's height to balance the space below it
 {
