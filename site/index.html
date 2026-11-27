@@ -96,7 +96,7 @@
       <a class="brand" href="#" data-home aria-label="Pixbits, home"><span class="brand-logo-wrap"><img class="brand-logo" src="img/logo.svg" alt="Pixbits" width="120" height="38"><img class="brand-logo brand-fill" src="img/logo-sunset.svg" alt="" aria-hidden="true" width="120" height="38"></span></a>
       <a class="by" href="https://x.com/me_Jahanvi" target="_blank" rel="noopener">By Jahanvi<svg class="by-x" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
     </div>
-    <p class="tagline"><span class="t1">Lil’ Pixel Icons drawn on a 16×16 grid.</span> <span class="t2">Clean SVGs, editable in Figma or code.</span></p>
+    <p class="tagline"><span class="t1">Lil’ Pixel Icons are drawn on a 16×16 grid.</span> <span class="t2">Free to use, editable in Figma and code.</span></p>
   </header>
 
   <main class="stage" id="main">
@@ -106,17 +106,19 @@
     <div class="view" id="view-home"><div class="view-in">
     <!-- the word wall: every word sits next to its icon, and one row is where you type yours -->
     <div class="wall" id="wall">
+      <div class="wall-row m-row" data-row="4" aria-hidden="true"></div>
       <div class="wall-row" data-row="0"></div>
       <div class="wall-row" data-row="1"></div>
       <form class="wall-row wall-type" id="word-form" autocomplete="off">
         <span class="w lead" data-lead></span>
         <label class="sr" for="word">Type a word</label>
-        <span class="pill-in"><span class="type-demo" id="type-demo" aria-hidden="true"><span id="type-demo-text"></span><i class="caret"></i></span><input id="word" type="text" placeholder="type a word" maxlength="40" spellcheck="false" enterkeyhint="go"><span class="pill-cta" id="pill-cta"><a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude" tabindex="-1">Make it in Claude</a><a class="ghost icon-only" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt" tabindex="-1" aria-label="Open in ChatGPT"><img src="img/chatgpt.svg" alt="" width="18" height="18"></a></span></span>
+        <span class="pill-in"><span class="type-demo" id="type-demo" aria-hidden="true"><span id="type-demo-text"></span><i class="caret"></i></span><input id="word" type="text" placeholder="type a word" maxlength="40" spellcheck="false" enterkeyhint="go"><span class="pill-cta" id="pill-cta"><a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude" tabindex="-1">Make it in Claude</a></span></span>
         <button class="slot" type="button" id="slot" aria-label="Your icon will appear here" disabled><span class="q" aria-hidden="true">?</span></button>
         <span class="w trail" data-trail></span>
       </form>
       <div class="wall-row" data-row="2"></div>
       <div class="wall-row" data-row="3"></div>
+      <div class="wall-row m-row" data-row="5" aria-hidden="true"></div>
     </div>
     </div></div>
 
@@ -198,11 +200,13 @@
   </main>
 
   <!-- floating pills: each swaps the hero for its view; the open one turns into a close button -->
+  <div class="bar-glow" aria-hidden="true"></div>
+  <p class="m-tag" aria-hidden="true"><span class="t1">Lil’ Pixel Icons are drawn on a 16×16 grid.</span><span class="t2">Open on desktop for the best experience</span></p>
   <nav class="pills" aria-label="Sections">
     <span class="pill-ind" aria-hidden="true"></span>
     <button class="pill-btn" type="button" data-view="install" aria-controls="install" aria-pressed="false"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v10"/><path d="M8 9.5l4 4 4-4"/><path d="M4.5 14.5v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"/></svg><span class="pl">Use Skill</span></span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3.5M7.5 3.5L3 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <span class="tsep tsep-a" aria-hidden="true"></span>
-    <button class="pill-btn" type="button" data-view="icons" aria-controls="icons" aria-pressed="false"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg><span class="pl">Library</span></span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3.5M7.5 3.5L3 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="lib-clip" id="lib-clip" aria-hidden="true"><span class="lib-badge" id="lib-badge"></span></span>
+    <button class="pill-btn" type="button" data-view="icons" aria-controls="icons" aria-pressed="false"><span class="pi"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg><span class="pl">Library</span><span class="m-count" id="m-count" aria-hidden="true"></span></span><svg class="x" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3.5M7.5 3.5L3 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="lib-clip" id="lib-clip" aria-hidden="true"><span class="lib-badge" id="lib-badge"></span></span>
     <label class="pill-search gone" data-for="icons"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input id="lib-search" type="search" placeholder="Search icons" spellcheck="false" autocomplete="off" aria-label="Search icons" tabindex="-1"></label>
     <button class="pill-btn pill-dl gone" data-for="icons" type="button" id="dl-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="dl-menu" tabindex="-1"><span class="pi"><span class="pl">Download</span><svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></span></button>
     <span class="tsep tsep-b" aria-hidden="true"></span>

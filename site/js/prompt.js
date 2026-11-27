@@ -35,7 +35,5 @@ Then turn the JSON into files I can use right away:
 If you can run code or create files, attach both as downloads. If you can't, put the full SVG in a second code block.`}
 
 EXAMPLE ("${example.label.toLowerCase()}")
-${ex}${api ? "" : `
-
-End your reply with this line, as an optional next step: "Want to tweak it pixel by pixel? Paste this whole reply into the editor at pixbits.iamjahanvi.com/#paste"`}`;
+${ex}`;
 }

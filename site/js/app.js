@@ -75,10 +75,13 @@ async function copyPrompt(word) {
 // ---------- the word wall ----------
 // [slug, word, colour, weight]: each word takes its icon's colour; weights alternate like a checkerboard.
 const WALL = [
-  [["heart", "Heart", "#e8243c", 600], ["fish", "Goldfish", "#f5861f", 300], ["tree", "Tree", "#3fae49", 600], ["watermelon", "Watermelon", "#e23a4f", 300], ["sunflower", "Sunflower", "#d99a0b", 600], ["penguin", "Penguin", "#34404e", 300], ["sushi", "Sushi", "#e2574c", 600], ["planet", "Planet", "#7a5bd6", 300]],
-  [["rain", "Rain", "#3a8ee6", 300], ["key", "Key", "#d9a21a", 600], ["mushroom", "Mushroom", "#e5322d", 300], ["frog", "Frog", "#3f9e3a", 600], ["owl", "Owl", "#9a6a3a", 300], ["rainbow", "Rainbow", "#e0483c", 600], ["headphones", "Headphones", "#4a4f57", 300], ["lemonade", "Lemonade", "#d9b21a", 600]],
-  [["pizza", "Pizza", "#e2a04a", 300], ["house", "House", "#d9483b", 600], ["cat", "Cat", "#e8862a", 300], ["tulip", "Tulip", "#3a9a3e", 600], ["butterfly", "Butterfly", "#ef7d22", 300], ["medal-gold", "Medal", "#d9a21a", 600], ["crab", "Crab", "#e04a3a", 300], ["cactus", "Cactus", "#5a9a2a", 600]],
-  [["whale", "Whale", "#2f7fd8", 600], ["pencil", "Pencil", "#e09a12", 300], ["rocket", "Rocket", "#e23b3b", 600], ["ice-cream", "Ice cream", "#e0679b", 300], ["pineapple", "Pineapple", "#d9a21a", 600], ["dog", "Dog", "#a0703a", 300], ["hot-air-balloon", "Balloon", "#e8433c", 600], ["sprout", "Sprout", "#4caf50", 300]],
+  [["heart", "Heart", "#e8243c", 600], ["fish", "Goldfish", "#f5861f", 300], ["tree", "Tree", "#3fae49", 600], ["watermelon", "Watermelon", "#e23a4f", 300], ["penguin", "Penguin", "#34404e", 600], ["sunflower", "Sunflower", "#d99a0b", 300], ["sushi", "Sushi", "#e2574c", 600], ["planet", "Planet", "#7a5bd6", 300]],
+  [["rain", "Rain", "#3a8ee6", 300], ["key", "Key", "#d9a21a", 600], ["mushroom", "Mushroom", "#e5322d", 300], ["frog", "Frog", "#3f9e3a", 600], ["owl", "Owl", "#9a6a3a", 300], ["rainbow", "Rainbow", "#e0483c", 600], ["lemonade", "Lemonade", "#d9b21a", 300], ["headphones", "Headphones", "#4a4f57", 600]],
+  [["pizza", "Pizza", "#e2a04a", 300], ["house", "House", "#d9483b", 600], ["cat", "Cat", "#e8862a", 300], ["tulip", "Tulip", "#3a9a3e", 600], ["butterfly", "Butterfly", "#ef7d22", 300], ["crab", "Crab", "#e04a3a", 600], ["medal-gold", "Medal", "#d9a21a", 300], ["cactus", "Cactus", "#5a9a2a", 600]],
+  [["whale", "Whale", "#2f7fd8", 600], ["pencil", "Pencil", "#e09a12", 300], ["rocket", "Rocket", "#e23b3b", 600], ["ice-cream", "Ice cream", "#e0679b", 300], ["dog", "Dog", "#a0703a", 600], ["pineapple", "Pineapple", "#d9a21a", 300], ["hot-air-balloon", "Balloon", "#e8433c", 600], ["sprout", "Sprout", "#4caf50", 300]],
+  // two extra rows, shown on phones only (one above the others, one below) so the hero stays centred
+  [["apple", "Apple", "#e8243c", 600], ["bee", "Bee", "#d9a21a", 300], ["mountain", "Mountain", "#5b7a99", 600], ["donut", "Donut", "#ec6f9e", 300], ["fox", "Fox", "#e8742a", 600], ["camera", "Camera", "#4a4f57", 300], ["burger", "Burger", "#c9802e", 600], ["sun", "Sun", "#e0a10a", 300]],
+  [["avocado", "Avocado", "#5a9a2a", 300], ["castle", "Castle", "#6b7280", 600], ["coffee", "Coffee", "#6b3b1f", 300], ["earth", "Earth", "#2f7fd8", 600], ["giraffe", "Giraffe", "#d9961a", 300], ["ladybug", "Ladybug", "#e04a3a", 600], ["lantern", "Lantern", "#d4a52a", 300], ["popsicle", "Popsicle", "#e0679b", 600]],
 ];
 const LEAD = ["coffee", "Coffee", "#6b3b1f", 600];
 const TRAIL = ["book", "Book", "#d93a3a", 300];
@@ -253,7 +256,7 @@ const shown = () => sorted.filter((ic) => (cat === "All" || ic.category === cat)
 // every icon is the same plain tile; clicking one opens the icon window, as the words on the landing page do
 function renderTable() {
   const items = shown();
-  $("#table").innerHTML = items.map((ic) => `<button class="cell" type="button" data-open="${ic.slug}" aria-label="${esc(ic.label)}">${iconImg(asDoc(ic), 56, ic.slug)}${esc(cellName(ic))}</button>`).join("");
+  $("#table").innerHTML = items.map((ic) => `<button class="cell" type="button" data-open="${ic.slug}" aria-label="${esc(ic.label)}">${iconImg(asDoc(ic), 56, ic.slug)}<span class="cn" title="${esc(cellName(ic))}">${esc(cellName(ic))}</span></button>`).join("");
   // nothing matched: offer to have an AI tool draw the word
   $("#lib-empty").hidden = items.length > 0;
   $("#table").hidden = !items.length;
@@ -841,6 +844,21 @@ function askWho(d) {
   document.addEventListener("click", (e) => { if (!e.target.closest(".fb-wrap")) setFb(false); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") setFb(false); });
 }
+// phones: the socials are the whole bar, so they're always reachable by keyboard
+const phone = matchMedia("(max-width: 720px)");
+$("#m-count").textContent = `${Math.floor(lib.length / 10) * 10}+`; // the phone bar's Library badge
+const ghIcon = $('.pills > .icon-pill[data-for="how"][href*="github.com"]');
+const phoneBar = () => {
+  $$('.pills > .icon-pill[data-for="how"]').forEach((a) => { if (phone.matches) a.tabIndex = 0; });
+  $(".by").tabIndex = phone.matches ? -1 : 0;
+  // on phones the GitHub icon opens the skill's repo; on desktop (About) it's Jahanvi's profile
+  const repo = phone.matches;
+  ghIcon.href = repo ? "https://github.com/iamjahanvi/pixel-icon-generator" : "https://github.com/iamjahanvi";
+  ghIcon.setAttribute("aria-label", repo ? "The Pixbits skill on GitHub" : "Jahanvi on GitHub");
+  ghIcon.title = repo ? "The Pixbits skill on GitHub" : "Jahanvi on GitHub";
+}; // on phones "By Jahanvi" is plain text, so it's skipped by Tab too
+phone.addEventListener?.("change", () => { phoneBar(); if (!phone.matches) layoutBar(false); });
+setTimeout(phoneBar, 0);
 // About: copy the feedback email
 $("#fb-copy")?.addEventListener("click", async (e) => { e.preventDefault(); toast((await copyText("iamjahanvi@gmail.com")) ? "Email copied." : "Couldn't copy. It's iamjahanvi@gmail.com"); });
 

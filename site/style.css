@@ -373,7 +373,10 @@ dialog.sheet:focus-visible { outline: none; }
 @keyframes caret { 50% { opacity: 0; } }
 .pill-in:focus-within { box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.12); }
 .pill-in input {
-  width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; padding: 0;
+  width: 100%; min-width: 0; border: 0; outline: 0; background: transparent;
+  /* room below the baseline so "y", "g" and "p" aren't clipped (Safari clips input text to its box); the
+     negative margin gives it back, so the field stays the same size */
+  padding: 0.08em 0 0.14em; margin: -0.08em 0 -0.14em;
   font: 300 0.8em/1.15 var(--font); letter-spacing: -0.025em; color: var(--text); caret-color: var(--text);
 }
 .pill-in input::placeholder { color: #9a9a9a; }
@@ -385,6 +388,7 @@ dialog.sheet:focus-visible { outline: none; }
   transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .pill-in.has-word .pill-cta { opacity: 1; transform: none; pointer-events: auto; }
+.pill-in:not(.has-word) .pill-cta { max-width: 0; overflow: hidden; } /* hidden buttons take no width (the hint isn't cut off on narrow screens) but keep their height, so the field doesn't jump */
 .pill-cta { font-size: clamp(14px, 0.24em, 20px); gap: 0.4em; }
 .pill-cta .solid { font-size: 1em; padding: 0.7em 1.25em; }
 .pill-cta .icon-only { font-size: 1em; width: 2.55em; height: 2.55em; }
@@ -439,6 +443,7 @@ dialog.sheet:focus-visible { outline: none; }
   font: 12px var(--font); color: #8a8a8a; cursor: pointer; padding: 8px;
 }
 .cell .ico { width: 56px; height: 56px; image-rendering: pixelated; }
+.cell .cn { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* one line per name, so every tile lines up */
 .cell:hover { background: var(--surface); color: var(--text); }
 
 /* install rows */
@@ -472,10 +477,14 @@ main { padding-bottom: clamp(80px, 10vw, 140px); }
   .wall { gap: 18px; font-size: clamp(30px, 9vw, 44px); }
   .wall-row { flex-wrap: wrap; justify-content: flex-start; gap: 12px 0.6em; }
   .wall-row.marquee { flex-wrap: nowrap; }
-  .marquee-track { animation-duration: 30s; }
-  .wall-row.marquee[data-row="1"] .marquee-track { animation-duration: 34s; }
-  .wall-row.marquee[data-row="2"] .marquee-track { animation-duration: 28s; }
-  .wall-row.marquee[data-row="3"] .marquee-track { animation-duration: 32s; }
+  /* slower on phones: each row holds 8 words now, so a calmer loop keeps them readable */
+  .marquee-track { animation-duration: 75s; }
+  .wall-row.marquee[data-row="1"] .marquee-track { animation-duration: 85s; }
+  .wall-row.marquee[data-row="2"] .marquee-track { animation-duration: 70s; }
+  .wall-row.marquee[data-row="3"] .marquee-track { animation-duration: 80s; }
+  /* phones stack the rows 4, 0, 1, [field], 2, 3, 5: directions alternate down that order */
+  .wall-row.marquee[data-row="4"] .marquee-track { animation-direction: reverse; animation-duration: 82s; }
+  .wall-row.marquee[data-row="5"] .marquee-track { animation-direction: normal; animation-duration: 78s; }
   .wall-type .lead, .wall-type .trail { display: none; }
   .wall-type .pill-in { flex: 1 1 0; padding-right: 0.14em; }
   .pill-cta { font-size: 14px; }
@@ -723,6 +732,7 @@ html.vt .view:not([hidden]) .view-in { animation: none; }
 @media (max-width: 720px) {
   #how .view-in { grid-template-columns: minmax(0, 1fr); row-gap: 40px; } /* About stacks: note and credits, then the drawing grid */
   .view { padding-top: 8px; }
+  #icons.view { padding-top: 0; } /* the category row pins flush to the header, with no gap for the grid to show through */
   .pill-btn { padding: 0 13px; font-size: 14px; }
   .pi { gap: 6px; }
   .pills .sep { margin: 0 2px; }
@@ -842,3 +852,63 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
 /* icons on the install buttons */
 .solid, .ghost { gap: 8px; }
 .solid .bi, .ghost .bi { flex: none; }
+
+/* ---------- phones: just the logo and pitch, the hero, a note, and Jahanvi's socials ---------- */
+.m-tag { display: none; }
+.wall-row.m-row { display: none; } /* the two extra hero rows are for phones only */
+.m-count { display: none; align-items: center; margin-left: -3px; /* sits close to the word (the button already spaces its parts 8px apart) */ padding: 3px 7px; border-radius: 999px; background: var(--sunken); color: var(--soft); font: 500 12px/1 var(--font); }
+.pill-btn[aria-pressed="true"] .m-count { opacity: 0; }
+@media (max-width: 720px) {
+  .top { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding-top: calc(36px + env(safe-area-inset-top, 0px)); }
+  .brand-col { align-items: center; }
+  .wall-row.m-row { display: flex; }
+  .by { justify-content: center; pointer-events: none; } /* By Jahanvi, centred under the logo, as plain text (no link on phones) */
+  .by-x { display: none; }
+  #dt-edit { display: none; } /* no editing on phones: the icon pop-up just copies and downloads */
+  #view-home .view-in { margin-top: auto; margin-bottom: auto; } /* the hero sits in the middle of the space */
+  #view-home.view { padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px)); } /* …between the logo and the lines + bar at the bottom */
+  .top .tagline { display: none; } /* on phones the pitch sits just above the floating bar, not in the header */
+  .m-tag { z-index: 5; display: block; position: fixed; left: var(--gutter); right: var(--gutter); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); margin: 0; text-align: center; font-size: 17px; line-height: 1.35; font-weight: 500; letter-spacing: -0.01em; pointer-events: none; } /* just above the floating bar */
+  .m-tag span { display: block; }
+  .m-tag .t2 { font-weight: 400; color: var(--faint); }
+  /* the floating bar: Library (with its icon count) | X, LinkedIn and GitHub */
+  .pills > :not(.icon-pill[data-for="how"]):not(.pill-btn[data-view="icons"]):not(.sep[data-for="how"]):not(.pill-ind):not(#tog-motion):not(.sep:not([data-for])) { display: none !important; }
+  /* play/pause for the moving rows, at the end of the bar (home only; the library hides it like on desktop) */
+  .pills > .sep:not([data-for]) { margin: 0 6px !important; background-color: var(--line-strong) !important; } /* stays visible: a tap leaves a sticky hover on phones */
+  .pills > .sep[data-for="how"] { background-color: var(--line-strong) !important; }
+  .pills > .icon-pill[data-for="how"] { width: auto !important; opacity: 1 !important; pointer-events: auto !important; margin: 0 !important; padding: 0 12px !important; }
+  .pills > .sep[data-for="how"] { width: 1px !important; opacity: 1 !important; margin: 0 6px !important; }
+  .m-count { display: inline-flex; }
+  .pills > .pill-btn[data-view="icons"]:not([aria-pressed="true"]) { width: auto !important; padding: 0 7px 0 16px; } /* sized by its own content, so the gap after the badge never depends on a load-time measurement */ /* the badge ends the button, so less padding after it: even gaps around the line */
+}
+
+/* phones: a soft pastel mesh drifting up from the bottom edge, behind the floating bar */
+.bar-glow { display: none; }
+@media (max-width: 720px) {
+  .bar-glow {
+    display: block; position: fixed; left: 0; right: 0; bottom: 0; height: 300px; z-index: 4; pointer-events: none;
+    background:
+      radial-gradient(55% 70% at 18% 100%, #ffe580 0%, transparent 72%),
+      radial-gradient(50% 65% at 50% 105%, #ffc4dc 0%, transparent 72%),
+      radial-gradient(55% 70% at 82% 100%, #a8dcff 0%, transparent 72%),
+      radial-gradient(45% 60% at 35% 110%, #b8f0a0 0%, transparent 72%),
+      radial-gradient(45% 60% at 68% 110%, #d8c4ff 0%, transparent 72%);
+    background-size: 240% 130%; background-repeat: no-repeat;
+    -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.85) 35%, transparent 100%);
+    mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.85) 35%, transparent 100%);
+    opacity: 1; animation: bar-glow 9s ease-in-out infinite alternate;
+  }
+  /* each colour wanders across and bobs up and down on its own path */
+  @keyframes bar-glow {
+    0%   { background-position: 0% 100%,   55% 60%,  100% 100%, 25% 40%,  75% 100%; }
+    33%  { background-position: 45% 40%,   0% 100%,  55% 60%,   100% 100%, 10% 50%; }
+    66%  { background-position: 100% 80%,  45% 30%,  0% 90%,    60% 50%,  45% 100%; }
+    100% { background-position: 60% 30%,   100% 90%, 35% 40%,   0% 80%,   100% 50%; }
+  }
+  :root.still .bar-glow { animation-play-state: paused; }
+  body:has(#view-home[hidden]) .bar-glow, body:has(#view-home[hidden]) .m-tag { display: none !important; } /* home page only */
+}
+@media (prefers-reduced-motion: reduce) { .bar-glow { animation: none; } }
+
+/* no blue flash when tapping links and buttons on phones */
+* { -webkit-tap-highlight-color: transparent; }
