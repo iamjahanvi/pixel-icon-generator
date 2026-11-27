@@ -889,9 +889,14 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
   /* going back on phones: an even, visible morph (no fast start), with the tab labels arriving while the bar grows */
   .pills.going-back { --spring: cubic-bezier(0.33, 0, 0.2, 1); --dur: 0.38s; } /* five rows of words on phones: the bottom one is left empty, keeping its space */
   /* touch targets: every bar button is at least 44×44 (Apple's minimum), with slightly bigger icons and label */
-  .pills > .pill-btn, .pills .pill-ind { height: 44px; }
-  .pills > .pill-btn[data-view="icons"] { font-size: 15px; }
-  .pills > #tog-motion { width: 44px; padding: 0; } /* a fixed width, so it shrinks away and grows back smoothly */
+  .pills > .pill-btn, .pills .pill-ind, .pills > .pill-search { height: 44px; } /* the search field lines up with the back circle */
+  .pills > .pill-btn[data-view="icons"], .pills > .pill-btn[data-view="how"] { font-size: 15px; } /* both tabs the same size */
+  .pills .m-count { margin-left: 0; }
+  /* one rhythm: 20px from the bar's ends, 16px on both sides of each divider */
+  .pills > .pill-btn[data-view="icons"]:not([aria-pressed="true"]):not(.gone) { padding-left: 19px; padding-right: 16px; } /* 24px from the bar's left end */
+  .pills > #tog-motion:not(.gone) { margin-right: 2px; } /* 20px from the bar's right end */
+  .pills > .pill-btn[data-view="how"]:not([aria-pressed="true"]):not(.gone) { padding-left: 15px; } /* a little air between "Library" and its badge (it was pulled in to 3px) */
+  .pills > #tog-motion { width: 46px; padding: 0; } /* a fixed width, so it shrinks away and grows back smoothly */
   .pills > #tog-motion.gone { width: 0 !important; } /* hidden in a section: takes no room */
   /* bigger icons, keeping the desktop proportions (16 / 17 / 18) that make the three logos look the same size */
   .pills > .icon-pill[data-for="how"] svg { width: 19px; height: 19px; }
@@ -909,7 +914,7 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
   /* phones: Library | About | pause. Use Skill and the Library's Download aren't offered here */
   .pills > [data-view="install"], .pills > [data-for="install"], .pills > .tsep-a, .pills > #dl-btn, .pills > #dl-menu { display: none !important; }
   /* play/pause for the moving rows, at the end of the bar (home only; the library hides it like on desktop) */
-  .pills > .sep:not([data-for]):not(.gone) { margin: 0 6px 0 3px !important; background-color: var(--line-strong) !important; }
+  .pills > .sep:not([data-for]):not(.gone) { margin: 0 1px 0 -1px !important; background-color: var(--line-strong) !important; }
   .pills > .sep.gone { margin: 0 !important; } /* a hidden divider takes no room (it left a gap at the end of the bar) */ /* stays visible: a tap leaves a sticky hover on phones */
   .pills > .sep[data-for="how"] { background-color: var(--line-strong) !important; }
   /* About's socials: full 44px touch targets */
@@ -919,6 +924,7 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
   .pills > .icon-pill[data-for="how"]:not(.gone) { padding-left: 12.5px !important; }
   .pills > .icon-pill[data-for="how"][href*="github"]:not(.gone) { padding-left: 10.5px !important; } /* folded away they take no room */
   .pills > .sep[data-for="how"]:not(.gone) { margin: 0 6px 0 4px !important; } /* even space either side of the line in About */
+  .pills > .pill-search:not(.gone) { margin-right: -4px; } /* ends 5px from the bar's edge, mirroring the back circle */
   .pills > .pill-search input { width: min(190px, calc(100vw - 180px)); } /* the Library's search fills its bar, and shrinks on small phones */
   .m-count { display: inline-flex; }
 }
