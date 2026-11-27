@@ -712,7 +712,16 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
 .fb-wrap.open:not(.gone) .fb-tip { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0s; }
 .fb-mail { user-select: all; -webkit-user-select: all; color: inherit; text-decoration: none; }
 .fb-mail:hover { text-decoration: underline; text-underline-offset: 3px; }
-.fb-copy { border: 0; border-radius: 999px; padding: 7px 12px; background: var(--dark); color: var(--on-dark); font: 500 13px/1 var(--font); cursor: pointer; }
+.fb-copy {
+  border: 0; border-radius: 999px; padding: 7px 12px; background: var(--dark); color: var(--on-dark); font: 500 13px/1 var(--font); cursor: pointer;
+  display: inline-flex; align-items: center; overflow: hidden; white-space: nowrap; transition: width 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* Copy → Copied: the pill eases wider, a green tick pops in beside the label, and the label fades up */
+.fc-tick { flex: none; width: 0; color: #4ade80; opacity: 0; transform: scale(0.3) rotate(-25deg); transition: opacity 0.2s ease 0.08s, transform 0.34s cubic-bezier(0.32, 0.72, 0, 1) 0.06s; }
+.fb-copy.done .fc-tick { width: 14px; margin-right: 5px; opacity: 1; transform: none; }
+.fc-label.swap { animation: fc-in 0.3s cubic-bezier(0.32, 0.72, 0, 1) both; }
+@keyframes fc-in { from { opacity: 0; transform: translateY(5px); filter: blur(2px); } }
+@media (prefers-reduced-motion: reduce) { .fb-copy, .fc-tick { transition: none; } .fc-label.swap { animation: none; } }
 .pills .gone { width: 0 !important; padding: 0; margin-left: -2px; opacity: 0; filter: blur(4px); pointer-events: none; } /* a little blur as items come and go */
 /* everything in the bar folds and unfolds on one curve: width, padding and spacing together, so nothing jumps;
    items fade out quickly as they fold, and fade in a beat after they start to open */
@@ -894,14 +903,14 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
   .pills .m-count { margin-left: 0; }
   /* one rhythm: 20px from the bar's ends, 16px on both sides of each divider */
   .pills > .pill-btn[data-view="icons"]:not([aria-pressed="true"]):not(.gone) { padding-left: 19px; padding-right: 16px; } /* 24px from the bar's left end */
-  .pills > #tog-motion:not(.gone) { margin-right: 2px; } /* 20px from the bar's right end */
+  .pills > #tog-motion:not(.gone) { margin-right: 0; } /* its shape sits 6px from the right edge, like top and bottom */
   .pills > .pill-btn[data-view="how"]:not([aria-pressed="true"]):not(.gone) { padding-left: 15px; } /* a little air between "Library" and its badge (it was pulled in to 3px) */
   .pills > #tog-motion { width: 46px; padding: 0; } /* a fixed width, so it shrinks away and grows back smoothly */
   .pills > #tog-motion.gone { width: 0 !important; } /* hidden in a section: takes no room */
   /* bigger icons, keeping the desktop proportions (16 / 17 / 18) that make the three logos look the same size */
-  .pills > .icon-pill[data-for="how"] svg { width: 19px; height: 19px; }
-  .pills > .icon-pill[href*="linkedin"] svg { width: 19px; height: 19px; } /* a solid square reads big */
-  .pills > .icon-pill[href*="github"] svg { width: 23px; height: 23px; } /* a round mark reads small */
+  .pills > .icon-pill[data-for="how"] svg { width: 20.5px; height: 20.5px; }
+  .pills > .icon-pill[href*="linkedin"] svg { width: 18px; height: 18px; } /* a solid square reads big */
+  .pills > .icon-pill[href*="github"] svg { width: 22px; height: 22px; } /* a round mark reads small */
   .pills > #tog-motion svg { width: 20px; height: 20px; }
   .by { justify-content: center; pointer-events: none; } /* By Jahanvi, centred under the logo, as plain text (no link on phones) */
   .by-x { display: none; }
@@ -915,16 +924,15 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
   .pills > [data-view="install"], .pills > [data-for="install"], .pills > .tsep-a, .pills > #dl-btn, .pills > #dl-menu { display: none !important; }
   /* play/pause for the moving rows, at the end of the bar (home only; the library hides it like on desktop) */
   .pills > .sep:not([data-for]):not(.gone) { margin: 0 1px 0 -1px !important; background-color: var(--line-strong) !important; }
-  .pills > .sep.gone { margin: 0 !important; } /* a hidden divider takes no room (it left a gap at the end of the bar) */ /* stays visible: a tap leaves a sticky hover on phones */
+  .pills > .sep.gone { margin: 0 0 0 -2px !important; } /* a hidden divider takes no room at all (its margin cancels the bar's 2px gap) */ /* stays visible: a tap leaves a sticky hover on phones */
   .pills > .sep[data-for="how"] { background-color: var(--line-strong) !important; }
   /* About's socials: full 44px touch targets */
   /* About's socials: 44px touch targets with the icon in the middle (content is pinned left for the morph, so the
      left padding does the centring: (44 - icon) / 2) */
   .pills > .icon-pill[data-for="how"] { width: 44px; padding: 0 !important; }
   .pills > .icon-pill[data-for="how"]:not(.gone) { padding-left: 12.5px !important; }
-  .pills > .icon-pill[data-for="how"][href*="github"]:not(.gone) { padding-left: 10.5px !important; } /* folded away they take no room */
   .pills > .sep[data-for="how"]:not(.gone) { margin: 0 6px 0 4px !important; } /* even space either side of the line in About */
-  .pills > .pill-search:not(.gone) { margin-right: -4px; } /* ends 5px from the bar's edge, mirroring the back circle */
+  .pills > .pill-search:not(.gone) { margin-right: 0; } /* ends 5px from the bar's edge, mirroring the back circle */
   .pills > .pill-search input { width: min(190px, calc(100vw - 180px)); } /* the Library's search fills its bar, and shrinks on small phones */
   .m-count { display: inline-flex; }
 }
@@ -1057,7 +1065,7 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
 
 /* phones: the mail icon draws much smaller than the socials beside it (an outline envelope in a 24 box); sized up
    so it draws about as wide as they do */
-@media (max-width: 720px) { .pills #fb-btn svg { width: 25px; height: 25px; } }
+@media (max-width: 720px) { .pills #fb-btn svg { width: 24.5px; height: 24.5px; } }
 
 /* phones: the About note is set at the credits' size (15px), a touch more open line spacing for the paragraphs */
 @media (max-width: 720px) { #how .note p { font-size: 15px; line-height: 1.55; } }
@@ -1065,4 +1073,131 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
 /* phones, keyboard open: the bar, the note above it and the glow step aside (unless you're typing in the bar) */
 @media (max-width: 720px) {
   html.kb:not(.kb-bar) .pills, html.kb .m-tag, html.kb .bar-glow { opacity: 0 !important; pointer-events: none !important; visibility: hidden; }
+}
+
+/* desktop section bars (Use Skill, Library, About): one 4px rhythm. 20px from the back circle to the first item,
+   20px either side of each divider, 20px at the right end, 24px between the social icons, 8px label to badge */
+@media (min-width: 721px) {
+  .pills > .pill-act.first:not(.gone) { margin-left: 6px; } /* 8px from the back circle, like the search field and the mail button */
+  .pills > .pill-search:not(.gone) { margin-left: 6px; } /* 8px from the circle */
+  .pills > .pill-dl:not(.gone) { margin-left: 6px; } /* 8px between the search pill and the Download button, like circle → search */
+  .pills > .sep[data-for="install"]:not(.gone) { margin: 0 2px; }
+  .pills > .sep[data-for="how"]:not(.gone) { margin: 0 7px 0 2px; }
+  .pills > .icon-pill[data-for="how"]:not(.gone) { padding: 0 11px; }
+  .pills > a.icon-pill[href*="github.com/iamjahanvi"]:not(.gone) { margin-right: 4px; }
+  .pills > [data-open-draw]:not(.gone), .pills > #dl-btn:not(.gone) { padding-right: 15px; }
+  .pill-act .stars { margin-left: 0; }
+  /* About: the feedback button is just its mail icon, in line with the socials (no label, no divider) */
+  .pills #fb-btn .pl { display: none; }
+  .pills > .sep[data-for="how"] { display: none !important; }
+  .pills #fb-btn { padding: 0 11px; margin-left: 0; }
+  .pills > .fb-wrap:not(.gone) { margin-left: 7px; } /* 20px from the circle, 24px to X; on the wrapper so the email bubble centres over the icon */
+  .pills #fb-btn svg { width: 21px; height: 21px; } /* an outline envelope draws small; sized to sit with the logos */
+}
+
+/* section bars: a divider morphs away (shrinks and fades) while either neighbour is hovered, like the home bar's */
+.pills > .sep[data-for] { transition: width var(--dur) var(--spring), padding var(--dur) var(--spring), margin var(--dur) var(--spring), opacity 0.22s ease calc(var(--dur) * 0.4), background-color 0.2s ease, transform 0.3s var(--ease); }
+@media (hover: hover) {
+  .pills:has(> .pill-btn[data-for="install"]:hover) > .sep[data-for="install"],
+  .pills:has(> .pill-btn[data-for="icons"]:hover, > .pill-search[data-for="icons"]:hover) > .sep[data-for="icons"] { background-color: transparent; transform: scaleY(0.2); }
+}
+
+/* desktop home bar on the same 4px rhythm: 20px at both ends, 16px either side of every divider */
+@media (min-width: 721px) {
+  .pills > .pill-btn[data-view]:not([aria-pressed="true"]):not(.gone) { padding-left: 15px; }
+  .pills > .sep:not([data-for]):not(.gone) { margin: 0 3px 0 -2px; }
+  .pills > #tog-motion:not(.gone) { margin-right: 0; } /* its hover shape sits as far from the bar's right edge as from its top and bottom */
+}
+/* phone About bar like the desktop one: the mail icon in line with the socials, no divider, 24px apart, 20px from
+   the circle and the end (the 44px touch targets overlap a hair so the icons can sit 24px apart) */
+@media (max-width: 720px) {
+  .pills > .sep[data-for="how"] { display: none !important; }
+  .pills > .fb-wrap:not(.gone) { margin-left: 2px; } /* 8px from the back circle */
+  .pills > .icon-pill[data-for="how"]:not(.gone) { margin: 0 -1.5px !important; }
+  .pills > .icon-pill[href*="x.com"]:not(.gone) { margin-left: -3.5px !important; }
+  .pills > .icon-pill[href*="linkedin"]:not(.gone) { margin-left: 0 !important; }
+  .pills > .icon-pill[href*="github"]:not(.gone) { margin: 0 -1px 0 -0.5px !important; } /* its hover shape 6px from the bar's right edge */
+  .pills > .sep:not([data-for]):not(.gone) { margin-left: 1px !important; }
+  .pills > .pill-search:not(.gone) { margin-left: 6px; } /* 8px from the circle */
+}
+
+/* buttons that show a hover background touch their neighbours: the bar's 2px gaps are cancelled and dividers sit
+   on the seam (the tab dividers only on the home bar, where they show) */
+.pills:not(:has(.pill-btn[data-view][aria-pressed="true"])) > .tsep { margin-right: -2px; }
+@media (min-width: 721px) {
+  .pills > .icon-pill[data-for="how"]:not(.gone) { margin-left: -2px; }
+  .pills > .sep[data-for="install"]:not(.gone) { margin: 0 -3px 0 -2px; }
+  /* balanced: 16 | 16 around every divider, 24px between the About icons, 20px at the ends */
+  .pills > .pill-btn[data-view="icons"]:not([aria-pressed="true"]):not(.gone), .pills > .pill-btn[data-view="how"]:not([aria-pressed="true"]):not(.gone) { padding-left: 17px; }
+  .pills > [data-open-draw]:not(.gone) { padding-left: 17px; }
+  .pills > .icon-pill[data-for="how"]:not(.gone) { padding: 0 12px; }
+  .pills #fb-btn { padding: 0 12px; }
+  .pills > .fb-wrap:not(.gone) { margin-left: 6px; }
+  .pills > a.icon-pill[href*="github.com/iamjahanvi"]:not(.gone) { margin-right: 0; } /* same space to the right edge as to the top and bottom */
+}
+
+/* desktop hover: one grey pill glides and resizes from button to button behind the cursor (instead of each button
+   showing its own), fading in when the cursor enters the bar and out when it leaves */
+.pill-hov { position: absolute; top: 5px; left: 0; height: 40px; width: 40px; border-radius: 999px; background: var(--sunken); opacity: 0; pointer-events: none; z-index: 0;
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), width 0.3s cubic-bezier(0.32, 0.72, 0, 1), height 0.3s cubic-bezier(0.32, 0.72, 0, 1), top 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.18s ease; }
+.pill-hov.on { opacity: 1; }
+@media (hover: hover) and (min-width: 721px) {
+  .pills .pill-btn:hover, .pills .pill-btn.tog:hover, .pills .pill-btn:not([aria-pressed="true"]):hover { background: transparent !important; }
+}
+@media (max-width: 720px), (hover: none) { .pill-hov { display: none; } }
+@media (prefers-reduced-motion: reduce) { .pill-hov { transition: opacity 0.18s ease; } }
+
+/* desktop About icons drawn at one optical size (~16px wide): each logo fills its box differently, so the boxes differ */
+@media (min-width: 721px) {
+  .pills > .icon-pill[href*="x.com"] svg { width: 18px; height: 18px; }
+  .pills > .icon-pill[href*="linkedin"] svg { width: 15.5px; height: 15.5px; }
+  .pills > .icon-pill[href*="github"] svg { width: 19px; height: 19px; }
+}
+
+/* About icons: every button the same round shape (40px on desktop, 44px on phones), icon centred, so the hover
+   circle is identical behind each of them and matches the back circle */
+@media (min-width: 721px) {
+  .pills #fb-btn, .pills > .icon-pill[data-for="how"] { width: 40px; padding: 0 !important; justify-content: center; justify-items: center; }
+  .pills > .icon-pill[data-for="how"]:not(.gone) { padding: 0 !important; }
+}
+@media (max-width: 720px) {
+  .pills #fb-btn, .pills > .icon-pill[data-for="how"] { width: 44px; padding: 0 !important; justify-content: center; justify-items: center; }
+  .pills > .icon-pill[data-for="how"]:not(.gone) { padding: 0 !important; margin: 0 0 0 -2px !important; }
+  .pills > .icon-pill[href*="github"]:not(.gone) { margin: 0 0 0 -2px !important; }
+}
+
+/* About icons: all four from Tabler (outline, MIT) on the same 24 grid, drawn at one size */
+.pills .ic-about { width: 20px !important; height: 20px !important; }
+@media (max-width: 720px) { .pills .ic-about { width: 22px !important; height: 22px !important; } }
+
+/* the divider beside a hovered button steps aside (set by the bar's script) */
+.pills > .sep.sep-hide { background-color: transparent !important; transform: scaleY(0.2); }
+.pills > .tsep.sep-hide::before { opacity: 0; transform: scaleY(0.2); }
+
+/* numbered install steps: the "1" / "2" badges hang in the margin, so the commands line up with the rows below */
+.row.steps .cmd { margin-left: -0.85em; padding-left: 0; }
+
+/* desktop: the divider before pause sits right on the seam: About ends at it and the pause button starts at it
+   (no gap either side); the pause button is wider so its icon sits 16px from the line, like the other tabs */
+@media (min-width: 721px) {
+  .pills > .sep:not([data-for]):not(.gone) { margin: 0 -2px 0 -2px !important; }
+  .pills > #tog-motion:not(.gone) { width: 50px; padding: 0; }
+}
+/* phones: the same, the pause divider on the seam between About and pause */
+@media (max-width: 720px) {
+  .pills > .sep:not([data-for]):not(.gone) { margin: 0 -2px 0 -2px !important; }
+  .pills > .pill-btn[data-view="how"]:not([aria-pressed="true"]):not(.gone) { padding-left: 17px; padding-right: 16px; }
+  .pills > #tog-motion:not(.gone) { width: 52px; }
+}
+
+/* while the bar measures its items: no animation at all (overrides the !important morph timings) */
+.pills.measuring, .pills.measuring *, .pills.measuring *::before { transition: none !important; animation: none !important; }
+/* the bar's focus ring is for keyboard use only (a click never leaves a ring) */
+.pills .pill-btn:focus-visible, .pills .icon-pill:focus-visible { outline: none; }
+html.kbd .pills .pill-btn:focus-visible, html.kbd .pills .icon-pill:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+/* phones: the side margin (16px) is too narrow for the badges to hang in, so they're left out there and the
+   commands line up with the rows below ("Run these one after the other" already gives the order) */
+@media (max-width: 720px) {
+  .row.steps .cmd { margin-left: 0; }
+  .row.steps .cmd .step { display: none; }
 }

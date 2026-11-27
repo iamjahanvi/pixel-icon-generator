@@ -616,8 +616,8 @@ const pile = (() => {
   chip.className = "who-chip"; chip.target = "_blank"; chip.rel = "noopener noreferrer";
   box.append(chip);
   let chipFor = null, chipT = 0;
-  const X_LOGO = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
-  const GO = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>';
+  const X_LOGO = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/> <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>';
+  const GO = '<svg width="14" height="14" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7l-10 10"/> <path d="M8 7l9 0l0 9"/></svg>';
   // an icon is "at rest" once it has settled (not falling, bouncing or being dragged)
   const atRest = (b) => b !== drag && Math.abs(b.vx) + Math.abs(b.vy) < 0.25;
   function showChip(b) {
@@ -701,8 +701,11 @@ const pile = (() => {
     try { const r = await fetch("/api/drops", { cache: "no-store" }); if (r.ok) list = (await r.json()).drops; } catch { /* offline or no server */ }
     if (list) { shared = true; MAX = 60; }
     const items = list ? list.slice().reverse() : saved();
-    // with reduced motion, settle the pile before showing it instead of letting it fall
-    if (calm.matches) { items.forEach((d) => add(d, { y: -60 })); for (let i = 0; i < 600; i++) step(); return; }
+    // the pour plays once per browser, on the very first visit; after that (and with reduced motion) the pile is
+    // settled before it's shown, so it's simply there at the bottom
+    let poured = false;
+    try { poured = localStorage.getItem("pb-poured") === "1"; localStorage.setItem("pb-poured", "1"); } catch { /* storage blocked */ }
+    if (calm.matches || poured) { items.forEach((d) => add(d, { y: -60 })); for (let i = 0; i < 600; i++) step(); return; }
     // the wall pours out from under the drawing grid, one icon after another, like fresh drops
     const g = $("#dd-cv")?.getBoundingClientRect();
     items.forEach((d, n) => setTimeout(() => {
@@ -824,7 +827,7 @@ function askWho(d) {
   const cv = $("#dd-cv"), ctx = cv.getContext("2d"), C = cv.width / 16;
   const PAL = { K: "#000000", w: "#ffffff", r: "#e8243c", o: "#f28c28", y: "#ffd23f", g: "#3fa34d", b: "#3b82f6", p: "#f7a1c4", n: "#8b5a2b" };
   const NAMES = { K: "Black", w: "White", r: "Red", o: "Orange", y: "Yellow", g: "Green", b: "Blue", p: "Pink", n: "Brown", ".": "Eraser" };
-  const ERASER = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 21h13"/><path d="M5.6 14.4l8.5-8.5a2 2 0 0 1 2.8 0l2.6 2.6a2 2 0 0 1 0 2.8L12 18.8 9.4 21H7.5l-1.9-1.9a2 2 0 0 1 0-2.8z"/><path d="M10.5 9.5l5 5"/></svg>';
+  const ERASER = '<svg width="16" height="16" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3"/> <path d="M18 13.3l-6.3 -6.3"/></svg>';
   const grid = Array.from({ length: 16 }, () => Array(16).fill("."));
   let ink = "K", painting = false;
   $("#dd-sw").innerHTML = [...Object.keys(PAL), "."].map((k) => `<button type="button" role="radio" aria-checked="${k === ink}" aria-label="${NAMES[k]}" title="${NAMES[k]}" data-ink="${k}"${k === "." ? ' class="eraser"' : ` style="background:${PAL[k]}"`}>${k === "." ? ERASER : ""}</button>`).join("");
@@ -872,6 +875,10 @@ function askWho(d) {
   // closing: the bubble fades out first, and only then does its pill clip again (clipping straight away cropped it)
   const setFb = (on) => {
     const was = fb.classList.contains("open");
+    if (on) { // the email bubble centres on the whole floating bar, not just the mail icon
+      const b = bar.getBoundingClientRect(), w = fb.getBoundingClientRect();
+      $(".fb-tip").style.left = `${b.left + b.width / 2 - w.left}px`;
+    }
     fb.classList.toggle("open", on); fbBtn.setAttribute("aria-expanded", on);
     clearTimeout(fb._closing);
     if (was && !on) { fb.classList.add("closing"); fb._closing = setTimeout(() => fb.classList.remove("closing"), 1500); } // fallback
@@ -902,9 +909,20 @@ $("#fb-copy")?.addEventListener("click", async (e) => {
   e.preventDefault();
   const b = e.currentTarget;
   if (!(await copyText("iamjahanvi@gmail.com"))) { toast("Couldn't copy. It's iamjahanvi@gmail.com"); return; }
-  b.textContent = "Copied";
-  clearTimeout(b._reset); b._reset = setTimeout(() => { b.textContent = "Copy"; }, 1500);
+  setCopied(b, true);
+  clearTimeout(b._reset); b._reset = setTimeout(() => setCopied(b, false), 1600);
 });
+// the pill morphs between its two widths (measured before and after the swap) instead of jumping
+function setCopied(b, on) {
+  const lab = b.querySelector(".fc-label"), from = b.getBoundingClientRect().width;
+  b.style.transition = "none"; b.style.width = "";
+  b.classList.toggle("done", on); lab.textContent = on ? "Copied" : "Copy";
+  const to = b.getBoundingClientRect().width;
+  b.style.width = `${from}px`; void b.offsetWidth;
+  b.style.transition = ""; b.style.width = `${to}px`;
+  lab.classList.remove("swap"); void lab.offsetWidth; lab.classList.add("swap");
+  clearTimeout(b._w); b._w = setTimeout(() => { b.style.width = ""; }, 400);
+}
 
 // the hero is centred on the whole screen: the CSS needs the header's height to balance the space below it
 {
@@ -928,13 +946,25 @@ const closedW = () => (matchMedia("(max-width: 720px)").matches ? 44 : 40); // a
 const noMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 let view = null, natural = new Map();
 // each button's own width (icon + word), measured once the font has loaded and again on resize
+// each item's natural width, read with no animation running and every tab in its normal (not open) state, so the
+// numbers are never half-way through a morph or the size of the round back button. A resize during a morph (a
+// phone keyboard closing, say) waits for the morph to finish first.
+let lastMorph = 0, measureLater = 0;
 function measure() {
+  const wait = 750 - (performance.now() - lastMorph);
+  if (wait > 0) { clearTimeout(measureLater); measureLater = setTimeout(measure, wait); return; }
   const all = [...viewBtns, ...soloItems];
+  const pressed = viewBtns.filter((b) => b.getAttribute("aria-pressed") === "true"), back = bar.classList.contains("going-back");
+  bar.classList.add("measuring"); bar.classList.remove("going-back");
+  pressed.forEach((b) => b.setAttribute("aria-pressed", "false"));
   all.forEach((b) => { b.style.transition = "none"; b.style.width = ""; b.classList.remove("gone"); });
   all.forEach((b) => natural.set(b, b.getBoundingClientRect().width));
+  pressed.forEach((b) => b.setAttribute("aria-pressed", "true"));
+  if (back) bar.classList.add("going-back");
   layoutBar(false);
   void bar.offsetWidth;
   all.forEach((b) => (b.style.transition = ""));
+  bar.classList.remove("measuring");
 }
 // one item's label changed: animate it to its new natural width
 function remeasure(el) {
@@ -991,20 +1021,12 @@ function swap() {
 }
 // keyboard or pointer: decides where focus goes when a section closes
 let usingKeys = false;
-addEventListener("keydown", () => { usingKeys = true; }, true);
-addEventListener("pointerdown", () => { usingKeys = false; }, true);
+addEventListener("keydown", (e) => { if (e.key === "Tab" || e.key.startsWith("Arrow")) { usingKeys = true; document.documentElement.classList.add("kbd"); } }, true);
+addEventListener("pointerdown", () => { usingKeys = false; document.documentElement.classList.remove("kbd"); }, true);
 function showView(name, { focus = true, animate = true } = {}) {
   const next = VIEWS.includes(name) ? name : null;
   if (next === view && animate) return;
-  // opening a view from the start: the dark highlight begins as the whole tab that was clicked, then closes into
-  // the round back button (instead of popping in from nothing)
-  if (!view && next && animate && !noMotion()) {
-    const b = viewBtns.find((x) => x.dataset.view === next);
-    clearTimeout(ind._fade); // a quick reopen cancels the closing fade
-    ind.style.transition = "none";
-    ind.style.width = `${b.offsetWidth}px`; ind.style.transform = `translateX(${b.offsetLeft}px)`; ind.style.opacity = "1";
-    void ind.offsetWidth; ind.style.transition = "";
-  }
+  const opening = !view && next && animate && !noMotion();
   // going back to the start: no blur on the way out (only opening a tab blurs its content in)
   const prev = view;
   if (view && !next) { bar.classList.add("going-back"); clearTimeout(bar._back); bar._back = setTimeout(() => bar.classList.remove("going-back"), 700); }
@@ -1016,6 +1038,18 @@ function showView(name, { focus = true, animate = true } = {}) {
     b.setAttribute("aria-label", on ? "Back" : label); // the open view's button takes you back to the start
   });
   const closing = prev && !view;
+  lastMorph = performance.now();
+  window.__hovOff?.(); // the bar is changing shape: the hover highlight would be over the wrong spot
+  // opening a view from the start: the dark highlight begins as the whole tab that was clicked, then closes into
+  // the round back button. Measured after the tabs' state has changed (and before they start moving), so it starts
+  // exactly where the tab is.
+  if (opening) {
+    const b = viewBtns.find((x) => x.dataset.view === next);
+    clearTimeout(ind._fade); // a quick reopen cancels the closing fade
+    ind.style.transition = "none";
+    ind.style.width = `${b.offsetWidth}px`; ind.style.transform = `translateX(${b.offsetLeft}px)`; ind.style.opacity = "1";
+    void ind.offsetWidth; ind.style.transition = "";
+  }
   layoutBar(animate);
   // going back: the dark circle goes as soon as ← is clicked (a quick fade, no stretching), while the tabs return
   if (closing && animate && !noMotion()) {
@@ -1045,6 +1079,73 @@ function showView(name, { focus = true, animate = true } = {}) {
     else if (usingKeys) viewBtns.find((x) => x.dataset.view === prev)?.focus({ preventScroll: true });
     else document.activeElement?.blur?.(); // after a tap or click: nothing stays focused (no ring, no keyboard)
   }
+}
+// desktop: the grey hover pill glides to whichever button the cursor is over
+{
+  const hov = $(".pill-hov");
+  const HOVERABLE = ".pill-btn:not([data-view][aria-pressed=\"true\"]):not(.gone), #fb-btn, .icon-pill";
+  // the highlight only ever shows over a button the browser itself says is hovered; while it shows, every frame
+  // checks that's still true, so it can't get stuck on (whatever moved, morphed or stole the mouse)
+  const reallyHovered = () => bar.matches(":hover"); // the mouse is still inside the bar (gaps between buttons included, so it glides across them)
+  let watching = false;
+  const watch = () => {
+    if (watching) return; watching = true;
+    (function tick() {
+      if (!hov.classList.contains("on")) { watching = false; return; }
+      if (!reallyHovered()) { watching = false; hovOff(); return; }
+      requestAnimationFrame(tick);
+    })();
+  };
+  const moveTo = (el) => {
+    if (!el.matches(":hover") && !el.querySelector(":hover")) return; // not genuinely under the mouse
+    const b = bar.getBoundingClientRect(), r = el.getBoundingClientRect();
+    const place = () => { hov.style.width = `${r.width}px`; hov.style.height = `${r.height}px`; hov.style.top = `${r.top - b.top - bar.clientTop}px`; hov.style.transform = `translateX(${r.left - b.left - bar.clientLeft}px)`; };
+    if (!hov.classList.contains("on")) { hov.style.transition = "none"; place(); void hov.offsetWidth; hov.style.transition = ""; hov.classList.add("on"); } // appears where the cursor is, then glides
+    else place();
+    watch();
+  };
+  // after a click the bar morphs under a still cursor; a button sliding under it isn't a hover, so the highlight
+  // waits until the mouse actually moves
+  let hold = null;
+  bar.addEventListener("pointerover", (e) => {
+    if (e.pointerType !== "mouse" || hold) return;
+    const el = e.target.closest(HOVERABLE);
+    if (el && bar.contains(el) && !el.closest(".fb-tip")) { moveTo(el); hideSeps(el); }
+    else if (e.target.closest(".pill-search, .fb-tip")) hov.classList.remove("on"); // the search field has its own look
+    // over a gap or a divider: stay put, so it glides on to the next button instead of blinking out
+  });
+  // the dividers either side of the hovered button step aside (done here, not with CSS :has, so every browser does it)
+  // found by where they sit on screen (the markup has hidden buttons between some of them): any divider at the
+  // hovered button's left or right edge
+  const hideSeps = (el) => {
+    bar.querySelectorAll(".sep-hide").forEach((s) => s.classList.remove("sep-hide"));
+    const r = (el.closest(".fb-wrap") || el).getBoundingClientRect();
+    bar.querySelectorAll(":scope > .sep, :scope > .tsep").forEach((s) => {
+      if (getComputedStyle(s).display === "none" || s.classList.contains("gone")) return;
+      const q = s.getBoundingClientRect(), x = q.left + q.width / 2;
+      if (Math.abs(x - r.left) <= 8 || Math.abs(x - r.right) <= 8) s.classList.add("sep-hide");
+    });
+  };
+  function hovOff() { hov.classList.remove("on"); bar.querySelectorAll(".sep-hide").forEach((s) => s.classList.remove("sep-hide")); }
+  bar.addEventListener("pointerleave", hovOff);
+  // safety nets, so it never lingers: the pointer anywhere outside the bar, the window losing focus (a screenshot
+  // tool, another app), or the bar changing layout (keyboard, the address bar) all clear it
+  document.addEventListener("pointermove", (e) => { if (hov.classList.contains("on") && !bar.contains(e.target)) hovOff(); }, { passive: true });
+  addEventListener("blur", hovOff);
+  document.addEventListener("visibilitychange", hovOff);
+  window.__hovOff = hovOff;
+  // a click changes the bar: the pill goes at once (no ghost fading over the morph) and comes back on the next move
+  // only a click that switches the view (a tab or the back button) reshapes the bar; pause/play and links don't
+  bar.addEventListener("click", (e) => {
+    if (!e.target.closest(".pill-btn[data-view]")) return;
+    hold = { x: e.clientX, y: e.clientY }; hov.style.transition = "none"; hov.classList.remove("on"); void hov.offsetWidth; hov.style.transition = "";
+  });
+  bar.addEventListener("pointermove", (e) => {
+    if (!hold || e.pointerType !== "mouse" || Math.hypot(e.clientX - hold.x, e.clientY - hold.y) < 3) return;
+    hold = null; // the mouse moved: pick up whatever button it's over now
+    const el = e.target.closest(HOVERABLE);
+    if (el && bar.contains(el) && !el.closest(".fb-tip")) { moveTo(el); hideSeps(el); }
+  });
 }
 function useVT() { return !!document.startViewTransition && !matchMedia("(max-width: 720px)").matches; }
 document.documentElement.classList.toggle("vt", useVT());

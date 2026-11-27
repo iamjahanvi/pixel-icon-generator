@@ -35,18 +35,18 @@ const used = (d) => {
 const toEdit = (d) => ({ ...d, palette: { ...d.palette }, grid: d.grid.map((r) => [...r]) });
 const toPlain = (d) => ({ name: d.name, style: d.style, palette: d.palette, grid: d.grid.map((r) => r.join("")) });
 
-// the editor's tool icons: Lucide (lucide.dev, ISC License), rounded line icons
+// the editor's tool icons: Tabler (tabler.io, MIT), outline, like every UI icon on the site
 const ico = (d) => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const LINE = {
-  pencil: ico('<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>'),
-  eraser: ico('<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>'),
-  fill: ico('<path d="M4 7.5h16l-1.6 11.4A2.4 2.4 0 0 1 16 21H8a2.4 2.4 0 0 1-2.4-2.1L4 7.5Z"/><path d="M4 7.5a8 3.2 0 0 1 16 0"/><path d="M5.2 12.5c2.3 1.2 4.5 1.2 6.8 0s4.5-1.2 6.8 0"/>'), // a paint bucket, upright: clearer than a tipped one at this size
-  pick: ico('<path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/>'),
-  fliph: ico('<path d="m3 7 5 5-5 5V7"/><path d="m21 7-5 5 5 5V7"/><path d="M12 20v2"/><path d="M12 14v2"/><path d="M12 8v2"/><path d="M12 2v2"/>'),
-  flipv: ico('<path d="m17 3-5 5-5-5h10"/><path d="m17 21-5-5-5 5h10"/><path d="M4 12H2"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/>'),
-  undo: ico('<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>'),
-  redo: ico('<path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13"/>'),
-  clear: ico('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>'),
+  pencil: ico('<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/> <path d="M13.5 6.5l4 4"/>'),
+  eraser: ico('<path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3"/> <path d="M18 13.3l-6.3 -6.3"/>'),
+  fill: ico('<path d="M5 16l1.465 1.638a2 2 0 1 1 -3.015 .099l1.55 -1.737z"/> <path d="M13.737 9.737c2.299 -2.3 3.23 -5.095 2.081 -6.245c-1.15 -1.15 -3.945 -.217 -6.244 2.082c-2.3 2.299 -3.231 5.095 -2.082 6.244c1.15 1.15 3.946 .218 6.245 -2.081z"/> <path d="M7.492 11.818c.362 .362 .768 .676 1.208 .934l6.895 4.047c1.078 .557 2.255 -.075 3.692 -1.512c1.437 -1.437 2.07 -2.614 1.512 -3.692c-.372 -.718 -1.72 -3.017 -4.047 -6.895a6.015 6.015 0 0 0 -.934 -1.208"/>'),
+  pick: ico('<path d="M11 7l6 6"/> <path d="M4 16l11.7 -11.7a1 1 0 0 1 1.4 0l2.6 2.6a1 1 0 0 1 0 1.4l-11.7 11.7h-4v-4z"/>'),
+  fliph: ico('<path d="M12 3l0 18"/> <path d="M16 7l0 10l5 0l-5 -10"/> <path d="M8 7l0 10l-5 0l5 -10"/>'),
+  flipv: ico('<path d="M3 12l18 0"/> <path d="M7 16l10 0l-10 5l0 -5"/> <path d="M7 8l10 0l-10 -5l0 5"/>'),
+  undo: ico('<path d="M9 14l-4 -4l4 -4"/> <path d="M5 10h11a4 4 0 1 1 0 8h-1"/>'),
+  redo: ico('<path d="M15 14l4 -4l-4 -4"/> <path d="M19 10h-11a4 4 0 1 0 0 8h1"/>'),
+  clear: ico('<path d="M4 7l16 0"/> <path d="M10 11l0 6"/> <path d="M14 11l0 6"/> <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/> <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>'),
 };
 
 // a rough name for a colour, so the palette rows read as words ("Red #E33A2F")
