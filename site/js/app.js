@@ -40,7 +40,7 @@ const lib = await fetch("data/icons.json").then((r) => r.json());
   const libBtn = document.querySelector('.pill-btn[data-view="icons"]');
   if (badge && libBtn) {
     badge.innerHTML = `<span class="tip">${Math.floor(lib.length / 10) * 10}+ icons</span>`;
-    libBtn.addEventListener("mouseenter", () => { badge.style.left = `${libBtn.offsetLeft + libBtn.offsetWidth / 2}px`; /* bubble and tail centred on the tab */ });
+    libBtn.addEventListener("mouseenter", () => { badge.parentElement.style.left = `${libBtn.offsetLeft + libBtn.offsetWidth / 2}px`; /* bubble and tail centred on the tab */ });
   }
 }
 const bySlug = (s) => lib.find((ic) => ic.slug === s);
@@ -696,10 +696,10 @@ function measure() {
 }
 // one item's label changed: animate it to its new natural width
 function remeasure(el) {
-  const was = el.style.width;
-  el.style.transition = "none"; el.style.width = "";
+  const was = el.style.width, gone = el.classList.contains("gone");
+  el.style.transition = "none"; el.style.width = ""; el.classList.remove("gone"); // measure at full size, even if it's hidden in this view
   natural.set(el, el.getBoundingClientRect().width);
-  el.style.width = was; void el.offsetWidth; el.style.transition = "";
+  el.classList.toggle("gone", gone); el.style.width = was; void el.offsetWidth; el.style.transition = "";
   layoutBar();
 }
 // set every button's target width, and slide the dark highlight to the open one
@@ -853,3 +853,6 @@ if (location.hash === "#make") openMake();
   setStill(get("pi-still") === "1");
   motion.addEventListener("click", () => { const on = !root.classList.contains("still"); setStill(on); put("pi-still", on ? "1" : "0"); });
 })();
+
+// tell the loading state the page is ready (icons rendered, fonts in)
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => window.__bootReady?.());

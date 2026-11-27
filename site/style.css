@@ -578,14 +578,15 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
 .pills:has(#tog-motion:hover) > .sep:not([data-for]) { background-color: transparent; }
 /* hover tooltip over the Library pill: a white pixel speech bubble with a chunky black outline
    (heavier bottom-right) and a stepped tail in the middle pointing at the pill */
+/* the tooltip lives in a box whose bottom edge is the bar's top edge; overflow clips it there, so it always
+   rises out from behind the bar and sinks back (same in every browser, no clip-path needed) */
+.lib-clip { position: absolute; bottom: 100%; left: 0; width: 220px; height: 64px; transform: translateX(-50%); overflow: hidden; pointer-events: none; z-index: 3; }
 .lib-badge {
   --p: 2px; --ink: #161616;
-  position: absolute; bottom: calc(100% + 12px); left: 0; z-index: 3; pointer-events: none;
-  /* hidden: tucked fully below the bar's top edge (12px under the bubble) and clipped there; the clip moves
-     with the slide, so it rises out from behind the bar and sinks back, no fade or blur */
-  transform: translate(-50%, 46px); clip-path: inset(-10px -10px 34px -10px);
-  transition: transform 0.38s var(--ease), clip-path 0.38s var(--ease);
-  /* the outline follows the clipped bubble + tail shape */
+  position: absolute; left: 50%; bottom: 12px;
+  transform: translate(-50%, 64px); /* hidden: fully below the box, i.e. behind the bar */
+  transition: transform 0.38s var(--ease);
+  /* the outline follows the bubble + tail shape */
   --outline: drop-shadow(var(--p) 0 0 var(--ink)) drop-shadow(calc(var(--p) * -1) 0 0 var(--ink))
           drop-shadow(0 var(--p) 0 var(--ink)) drop-shadow(0 calc(var(--p) * -1) 0 var(--ink))
           drop-shadow(var(--p) var(--p) 0 var(--ink));
@@ -602,12 +603,13 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
   content: ""; position: absolute; left: calc(50% - var(--p) * 1.5); top: calc(100% - 1px); width: calc(var(--p) * 3); height: calc(var(--p) * 3); background: #fff;
   clip-path: polygon(0 0, 100% 0, 100% 33.34%, 66.67% 33.34%, 66.67% 66.67%, 33.34% 66.67%, 33.34% 100%, 0 100%);
 }
-.pill-btn[data-view="icons"]:not([aria-pressed="true"]):hover ~ .lib-badge { transform: translate(-50%, 0); clip-path: inset(-10px -10px -12px -10px); }
+.pill-btn[data-view="icons"]:not([aria-pressed="true"]):hover ~ .lib-clip .lib-badge { transform: translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce) { .lib-badge { transition: none; } }
 .pill-btn.tog { width: 40px; padding: 0; }
 .pill-btn.tog svg { width: 18px; height: 18px; }
 .pill-btn.tog .on { display: none; }
 .pill-btn.tog[aria-pressed="true"] { color: var(--text); }
+.pill-btn.tog:hover { background: var(--sunken); } /* grey hover whether the rows are moving or paused */
 .pill-btn.tog[aria-pressed="true"] .on { display: block; }
 .pill-btn.tog[aria-pressed="true"] .off { display: none; }
 /* in the library the bar slims down to its close button and a search pill; the rest fold away */
@@ -715,3 +717,15 @@ html.vt .view:not([hidden]) .view-in { animation: none; }
 .chip[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: #fff; }
 .chip[aria-pressed="true"] .n { color: rgba(255, 255, 255, 0.6); }
 .chip:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+/* ---------- loading state: the wordmark fills pixel by pixel, then glides into the header ---------- */
+html.booting body > :not(.boot):not(script) { opacity: 0; }
+html.boot-out body > :not(.boot):not(script) { transition: opacity 0.45s ease 0.1s; }
+.boot { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; pointer-events: none; }
+.boot-logo { position: relative; width: 192px; height: 60.63px; opacity: 0; animation: boot-in 0.2s ease 0.15s forwards; transform-origin: top left; }
+.boot-logo img, .boot-fill { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; shape-rendering: crispEdges; }
+.boot-fill rect { opacity: 0; animation: boot-px 0s linear forwards; }
+@keyframes boot-in { to { opacity: 1; } }
+@keyframes boot-px { to { opacity: 1; } }
+html.boot-out .boot-logo { transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1); }
+html.boot-out .boot-fill { opacity: 0; transition: opacity 0.35s ease 0.2s; }
