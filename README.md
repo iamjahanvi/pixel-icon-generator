@@ -60,7 +60,7 @@ Add `--global` to install it in your home folder for every project, and `--force
 
 ### Any chatbot, without installing anything
 
-On [the website](https://pixbits.iamjahanvi.com/#skill), open **Any chat** and type your word. **Open in Claude** or **Open in ChatGPT** starts a new chat with the prompt filled in; press send. For Gemini or any other chat, use **Copy prompt** and paste it in. Then paste the reply into the site's editor to check the icon and download the SVG. This works on free accounts.
+On [the website](https://pixbits.iamjahanvi.com/#skill), open **Any chat** and type your word. **Open in Claude** starts a new chat with the prompt filled in; press send. For ChatGPT, Gemini or any other chat, use **Copy prompt** and paste it in. Then paste the reply into the site's editor to check the icon and download the SVG. This works on free accounts.
 
 ### On the website, with your own API key
 
@@ -108,6 +108,8 @@ skills/pixel-icons/       ← the skill (this folder is what gets installed)
 bin/cli.mjs               ← the npx installer
 pixel-icons.zip           ← the skill folder, zipped for uploading to Claude
 site/                     ← the website (static, no build step)
+api/drops.js              ← the About page's shared wall (a Vercel function)
+supabase/pixbits_drops.sql ← the wall's table, created once in Supabase
 ```
 
 ## Using the tool on its own
@@ -138,10 +140,21 @@ node site/tools/sync-core.mjs               # after changing the checker in pixe
 node site/tools/test-site.mjs               # checks the site matches the skill and every icon passes
 ```
 
+### The wall on the About page
+
+Icons people draw and drop are shared through `api/drops.js`, a Vercel function that stores them in Supabase. Without it the site still works and the wall stays in each visitor's own browser. To run your own:
+
+1. In Supabase, run `supabase/pixbits_drops.sql` once (SQL Editor). Row level security is on with no policies, so only the server can read or write the table.
+2. In Vercel, set these environment variables (never commit them):
+   - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (Vercel's Supabase integration sets both)
+   - `ADMIN_TOKEN`: a long password you make up, for removing drops at `/admin`
+
+Each visitor can drop 5 icons a day. Visitors are counted by a hash of their IP address; the IP itself is never stored.
+
 ## Credits
 
-Style and reference icons by **Jahanvi Singh**: [Pixtober 2024](https://jahanvi-pixtober-2024.framer.website/) · [@me_Jahanvi](https://x.com/me_Jahanvi). Skill built with Claude. The site uses the [Allo](https://allo.joshpuckett.me) font by Josh Puckett, under the SIL Open Font License.
+Style and reference icons by **Jahanvi Singh**: [Pixtober 2024](https://jahanvi-pixtober-2024.framer.website/) · [@me_Jahanvi](https://x.com/me_Jahanvi). Skill built with Claude. The site uses the [Allo](https://allo.joshpuckett.me) font by Josh Puckett, under the SIL Open Font License, and interface icons from [Tabler Icons](https://tabler.io/icons) (MIT). Profile pictures on the wall come from [unavatar.io](https://unavatar.io).
 
 ## License
 
-[MIT](LICENSE), covering the code, the skill and the icons.
+[MIT](LICENSE), covering the code, the skill and the icons. Fonts and interface icons by others are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

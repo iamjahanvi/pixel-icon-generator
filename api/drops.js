@@ -5,29 +5,17 @@
 //
 // Storage: Supabase (Postgres) through its REST API, no packages. The table is created once with the SQL
 // in supabase/pixbits_drops.sql. Vercel's Supabase integration sets SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
-// (Upstash Redis also works: set KV_REST_API_URL / KV_REST_API_TOKEN or UPSTASH_REDIS_REST_URL / _TOKEN.)
 // ADMIN_TOKEN is a password you choose, set in Vercel's environment variables.
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 
 const SB_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-const LIST = "pb:drops", KEEP = 200, SHOW = 60, PER_DAY = 5;
-const backend = SB_URL && SB_KEY ? "supabase" : URL_ && TOKEN ? "redis" : null;
+const SHOW = 60, PER_DAY = 5;
+const backend = SB_URL && SB_KEY;
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 
-async function redis(...cmds) {
-  const r = await fetch(`${URL_}/pipeline`, {
-    method: "POST",
-    headers: { authorization: `Bearer ${TOKEN}`, "content-type": "application/json" },
-    body: JSON.stringify(cmds),
-  });
-  if (!r.ok) throw new Error(`redis ${r.status}`);
-  return (await r.json()).map((x) => x.result);
-}
 // Supabase's REST API (PostgREST) with the service key: only this server can read or write the table
 async function sb(path, { method = "GET", body, prefer } = {}) {
   const r = await fetch(`${SB_URL}/rest/v1/${path}`, {
@@ -39,39 +27,23 @@ async function sb(path, { method = "GET", body, prefer } = {}) {
   return r;
 }
 
-// ---- the three things the wall needs, for either backend ----
+// ---- the things the wall needs ----
 const store = {
   async list() {
-    if (backend === "supabase") return (await (await sb(`pixbits_drops?select=id,t,palette,grid,who&order=t.desc&limit=${SHOW}`)).json());
-    const [raw] = await redis(["LRANGE", LIST, 0, SHOW - 1]);
-    return (raw || []).map((s) => { try { return JSON.parse(s); } catch { return null; } }).filter(Boolean);
+    return (await sb(`pixbits_drops?select=id,t,palette,grid,who&order=t.desc&limit=${SHOW}`)).json();
   },
   // how many this visitor has dropped today, counting the new one
   async countToday(v) {
-    const day = new Date().toISOString().slice(0, 10);
-    if (backend === "supabase") {
-      const since = Date.parse(`${day}T00:00:00Z`);
-      const r = await sb(`pixbits_drops?select=id&visitor=eq.${v}&t=gte.${since}`, { prefer: "count=exact" });
-      return Number((r.headers.get("content-range") || "*/0").split("/")[1]) + 1;
-    }
-    const rate = `pb:rate:${v}:${day}`;
-    const [count] = await redis(["INCR", rate], ["EXPIRE", rate, 86400]);
-    return count;
+    const since = Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`);
+    const r = await sb(`pixbits_drops?select=id&visitor=eq.${v}&t=gte.${since}`, { prefer: "count=exact" });
+    return Number((r.headers.get("content-range") || "*/0").split("/")[1]) + 1;
   },
   async add(drop, v) {
-    if (backend === "supabase") return sb("pixbits_drops", { method: "POST", body: { ...drop, visitor: v }, prefer: "return=minimal" });
-    await redis(["LPUSH", LIST, JSON.stringify(drop)], ["LTRIM", LIST, 0, KEEP - 1]);
+    return sb("pixbits_drops", { method: "POST", body: { ...drop, visitor: v }, prefer: "return=minimal" });
   },
   async remove(id) {
-    if (backend === "supabase") {
-      const r = await sb(`pixbits_drops?id=eq.${encodeURIComponent(id)}`, { method: "DELETE", prefer: "return=representation" });
-      return (await r.json()).length > 0;
-    }
-    const [raw] = await redis(["LRANGE", LIST, 0, -1]);
-    const hit = (raw || []).find((s) => { try { return JSON.parse(s).id === id; } catch { return false; } });
-    if (!hit) return false;
-    await redis(["LREM", LIST, 1, hit]);
-    return true;
+    const r = await sb(`pixbits_drops?id=eq.${encodeURIComponent(id)}`, { method: "DELETE", prefer: "return=representation" });
+    return (await r.json()).length > 0;
   },
 };
 
@@ -121,7 +93,9 @@ export async function POST(req) {
 export async function DELETE(req) {
   if (!backend) return json({ error: "storage not set up" }, 503);
   const admin = process.env.ADMIN_TOKEN;
-  if (!admin || req.headers.get("authorization") !== `Bearer ${admin}`) return json({ error: "not allowed" }, 401);
+  // compared in constant time, so the password can't be guessed a character at a time from response times
+  const sent = createHash("sha256").update(req.headers.get("authorization") || "").digest();
+  if (!admin || !timingSafeEqual(sent, createHash("sha256").update(`Bearer ${admin}`).digest())) return json({ error: "not allowed" }, 401);
   const id = new URL(req.url).searchParams.get("id") || "";
   if (!/^[0-9a-f]{12}$/.test(id)) return json({ error: "not found" }, 404);
   return (await store.remove(id)) ? json({ ok: true }) : json({ error: "not found" }, 404);

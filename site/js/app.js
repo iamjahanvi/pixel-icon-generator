@@ -66,7 +66,6 @@ const editor = initEditor();
 // Free route: open a new chat with the prompt filled in. The visitor reviews it and presses send.
 const CHATS = {
   claude: (q) => `https://claude.ai/new?q=${encodeURIComponent(q)}`,
-  chatgpt: (q) => `https://chatgpt.com/?q=${encodeURIComponent(q)}`,
 };
 // Real links (not window.open), so they work in every browser and frame. Each link's href follows its word.
 function setChatLinks(scope, word) {
@@ -117,7 +116,7 @@ const findIcon = (w) => {
 function onWord() {
   const w = wordIn.value.trim();
   setChatLinks($("#pill-cta"), w);
-  // the Claude and ChatGPT buttons pop up inside the field once there's a word
+  // the Open in Claude button pops up inside the field once there's a word
   $(".pill-in").classList.toggle("has-word", !!w);
   $$("#pill-cta a").forEach((a) => (a.tabIndex = w ? 0 : -1));
   syncChat(); // the Any chat row and the paste box follow its own word, or this one if it's empty

@@ -1,3 +1,2 @@
-site/_food
-site/img/logo-wide.svg
-site/img/logo-pixbit-icons.svg
+# not served on the website: the dev scripts that build og.png, llms.txt and the checker copy
+site/tools
