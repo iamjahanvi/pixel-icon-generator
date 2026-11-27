@@ -411,7 +411,7 @@ dialog.sheet:focus-visible { outline: none; }
    The negative margin keeps the text in line with the name above. */
 .by {
   display: inline-flex; align-items: center; padding: 4px 0;
-  font: 400 17px/1.2 var(--font); color: var(--faint); text-decoration: none; white-space: nowrap;
+  font: 400 15px/1.2 var(--font); color: var(--faint); text-decoration: none; white-space: nowrap;
   transition: color 0.15s ease;
 }
 /* no pill: on hover the text darkens, a dashed underline appears and the X logo slides in */
@@ -452,7 +452,6 @@ dialog.sheet:focus-visible { outline: none; }
 /* Claude Code needs two commands in order: each gets its own line, number and Copy button */
 .row.steps { row-gap: 14px; }
 .row.steps .who { grid-row: span 2; }
-.row.steps .cmd { font-size: clamp(20px, 2.3vw, 34px); }
 .cmd .step { display: inline-grid; place-items: center; width: 1.25em; height: 1.25em; margin-right: 0.45em; border-radius: 50%; background: #efefef; color: var(--soft); font-size: 0.5em; letter-spacing: 0; vertical-align: 0.35em; }
 .cmd .sep { color: var(--soft); }
 .install .hint { font-size: 14px; margin-top: 20px; }

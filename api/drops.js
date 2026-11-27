@@ -4,7 +4,7 @@
 // DELETE /api/drops?id=...     -> remove one (only with the admin token)
 //
 // Storage: Supabase (Postgres) through its REST API, no packages. The table is created once with the SQL
-// in api/drops.sql. Vercel's Supabase integration sets SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
+// in supabase/pixbits_drops.sql. Vercel's Supabase integration sets SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
 // (Upstash Redis also works: set KV_REST_API_URL / KV_REST_API_TOKEN or UPSTASH_REDIS_REST_URL / _TOKEN.)
 // ADMIN_TOKEN is a password you choose, set in Vercel's environment variables.
 import { createHash, randomBytes } from "node:crypto";
