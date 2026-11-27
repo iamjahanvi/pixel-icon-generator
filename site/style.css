@@ -838,22 +838,22 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
 /* ---------- About: who drew it (chip over a signed icon) ---------- */
 .who-chip {
   position: absolute; left: 0; top: 0; z-index: 2; pointer-events: auto;
-  display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; border-radius: 999px;
+  display: flex; align-items: center; gap: 7px; padding: 4px 11px 4px 4px; border-radius: 999px;
   background: #fff; color: var(--text); text-decoration: none; white-space: nowrap;
   box-shadow: 0 0 0 1px var(--line), 0 8px 24px -8px rgba(0, 0, 0, 0.25);
-  font: 500 14px/1 var(--font); opacity: 0; transform: translate(-50%, calc(-100% + 6px)) scale(0.96);
+  font: 500 13px/1 var(--font); opacity: 0; transform: translate(-50%, calc(-100% + 6px)) scale(0.96);
   transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); visibility: hidden;
 }
 .who-chip.on { opacity: 1; visibility: visible; transform: translate(-50%, -100%); }
 .who-chip:hover .who-go { color: var(--text); }
-.who-av { position: relative; width: 36px; height: 36px; flex: none; }
-.who-av img, .who-av .ini { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px #fff, 0 1px 4px rgba(0, 0, 0, 0.2); background: var(--sunken); }
-.who-av .ini { display: grid; place-items: center; font-weight: 600; color: #fff; background: #3a3f47; }
+.who-av { position: relative; width: 24px; height: 24px; flex: none; }
+.who-av img, .who-av .ini { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px #fff, 0 1px 4px rgba(0, 0, 0, 0.2); background: var(--sunken); }
+.who-av .ini { display: grid; place-items: center; font-weight: 600; font-size: 11px; color: #fff; background: #3a3f47; }
 .who-av .ini.li { background: #0a66c2; }
-.who-badge { position: absolute; right: -4px; bottom: -4px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 0 2px #fff; }
+.who-badge { position: absolute; right: -4px; bottom: -3px; width: 13px; height: 13px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 0 2px #fff; }
 .who-badge.x { background: #000; color: #fff; }
-.who-badge.li { background: #0a66c2; color: #fff; border-radius: 5px; font: 700 10px/1 system-ui, sans-serif; }
-.who-badge svg { width: 10px; height: 10px; }
+.who-badge.li { background: #0a66c2; color: #fff; border-radius: 4px; font: 700 7.5px/1 system-ui, sans-serif; }
+.who-badge svg { width: 7px; height: 7px; }
 .who-name { display: flex; flex-direction: column; gap: 3px; }
 .who-name small { font-size: 12px; color: var(--faint); font-weight: 400; }
 .who-go { color: var(--faint); display: grid; place-items: center; }

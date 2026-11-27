@@ -583,6 +583,7 @@ const pile = (() => {
     if (d.who) {
       el.classList.add("signed");
       el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse" && !drag) showChip(b); });
+      el.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse" && !drag && chipFor !== b) showChip(b); }); // hovering an icon as it comes to rest
       el.addEventListener("pointerleave", hideSoon);
     }
     bodies.push(b);
@@ -608,14 +609,17 @@ const pile = (() => {
   let chipFor = null, chipT = 0;
   const X_LOGO = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
   const GO = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>';
+  // an icon is "at rest" once it has settled (not falling, bouncing or being dragged)
+  const atRest = (b) => b !== drag && Math.abs(b.vx) + Math.abs(b.vy) < 0.25;
   function showChip(b) {
+    if (!atRest(b)) return; // the chip is only for icons resting at the bottom
     clearTimeout(chipT);
     const w = b.d.who, x = w.kind === "x";
     const name = x ? `@${w.handle}` : w.name || w.handle, ini = esc((x ? w.handle : w.name || w.handle).charAt(0).toUpperCase());
     if (chipFor !== b) {
       chip.href = x ? `https://x.com/${encodeURIComponent(w.handle)}` : `https://www.linkedin.com/in/${encodeURIComponent(w.handle)}`;
       chip.setAttribute("aria-label", `${name} on ${x ? "X" : "LinkedIn"}`);
-      chip.innerHTML = `<span class="who-av">${x ? `<img src="https://unavatar.io/x/${encodeURIComponent(w.handle)}?fallback=false" alt="" referrerpolicy="no-referrer">` : `<span class="ini li">${ini}</span>`}<span class="who-badge ${x ? "x" : "li"}">${x ? X_LOGO : "in"}</span></span><span class="who-name">${esc(name)}<small>${x ? "on X" : "on LinkedIn"}</small></span><span class="who-go">${GO}</span>`;
+      chip.innerHTML = `<span class="who-av">${x ? `<img src="https://unavatar.io/x/${encodeURIComponent(w.handle)}?fallback=false" alt="" referrerpolicy="no-referrer">` : `<span class="ini li">${ini}</span>`}<span class="who-badge ${x ? "x" : "li"}">${x ? X_LOGO : "in"}</span></span><span class="who-name">${esc(name)}</span>`;
       const img = $("img", chip);
       if (img) img.addEventListener("error", () => { img.outerHTML = `<span class="ini">${ini}</span>`; }); // no picture: their initial instead
       chipFor = b;
@@ -626,7 +630,7 @@ const pile = (() => {
     chip.style.top = `${Math.max(chip.offsetHeight + 8, b.y - b.h / 2 - 6)}px`;
     chip.classList.add("on");
   }
-  const hideChip = () => { clearTimeout(chipT); chip.classList.remove("on"); };
+  const hideChip = () => { clearTimeout(chipT); chip.classList.remove("on"); chipFor = null; };
   function hideSoon() { clearTimeout(chipT); chipT = setTimeout(hideChip, 300); }
   chip.addEventListener("pointerenter", () => clearTimeout(chipT));
   chip.addEventListener("pointerleave", hideSoon);
@@ -652,6 +656,7 @@ const pile = (() => {
       const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
       if (rv < 0) { const k = rv * 0.6; a.vx += nx * k * wa * 2; a.vy += ny * k * wa * 2; b.vx -= nx * k * wb * 2; b.vy -= ny * k * wb * 2; }
     }
+    if (chipFor && chip.classList.contains("on") && !atRest(chipFor)) hideChip(); // knocked into motion: hide its chip
     for (const b of bodies) {
       if (Math.abs(b.vx) + Math.abs(b.vy) > 0.15) moving++;
       b.el.style.transform = `translate(${b.x - b.w / 2}px, ${b.y - b.h / 2}px) rotate(${b.a}deg)`;
@@ -729,10 +734,15 @@ const pile = (() => {
       if (bodies.length >= MAX) bodies.shift().el.remove();
       place();
       const from = $("#dd-cv").getBoundingClientRect();
-      add(d, { x: from.left + from.width / 2, y: from.bottom }); // falls from under the grid where it was drawn
+      const b = add(d, { x: from.left + from.width / 2, y: from.bottom }); // falls from under the grid where it was drawn
       save();
       wake();
+      return b;
     },
+    // the server confirmed it: keep its id (so its resting spot is remembered on the shared wall)
+    saved(b, d) { b.d = { ...b.d, ...d }; save(); },
+    // the server refused it (daily limit): take it back off the wall
+    remove(b) { const i = bodies.indexOf(b); if (i >= 0) bodies.splice(i, 1); b.el.remove(); if (chipFor === b) hideChip(); save(); },
   };
 })();
 
@@ -823,15 +833,14 @@ function askWho(d) {
     const d = { name: "my-icon", style: "color", palette: Object.fromEntries([...used].map((k) => [k, PAL[k]])), grid: grid.map((r) => r.join("")) };
     const who = await askWho(d); // a handle, null if skipped, undefined if closed
     if (who === undefined) return; // closed: keep drawing
-    let saved = null;
+    // drop it straight away; the save to the shared wall happens in the background
+    const body = pile.drop({ ...d, who });
+    grid.forEach((r) => r.fill(".")); draw();
     try {
       const r = await fetch("/api/drops", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ palette: d.palette, grid: d.grid, who }) });
-      if (r.status === 429) { toast((await r.json()).error || "That's enough drops for today."); return; }
-      if (r.ok) saved = (await r.json()).drop;
+      if (r.status === 429) { pile.remove(body); toast((await r.json()).error || "That's enough drops for today."); return; }
+      if (r.ok) pile.saved(body, (await r.json()).drop);
     } catch { /* no server: it stays on this browser's pile */ }
-    pile.drop(saved ? { ...d, ...saved } : { ...d, who });
-    grid.forEach((r) => r.fill(".")); draw();
-    toast(saved ? "Dropped on the wall for everyone." : "Dropped on your pile.");
   });
   draw();
 })();
