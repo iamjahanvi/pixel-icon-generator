@@ -111,7 +111,7 @@
       <form class="wall-row wall-type" id="word-form" autocomplete="off">
         <span class="w lead" data-lead></span>
         <label class="sr" for="word">Type a word</label>
-        <span class="pill-in"><span class="type-demo" id="type-demo" aria-hidden="true"><span id="type-demo-text"></span><i class="caret"></i></span><input id="word" type="text" placeholder="type a word" maxlength="40" spellcheck="false" enterkeyhint="go"><span class="pill-cta" id="pill-cta"><a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude" tabindex="-1">Open in Claude</a><a class="ghost icon-only" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt" tabindex="-1" aria-label="Open in ChatGPT" title="Open in ChatGPT"><img src="img/chatgpt.svg" alt="" width="18" height="18"></a></span></span>
+        <span class="pill-in"><span class="type-demo" id="type-demo" aria-hidden="true"><span id="type-demo-text"></span><i class="caret"></i></span><input id="word" type="text" placeholder="type a word" maxlength="40" spellcheck="false" enterkeyhint="go"><span class="pill-cta" id="pill-cta"><a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude" tabindex="-1" title="Free: opens Claude with the prompt ready">Make it in Claude</a><a class="ghost icon-only" href="https://chatgpt.com/" target="_blank" rel="noopener" data-chat="chatgpt" tabindex="-1" aria-label="Open in ChatGPT" title="Open in ChatGPT"><img src="img/chatgpt.svg" alt="" width="18" height="18"></a></span></span>
         <button class="slot" type="button" id="slot" aria-label="Your icon will appear here" disabled><span class="q" aria-hidden="true">?</span></button>
         <span class="w trail" data-trail></span>
       </form>
@@ -190,7 +190,7 @@
       </div>
       <div class="row last" id="any-chat">
         <div class="who"><strong>Any chat</strong><small>Free, nothing to install<br>Or <button type="button" class="link" data-chat="copy">copy the prompt</button> for Gemini and others</small></div>
-        <div class="cmd">a pixel icon of a <span id="chat-word">lantern</span>, please</div>
+        <div class="cmd chat-line">a pixel icon of <span id="chat-art">a</span> <input id="chat-in" class="chat-in" type="text" placeholder="type a word" maxlength="40" spellcheck="false" enterkeyhint="go" aria-label="The word to draw" size="11">, please</div>
         <a class="solid" href="https://claude.ai/new" target="_blank" rel="noopener" data-chat="claude">Open in Claude</a>
       </div>
       <p class="hint">Got an SVG back? Tweak it in the <a href="#paste" data-open-paste>editor</a>. Or <a href="#make" data-open-make>make one here</a> with an API key.</p>

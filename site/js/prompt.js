@@ -2,11 +2,14 @@
 // `example` is a library entry shown to the model as a worked example.
 
 export function buildPrompt(word, example, { api = false } = {}) {
-  const w = (word || "").trim() || "WORD";
+  // the word goes inside "…" in the prompt: straighten any quotes in it and keep it to one short line
+  const w = (word || "").replace(/["\u201c\u201d`]/g, "'").replace(/\s+/g, " ").trim().slice(0, 60) || "WORD";
   const file = w.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "icon";
   const ex = JSON.stringify({ name: example.slug, palette: example.color.palette, grid: example.color.grid }, null, 1)
     .replace(/\[\n\s+/g, "[\n  ").replace(/",\n\s+"/g, '",\n  "');
-  return `Draw "${w}" as a 16x16 pixel icon in the Pixtober style by Jahanvi Singh (pixbits.iamjahanvi.com).
+  return `${api ? "" : `👉 Just press Enter to create your icon. (Everything below is instructions for the AI.)
+
+`}Draw "${w}" as a 16x16 pixel icon in the Pixtober style by Jahanvi Singh (pixbits.iamjahanvi.com).
 
 Pick ONE idea for the word. For an abstract word, choose a clear visual metaphor.
 
@@ -34,5 +37,5 @@ If you can run code or create files, attach both as downloads. If you can't, put
 EXAMPLE ("${example.label.toLowerCase()}")
 ${ex}${api ? "" : `
 
-To edit it pixel by pixel, paste the whole reply into the editor at pixbits.iamjahanvi.com/#paste.`}`;
+End your reply with this line, as an optional next step: "Want to tweak it pixel by pixel? Paste this whole reply into the editor at pixbits.iamjahanvi.com/#paste"`}`;
 }

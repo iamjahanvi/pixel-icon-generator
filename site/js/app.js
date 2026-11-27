@@ -46,7 +46,12 @@ window.__bootStep?.(0.7); // the loading fill tracks real progress: icon data is
 }
 const bySlug = (s) => lib.find((ic) => ic.slug === s);
 const asDoc = (ic) => ({ name: ic.slug, style: "color", ...ic.color });
-const example = bySlug("lantern") || lib[0];
+// the worked example in the prompt: never the word being asked for, so the model isn't handed the answer
+const EXAMPLES = ["lantern", "coffee", "cactus", "heart"].map(bySlug).filter(Boolean);
+const exampleFor = (word) => {
+  const w = (word || "").trim().toLowerCase();
+  return EXAMPLES.find((ic) => !(w && (ic.slug === w || ic.label.toLowerCase().includes(w) || w.includes(ic.slug) || ic.keywords.includes(w)))) || lib[0];
+};
 const editor = initEditor();
 
 // Free route: open a new chat with the prompt filled in. The visitor reviews it and presses send.
@@ -57,13 +62,13 @@ const CHATS = {
 // Real links (not window.open), so they work in every browser and frame. Each link's href follows its word.
 function setChatLinks(scope, word) {
   $$('a[data-chat]', scope).forEach((a) => {
-    a.href = word ? CHATS[a.dataset.chat](buildPrompt(word, example)) : CHATS[a.dataset.chat]("").replace(/\?q=$/, "");
+    a.href = word ? CHATS[a.dataset.chat](buildPrompt(word, exampleFor(word))) : CHATS[a.dataset.chat]("").replace(/\?q=$/, "");
     a.dataset.word = word;
   });
 }
 
 async function copyPrompt(word) {
-  const ok = await copyText(buildPrompt(word, example));
+  const ok = await copyText(buildPrompt(word, exampleFor(word)));
   toast(ok ? "Prompt copied. Paste it into any AI chat." : "Couldn't copy. Your browser blocked the clipboard.");
 }
 
@@ -103,9 +108,7 @@ function onWord() {
   // the Claude and ChatGPT buttons pop up inside the field once there's a word
   $(".pill-in").classList.toggle("has-word", !!w);
   $$("#pill-cta a").forEach((a) => (a.tabIndex = w ? 0 : -1));
-  setChatLinks($("#any-chat"), w || "lantern");
-  setChatLinks($("#paste-dialog"), w || "lantern"); // the paste box's "No reply yet? Open in Claude"
-  $("#chat-word").textContent = w || "lantern";
+  syncChat(); // the Any chat row and the paste box follow its own word, or this one if it's empty
   showSlot(findIcon(w));
 }
 
@@ -200,17 +203,38 @@ wordIn.addEventListener("input", onWord);
     }
   })();
 })();
+// Any chat: type the word right in the sentence ("a pixel icon of an umbrella, please")
+const chatIn = $("#chat-in");
+function syncChat() {
+  const w = chatIn.value.trim();
+  const art = /^[aeiou]/i.test(w) ? "an" : "a";
+  $("#chat-art").textContent = art;
+  fitChat(); // the dashed line is exactly as wide as the word (or the placeholder)
+  setChatLinks($("#any-chat"), w);
+  setChatLinks($("#paste-dialog"), w || wordIn.value.trim()); // the paste box's "No reply yet? Open in Claude"
+}
+const textMeter = document.createElement("canvas").getContext("2d");
+function fitChat() {
+  const cs = getComputedStyle(chatIn);
+  textMeter.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const text = chatIn.value || chatIn.placeholder;
+  const ls = parseFloat(cs.letterSpacing) || 0; // the big text is set a little tight
+  chatIn.style.width = `${Math.ceil(textMeter.measureText(text).width + ls * text.length + parseFloat(cs.fontSize) * 0.08)}px`;
+}
+document.fonts?.ready.then(fitChat);
+chatIn.addEventListener("input", syncChat);
+chatIn.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $('#any-chat a[data-chat="claude"]').click(); } });
 onWord();
 $("#word-form").addEventListener("submit", (e) => { e.preventDefault(); $('#pill-cta a[data-chat="claude"]').click(); });
 document.addEventListener("click", (e) => {
   const a = e.target.closest("a[data-chat]");
   if (a) {
-    if (!a.dataset.word) { e.preventDefault(); toast("Type a word first."); (a.closest("#pill-cta") ? wordIn : search).focus(); return; }
-    toast("When the icon comes back, paste the reply into the editor.");
+    if (!a.dataset.word) { e.preventDefault(); toast("Type a word first."); (a.closest("#pill-cta") ? wordIn : a.closest("#any-chat, #paste-dialog") ? chatIn : search).focus(); return; }
   }
   const c = e.target.closest('button[data-chat="copy"]');
   if (c) {
-    const w = c.closest("#lib-empty") ? search.value.trim() : wordIn.value.trim() || "lantern";
+    const w = c.closest("#lib-empty") ? search.value.trim() : c.closest("#any-chat, #paste-dialog") ? chatIn.value.trim() || wordIn.value.trim() : wordIn.value.trim();
+    if (!w) { toast("Type a word first."); (c.closest("#lib-empty") ? search : chatIn).focus(); return; }
     if (!w) { toast("Type a word first."); return; }
     copyPrompt(w);
   }
@@ -242,6 +266,8 @@ function renderTable() {
 renderTable();
 
 // ---------- install rows ----------
+// commands stay on one line and may be cut off with …, so the full text shows on hover
+$$(".install .cmd").forEach((c) => (c.title = c.dataset.copy || c.textContent.trim()));
 $$("[data-copy-btn]").forEach((b) => b.addEventListener("click", async () => {
   const prev = b.previousElementSibling, cmd = prev && prev.classList.contains("cmd") ? prev : $(".cmd", b.closest(".row")); // each step has its own button
   const ok = await copyText(cmd.dataset.copy || cmd.textContent.trim());
@@ -491,7 +517,7 @@ $("#mk-form").addEventListener("submit", async (e) => {
   job = new AbortController();
   mkView("busy");
   try {
-    const r = await makeIcon({ word, key, model: $("#mk-model").value, example: bySlug("lantern") || lib[0], signal: job.signal, onStep: (t) => ($("#mk-step").textContent = t) });
+    const r = await makeIcon({ word, key, model: $("#mk-model").value, example: exampleFor(word), signal: job.signal, onStep: (t) => ($("#mk-step").textContent = t) });
     r.doc.name = slugify(word);
     made = { slug: r.doc.name, label: word, category: "Made by you", keywords: [], color: { palette: r.doc.palette, grid: r.doc.grid } };
     $("#mk-stage").innerHTML = iconSvg(r.doc, 128);
@@ -537,13 +563,19 @@ const pile = (() => {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w * PX}" height="${h * PX}" shape-rendering="crispEdges">${rects}</svg>`;
     return { src: `data:image/svg+xml,${encodeURIComponent(svg)}`, w: w * PX, h: h * PX };
   }
+  // an icon with no saved spot falls in below the drawing grid (a little scatter across its width)
+  function underGrid(r) {
+    const g = $("#dd-cv")?.getBoundingClientRect();
+    if (!g || !g.width) return r + Math.random() * Math.max(1, W() - 2 * r);
+    return Math.min(W() - r, Math.max(r, g.left + r + Math.random() * Math.max(1, g.width - 2 * r)));
+  }
   function add(d, { x = null, y = null, pinned = false } = {}) {
     const t = trimmed(d), el = document.createElement("img");
     el.src = t.src; el.alt = d.who ? `Drawn by ${d.who.kind === "x" ? "@" + d.who.handle : d.who.name || d.who.handle}` : ""; el.draggable = false; el.width = t.w; el.height = t.h;
     box.append(el);
     box.classList.add("has-icons");
     const r = Math.max(t.w, t.h) / 2 * 0.9;
-    const b = { el, w: t.w, h: t.h, r, x: x ?? r + Math.random() * Math.max(1, W() - 2 * r), y: y ?? -t.h, vx: (Math.random() - 0.5) * 2, vy: 0, a: (Math.random() - 0.5) * 30, va: (Math.random() - 0.5) * 6, d, pinned };
+    const b = { el, w: t.w, h: t.h, r, x: x ?? underGrid(r), y: y ?? -t.h, vx: (Math.random() - 0.5) * 2, vy: 0, a: (Math.random() - 0.5) * 30, va: (Math.random() - 0.5) * 6, d, pinned };
     if (pinned) { b.a = 0; b.va = 0; }
     if (d.who) {
       el.classList.add("signed");
