@@ -511,7 +511,10 @@ body { min-height: 0; height: 100vh; height: 100dvh; display: flex; flex-directi
 }
 .view-in { margin-block: auto; width: 100%; }
 /* the wall sits close under the header rather than centred */
-#view-home .view-in { margin-top: clamp(24px, 8vh, 96px); }
+/* the hero sits in the middle of the whole screen: the view starts below the header, so its bottom padding matches the
+   header's height (measured in app.js as --top-h) and auto margins centre it */
+#view-home .view-in { margin-top: auto; margin-bottom: auto; }
+#view-home.view { padding-bottom: max(var(--top-h, 110px), calc(96px + env(safe-area-inset-bottom, 0px))); }
 /* the library scrolls under the header, so it starts a little below it rather than centred */
 #icons .view-in { margin-top: 0; } /* the top space lives inside the pinned chip row, so the row never travels */
 
@@ -565,12 +568,12 @@ body { min-height: 0; height: 100vh; height: 100dvh; display: flex; flex-directi
    the rounded ends, so it goes solid until the switch is done */
 html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; background: #fff; }
 
-.pills { --ease: cubic-bezier(0.32, 0.72, 0, 1); --dur: 0.42s; }
+.pills { --ease: cubic-bezier(0.32, 0.72, 0, 1); --spring: var(--ease); --dur: 0.42s; } /* no overshoot: size changes use the same smooth ease-out */
 /* the dark highlight slides and stretches to whichever section is open */
 .pill-ind {
   position: absolute; top: 5px; left: 0; height: 40px; width: 40px; border-radius: 999px; background: var(--text);
   opacity: 0; transform: translateX(0) scale(0.6); pointer-events: none;
-  transition: transform var(--dur) var(--ease), width var(--dur) var(--ease), opacity 0.2s ease;
+  transition: transform var(--dur) var(--spring), width var(--dur) var(--spring), opacity 0.2s ease;
 }
 .pill-btn {
   position: relative; z-index: 1; height: 40px; padding: 0 16px; display: inline-grid; place-items: center; place-content: center; overflow: hidden;
@@ -579,14 +582,15 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
   transition: width var(--dur) var(--ease), background 0.15s ease, color 0.25s ease;
 }
 .pill-btn > * { grid-area: 1 / 1; }
-.pi { display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.2s ease, transform var(--dur) var(--ease), filter 0.2s ease; }
+.pi { display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.22s ease calc(var(--dur) * 0.4), transform var(--dur) var(--ease), filter 0.22s ease calc(var(--dur) * 0.4); } /* returns with the other tabs, not before them */
 .pi .ic { flex: none; }
-.pill-btn .x { opacity: 0; transform: scale(0.4) rotate(-90deg); transition: opacity 0.2s ease, transform var(--dur) var(--ease); }
+.pill-btn .x { opacity: 0; transform: scale(0.4) rotate(-90deg); transition: opacity 0.08s ease, transform var(--dur) var(--ease); } /* the arrow clears as fast as the circle on the way back */
+.pill-btn[aria-pressed="true"] .x { transition-duration: 0.2s, var(--dur); }
 .pill-btn:not([aria-pressed="true"]):hover { background: var(--sunken); }
 /* the open section's button shrinks into a round close button */
 .pill-btn[aria-pressed="true"] { color: var(--on-dark); }
-.pill-btn[aria-pressed="true"] .pi { opacity: 0; transform: scale(0.7); filter: blur(2px); }
-.pill-btn[aria-pressed="true"] .x { opacity: 1; transform: none; transition-delay: 0.06s; }
+.pill-btn[aria-pressed="true"] .pi { opacity: 0; transform: scale(0.92); filter: blur(3px); transition: opacity 0.1s ease, transform 0.2s ease, filter 0.1s ease; }
+.pill-btn[aria-pressed="true"] .x { opacity: 1; transform: none; transition-delay: calc(var(--dur) * 0.45); }
 .pill-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 /* the small switch at the end of the bar: stop the marquees */
 .pills .sep { width: 1px; height: 22px; background: var(--line-strong); margin: 0 4px; }
@@ -603,6 +607,7 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
 .pills:has(.pill-btn[data-view="icons"]:hover) .tsep::before,
 .pills:has(.pill-btn[data-view="how"]:hover) .tsep-b::before,
 .pills:has(.pill-btn[data-view][aria-pressed="true"]) .tsep::before { opacity: 0; transform: scaleY(0.2); }
+.pills.going-back .tsep::before { transition: opacity 0.22s ease calc(var(--dur) * 0.4), transform 0.3s var(--ease) calc(var(--dur) * 0.4); } /* going back: the dividers arrive with the tab names, not before */
 /* the divider before the pause button takes no room either (1px line, margins cancel its width and the
    extra flex gap), so About → pause is spaced like the tabs */
 .pills > .sep:not([data-for]) { margin: 0 -1.5px; }
@@ -690,9 +695,10 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
 .bar-menu [aria-checked="true"] .n { color: rgba(255, 255, 255, 0.6); }
 @media (prefers-reduced-motion: reduce) { .bar-menu { animation: none; } }
 /* About: clicking "Got feedback?" shows the address (a mailto link) with a Copy button */
-.fb-wrap { position: relative; display: inline-flex; overflow-x: clip; overflow-y: visible; transition: width var(--dur) var(--ease), opacity 0.2s ease; } /* clipped sideways so it grows with the bar like the other pills; the email bubble above still shows */
+.fb-wrap { position: relative; display: inline-flex; overflow-x: clip; overflow-y: visible; transition: width var(--dur) var(--spring), opacity 0.22s ease calc(var(--dur) * 0.4), filter 0.22s ease calc(var(--dur) * 0.4); } /* clipped sideways so it grows with the bar like the other pills; the email bubble above still shows */
 .fb-wrap > .pill-btn { flex: none; }
 .pills .fb-wrap.gone { overflow: hidden; }
+.pills > .fb-wrap.gone { transition-duration: var(--dur), 0.09s, 0.09s; } /* width, then a quick fade for icon and words together */
 .fb-wrap.open { overflow: visible; } /* the open email bubble is wider than the pill, so no clipping while it's shown */
 .fb-tip {
   position: absolute; left: 50%; bottom: calc(100% + 12px); z-index: 4; display: flex; align-items: center; gap: 10px;
@@ -705,20 +711,25 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
 .fb-mail { user-select: all; -webkit-user-select: all; color: inherit; text-decoration: none; }
 .fb-mail:hover { text-decoration: underline; text-underline-offset: 3px; }
 .fb-copy { border: 0; border-radius: 999px; padding: 7px 12px; background: var(--dark); color: var(--on-dark); font: 500 13px/1 var(--font); cursor: pointer; }
-.pills .gone { width: 0 !important; padding: 0; margin-left: -2px; opacity: 0; pointer-events: none; }
+.pills .gone { width: 0 !important; padding: 0; margin-left: -2px; opacity: 0; filter: blur(4px); pointer-events: none; } /* a little blur as items come and go */
 /* everything in the bar folds and unfolds on one curve: width, padding and spacing together, so nothing jumps;
    items fade out quickly as they fold, and fade in a beat after they start to open */
 .pills > .pill-btn, .pills > .pill-search, .pills > .sep {
-  transition: width var(--dur) var(--ease), padding var(--dur) var(--ease), margin var(--dur) var(--ease),
-    opacity 0.24s ease 0.08s, background-color 0.15s ease, color 0.25s ease, box-shadow 0.15s ease;
+  transition: width var(--dur) var(--spring), padding var(--dur) var(--spring), margin var(--dur) var(--spring),
+    opacity 0.22s ease calc(var(--dur) * 0.4), background-color 0.15s ease, color 0.25s ease, box-shadow 0.15s ease,
+    filter 0.22s ease calc(var(--dur) * 0.4);
 }
-.pills > .gone { transition-delay: 0s; transition-duration: var(--dur), var(--dur), var(--dur), 0.12s, 0.15s, 0.25s, 0.15s; }
-/* a view's own items (About's feedback + socials, Use Skill's GitHub + Draw icon, Library's search + Download)
-   stay invisible while the bar resizes, then fade in once it has reached its final width */
-.pills > [data-for]:not(.gone) {
-  transition: width var(--dur) var(--ease), padding var(--dur) var(--ease), margin var(--dur) var(--ease),
-    opacity 0.18s ease var(--dur), background-color 0.15s ease, color 0.25s ease, box-shadow 0.15s ease;
+.pills > .pill-btn[data-for] { justify-content: start; justify-items: start; }
+.pills.going-back, .pills.going-back * { filter: none !important; } /* the blur is only for opening a tab, not for going back */
+/* …and nothing animates out of a blur on the way back: the same timings as usual, just without the filter */
+.pills.going-back > .pill-btn, .pills.going-back > .pill-search, .pills.going-back > .sep {
+  transition: width var(--dur) var(--spring), padding var(--dur) var(--spring), margin var(--dur) var(--spring),
+    opacity 0.22s ease calc(var(--dur) * 0.4), background-color 0.15s ease, color 0.25s ease, box-shadow 0.15s ease !important;
 }
+.pills.going-back > .gone { transition-delay: 0s !important; transition-duration: var(--dur), var(--dur), var(--dur), 0.09s, 0.15s, 0.25s, 0.15s !important; }
+.pills.going-back > .fb-wrap { transition: width var(--dur) var(--spring), opacity 0.09s ease !important; }
+.pills.going-back .pi { transition: opacity 0.22s ease calc(var(--dur) * 0.4), transform var(--dur) var(--ease) !important; }
+.pills > .gone { transition-delay: 0s; transition-duration: var(--dur), var(--dur), var(--dur), 0.09s, 0.15s, 0.25s, 0.15s, 0.09s; } /* leaving: gone in under 0.1s */
 .pills .sep.gone { margin: 0 0 0 -2px; }
 
 /* views morph into each other: the old one sinks and fades, the new one rises in */
@@ -872,8 +883,6 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
   .by { justify-content: center; pointer-events: none; } /* By Jahanvi, centred under the logo, as plain text (no link on phones) */
   .by-x { display: none; }
   #dt-edit { display: none; } /* no editing on phones: the icon pop-up just copies and downloads */
-  #view-home .view-in { margin-top: auto; margin-bottom: auto; } /* the hero sits in the middle of the space */
-  #view-home.view { padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px)); } /* …between the logo and the lines + bar at the bottom */
   .top .tagline { display: none; } /* on phones the pitch sits just above the floating bar, not in the header */
   .m-tag { z-index: 5; display: block; position: fixed; left: var(--gutter); right: var(--gutter); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); margin: 0; text-align: center; font-size: 17px; line-height: 1.35; font-weight: 500; letter-spacing: -0.01em; pointer-events: none; } /* just above the floating bar */
   .m-tag span { display: block; }
@@ -883,8 +892,8 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
   /* play/pause for the moving rows, at the end of the bar (home only; the library hides it like on desktop) */
   .pills > .sep:not([data-for]) { margin: 0 6px !important; background-color: var(--line-strong) !important; } /* stays visible: a tap leaves a sticky hover on phones */
   .pills > .sep[data-for="how"] { background-color: var(--line-strong) !important; }
-  .pills > .icon-pill[data-for="how"] { width: auto !important; opacity: 1 !important; pointer-events: auto !important; margin: 0 !important; padding: 0 12px !important; }
-  .pills > .sep[data-for="how"] { width: 1px !important; opacity: 1 !important; margin: 0 6px !important; }
+  .pills > .icon-pill[data-for="how"] { width: auto !important; opacity: 1 !important; filter: none !important; pointer-events: auto !important; margin: 0 !important; padding: 0 12px !important; }
+  .pills > .sep[data-for="how"] { width: 1px !important; opacity: 1 !important; filter: none !important; margin: 0 6px !important; }
   .m-count { display: inline-flex; }
   .pills > .pill-btn[data-view="icons"]:not([aria-pressed="true"]) { width: auto !important; padding: 0 7px 0 16px; } /* sized by its own content, so the gap after the badge never depends on a load-time measurement */ /* the badge ends the button, so less padding after it: even gaps around the line */
 }
@@ -919,3 +928,9 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
 
 /* no blue flash when tapping links and buttons on phones */
 * { -webkit-tap-highlight-color: transparent; }
+
+/* very short phones: keep the hero clear of the tagline + bar rather than exactly centred */
+@media (max-width: 720px) and (max-height: 640px) {
+  #view-home.view { padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px)); }
+  .wall-row.m-row { display: none; } /* six rows don't fit: back to four */
+}

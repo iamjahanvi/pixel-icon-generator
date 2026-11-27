@@ -862,6 +862,14 @@ setTimeout(phoneBar, 0);
 // About: copy the feedback email
 $("#fb-copy")?.addEventListener("click", async (e) => { e.preventDefault(); toast((await copyText("iamjahanvi@gmail.com")) ? "Email copied." : "Couldn't copy. It's iamjahanvi@gmail.com"); });
 
+// the hero is centred on the whole screen: the CSS needs the header's height to balance the space below it
+{
+  const top = $(".top");
+  const setTop = () => document.documentElement.style.setProperty("--top-h", `${top.offsetHeight}px`);
+  setTop();
+  new ResizeObserver(setTop).observe(top);
+}
+
 // ---------- views: the floating bar swaps the hero for another view ----------
 const VIEWS = ["icons", "install", "how"];
 // the address bar names each view after its tab; the old names still open the right view
@@ -940,6 +948,18 @@ function swap() {
 function showView(name, { focus = true, animate = true } = {}) {
   const next = VIEWS.includes(name) ? name : null;
   if (next === view && animate) return;
+  // opening a view from the start: the dark highlight begins as the whole tab that was clicked, then closes into
+  // the round back button (instead of popping in from nothing)
+  if (!view && next && animate && !noMotion()) {
+    const b = viewBtns.find((x) => x.dataset.view === next);
+    clearTimeout(ind._fade); // a quick reopen cancels the closing fade
+    ind.style.transition = "none";
+    ind.style.width = `${b.offsetWidth}px`; ind.style.transform = `translateX(${b.offsetLeft}px)`; ind.style.opacity = "1";
+    void ind.offsetWidth; ind.style.transition = "";
+  }
+  // going back to the start: no blur on the way out (only opening a tab blurs its content in)
+  const prev = view;
+  if (view && !next) { bar.classList.add("going-back"); clearTimeout(bar._back); bar._back = setTimeout(() => bar.classList.remove("going-back"), 700); }
   view = next;
   viewBtns.forEach((b) => {
     const on = b.dataset.view === view;
@@ -947,7 +967,13 @@ function showView(name, { focus = true, animate = true } = {}) {
     const label = $(".pl", b).textContent;
     b.setAttribute("aria-label", on ? "Back" : label); // the open view's button takes you back to the start
   });
+  const closing = prev && !view;
   layoutBar(animate);
+  // going back: the dark circle goes as soon as ← is clicked (a quick fade, no stretching), while the tabs return
+  if (closing && animate && !noMotion()) {
+    ind.style.transition = "opacity 0.1s ease"; ind.style.opacity = "0";
+    clearTimeout(ind._fade); ind._fade = setTimeout(() => { ind.style.transition = ""; }, 150);
+  }
   // the views morph into each other where the browser supports view transitions
   if (animate && !noMotion() && document.startViewTransition) {
     // the bar's frosted blur would be drawn as a square during the switch, so it's switched off until the switch ends
