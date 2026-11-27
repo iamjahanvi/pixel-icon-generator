@@ -2,27 +2,23 @@
 <!-- Source for og.png. Render at 1200x630 with: node site/tools/render-og.cjs (site served on :8765) -->
 <html><head><meta charset="utf-8"><link rel="stylesheet" href="../style.css">
 <style>
+  html, body { margin: 0; }
   body { width: 1200px; height: 630px; overflow: hidden; position: relative; }
-  .og { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .og .logo { display: block; width: 380px; height: 120px; image-rendering: pixelated; margin: 0 0 34px; }
-  .og h1 { font-size: 64px; line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 20px; }
-  .og p { font-size: 24px; color: var(--muted); margin: 0; }
-  .ic { position: absolute; image-rendering: pixelated; }
-  .ic svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+  .txt { position: absolute; left: 80px; top: 0; bottom: 0; width: 520px; display: flex; flex-direction: column; justify-content: center; }
+  .logo { display: block; width: 316px; height: 100px; image-rendering: pixelated; margin-bottom: 40px; }
+  h1 { margin: 0; font-size: 52px; font-weight: 600; line-height: 1.1; letter-spacing: -0.03em; color: var(--text); }
+  p { margin: 28px 0 0; font-size: 22px; color: var(--muted); }
+  .grid { position: absolute; right: 72px; top: 75px; display: grid; grid-template-columns: repeat(3, 128px); gap: 32px; }
+  .grid svg { display: block; width: 128px; height: 128px; }
 </style></head>
 <body>
-<div id="ics"></div>
-<div class="og"><img class="logo" src="../img/logo.svg" alt="Pixbits" width="380" height="120"><h1>Type a word.<br>Get a pixel icon.</h1><p>150 free 16×16 icons, and a skill for your AI &middot; pixbits.iamjahanvi.com</p></div>
+<div class="txt"><img class="logo" src="../img/logo.svg" alt="Pixbits"><h1>Cute lil’ pixel icons, and a Skill to draw more.</h1><p>150 free 16×16 icons · pixbits.iamjahanvi.com</p></div>
+<div class="grid" id="grid"></div>
 <script type="module">
   import { svg } from "../js/core.js";
   const lib = await fetch("../data/icons.json").then((r) => r.json());
-  const at = [["cherry", 80, 60, 88], ["cat", 56, 270, 96], ["watermelon", 150, 470, 88], ["frog", 250, 70, 80],
-              ["rocket", 1050, 60, 88], ["heart", 1076, 280, 88], ["whale", 990, 470, 96], ["medal-gold", 900, 70, 80],
-              ["mushroom", 300, 500, 72], ["hot-air-balloon", 850, 500, 72]];
-  document.getElementById("ics").innerHTML = at.map(([s, x, y, z]) => {
-    const ic = lib.find((i) => i.slug === s);
-    return `<div class="ic" style="left:${x}px;top:${y}px;width:${z}px;height:${z}px">${svg({ ...ic.color }, z)}</div>`;
-  }).join("");
+  document.getElementById("grid").innerHTML = ["cherry", "frog", "rocket", "cat", "heart", "whale", "mushroom", "sunflower", "hot-air-balloon"]
+    .map((s) => svg({ ...lib.find((i) => i.slug === s).color }, 128)).join("");
   await document.fonts.ready;
   document.body.dataset.ready = "1";
 </script></body></html>
