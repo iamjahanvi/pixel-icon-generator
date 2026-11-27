@@ -690,9 +690,10 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
 .bar-menu [aria-checked="true"] .n { color: rgba(255, 255, 255, 0.6); }
 @media (prefers-reduced-motion: reduce) { .bar-menu { animation: none; } }
 /* About: clicking "Got feedback?" shows the address (a mailto link) with a Copy button */
-.fb-wrap { position: relative; display: inline-flex; transition: width var(--dur) var(--ease), opacity 0.2s ease; }
+.fb-wrap { position: relative; display: inline-flex; overflow-x: clip; overflow-y: visible; transition: width var(--dur) var(--ease), opacity 0.2s ease; } /* clipped sideways so it grows with the bar like the other pills; the email bubble above still shows */
 .fb-wrap > .pill-btn { flex: none; }
 .pills .fb-wrap.gone { overflow: hidden; }
+.fb-wrap.open { overflow: visible; } /* the open email bubble is wider than the pill, so no clipping while it's shown */
 .fb-tip {
   position: absolute; left: 50%; bottom: calc(100% + 12px); z-index: 4; display: flex; align-items: center; gap: 10px;
   padding: 6px 6px 6px 14px; border-radius: 999px; background: #fff; white-space: nowrap;
