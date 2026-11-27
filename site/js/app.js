@@ -700,10 +700,10 @@ const pile = (() => {
     try { const r = await fetch("/api/drops", { cache: "no-store" }); if (r.ok) list = (await r.json()).drops; } catch { /* offline or no server */ }
     if (list) { shared = true; MAX = 60; }
     const items = list ? list.slice().reverse() : saved();
-    // the pour plays once per browser, on the very first visit; after that (and with reduced motion) the pile is
-    // settled before it's shown, so it's simply there at the bottom
+    // the pour plays once per visit (a session: until the tab or browser is closed), the first time About opens;
+    // after that in the same visit (and always with reduced motion) the pile is settled before it's shown
     let poured = false;
-    try { poured = localStorage.getItem("pb-poured") === "1"; localStorage.setItem("pb-poured", "1"); } catch { /* storage blocked */ }
+    try { poured = sessionStorage.getItem("pb-poured") === "1"; sessionStorage.setItem("pb-poured", "1"); } catch { /* storage blocked */ }
     if (calm.matches || poured) { items.forEach((d) => add(d, { y: -60 })); for (let i = 0; i < 600; i++) step(); return; }
     // the wall pours out from under the drawing grid, one icon after another, like fresh drops
     const g = $("#dd-cv")?.getBoundingClientRect();
@@ -937,6 +937,7 @@ const VIEWS = ["icons", "install", "how"];
 const HASH = { icons: "library", install: "skill", how: "about" };
 const FROM_HASH = { library: "icons", skill: "install", about: "how", icons: "icons", install: "install", how: "how" };
 const bar = $(".pills"), ind = $(".pill-ind"), viewBtns = $$(".pill-btn[data-view]");
+bar.addEventListener("animationend", (e) => { if (e.animationName === "bar-rise") { bar.classList.remove("rise"); [...bar.children].forEach((el) => el.style.removeProperty("--ox")); } }); // the rise is done once its shared animation ends
 // in the library view only its close button and a search pill stay in the bar
 // views with their own actions: the bar slims to the close button and the items marked data-for that view
 const FOCUSED = ["icons", "install", "how"];
@@ -1028,7 +1029,10 @@ function showView(name, { focus = true, animate = true } = {}) {
   const opening = !view && next && animate && !noMotion();
   // going back to the start: no blur on the way out (only opening a tab blurs its content in)
   const prev = view;
-  if (view && !next) { bar.classList.add("going-back"); clearTimeout(bar._back); bar._back = setTimeout(() => bar.classList.remove("going-back"), 700); }
+  if (view && !next) {
+    bar.classList.add("going-back"); if (animate && !noMotion()) bar.classList.add("rise"); // the bar's content fades in, in place, out of a blur
+    clearTimeout(bar._back); bar._back = setTimeout(() => bar.classList.remove("going-back"), 700);
+  }
   view = next;
   viewBtns.forEach((b) => {
     const on = b.dataset.view === view;
@@ -1049,10 +1053,20 @@ function showView(name, { focus = true, animate = true } = {}) {
     ind.style.width = `${b.offsetWidth}px`; ind.style.transform = `translateX(${b.offsetLeft}px)`; ind.style.opacity = "1";
     void ind.offsetWidth; ind.style.transition = "";
   }
+  // going back: the items jump straight to their final places and the bar grows around them, so nothing slides
+  const rising = bar.classList.contains("rise"), fromW = bar.offsetWidth;
   layoutBar(animate);
+  if (rising) {
+    const toW = bar.offsetWidth;
+    [...bar.children].forEach((el) => el.style.setProperty("--ox", `${toW / 2 - el.offsetLeft}px`)); // scale about the bar's centre
+    bar.style.transition = "none"; bar.style.width = `${fromW}px`; void bar.offsetWidth;
+    bar.style.transition = "width var(--dur) var(--spring)"; bar.style.width = `${toW}px`;
+    const done = (e) => { if (e && (e.target !== bar || e.propertyName !== "width")) return; bar.removeEventListener("transitionend", done); clearTimeout(bar._grow); bar.style.width = ""; bar.style.transition = ""; };
+    bar.addEventListener("transitionend", done); clearTimeout(bar._grow); bar._grow = setTimeout(done, 900);
+  }
   // going back: the dark circle goes as soon as ← is clicked (a quick fade, no stretching), while the tabs return
   if (closing && animate && !noMotion()) {
-    ind.style.transition = "opacity 0.1s ease"; ind.style.opacity = "0";
+    ind.style.transition = rising ? "none" : "opacity 0.1s ease"; ind.style.opacity = "0"; // with the bar growing around still content, it just goes
     clearTimeout(ind._fade); ind._fade = setTimeout(() => { ind.style.transition = ""; }, 150);
   }
   // the views morph into each other where the browser supports view transitions; phones skip the page snapshot
@@ -1095,8 +1109,8 @@ function showView(name, { focus = true, animate = true } = {}) {
       requestAnimationFrame(tick);
     })();
   };
-  const moveTo = (el) => {
-    if (!el.matches(":hover") && !el.querySelector(":hover")) return; // not genuinely under the mouse
+  const moveTo = (el, under = false) => {
+    if (!under && !el.matches(":hover") && !el.querySelector(":hover")) return; // not genuinely under the mouse
     const b = bar.getBoundingClientRect(), r = el.getBoundingClientRect();
     const place = () => { hov.style.width = `${r.width}px`; hov.style.height = `${r.height}px`; hov.style.top = `${r.top - b.top - bar.clientTop}px`; hov.style.transform = `translateX(${r.left - b.left - bar.clientLeft}px)`; };
     if (!hov.classList.contains("on")) { hov.style.transition = "none"; place(); void hov.offsetWidth; hov.style.transition = ""; hov.classList.add("on"); } // appears where the cursor is, then glides
@@ -1104,8 +1118,17 @@ function showView(name, { focus = true, animate = true } = {}) {
     watch();
   };
   // after a click the bar morphs under a still cursor; a button sliding under it isn't a hover, so the highlight
-  // waits until the mouse actually moves
-  let hold = null;
+  // waits while the bar changes shape. Once it has settled, it shows on whatever button is under the cursor (no need
+  // to move the mouse); moving the mouse before that picks it up straight away.
+  let hold = null, settleT = 0;
+  const settle = () => {
+    if (!hold) return;
+    // the page switch (desktop) covers everything until it's done, hiding what's under the cursor: wait for it
+    if (document.documentElement.classList.contains("switching")) { settleT = setTimeout(settle, 30); return; }
+    const p = hold; hold = null;
+    const el = document.elementFromPoint(p.x, p.y)?.closest(HOVERABLE);
+    if (el && bar.contains(el) && !el.closest(".fb-tip")) { moveTo(el, true); hideSeps(el); }
+  };
   bar.addEventListener("pointerover", (e) => {
     if (e.pointerType !== "mouse" || hold) return;
     const el = e.target.closest(HOVERABLE);
@@ -1138,10 +1161,11 @@ function showView(name, { focus = true, animate = true } = {}) {
   bar.addEventListener("click", (e) => {
     if (!e.target.closest(".pill-btn[data-view]")) return;
     hold = { x: e.clientX, y: e.clientY }; hov.style.transition = "none"; hov.classList.remove("on"); void hov.offsetWidth; hov.style.transition = "";
+    clearTimeout(settleT); settleT = setTimeout(settle, (parseFloat(getComputedStyle(bar).getPropertyValue("--dur")) || 0.42) * 1000 + 60);
   });
   bar.addEventListener("pointermove", (e) => {
     if (!hold || e.pointerType !== "mouse" || Math.hypot(e.clientX - hold.x, e.clientY - hold.y) < 3) return;
-    hold = null; // the mouse moved: pick up whatever button it's over now
+    hold = null; clearTimeout(settleT); // the mouse moved: pick up whatever button it's over now
     const el = e.target.closest(HOVERABLE);
     if (el && bar.contains(el) && !el.closest(".fb-tip")) { moveTo(el); hideSeps(el); }
   });

@@ -731,7 +731,7 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
     filter 0.22s ease calc(var(--dur) * 0.4);
 }
 .pills > .pill-btn[data-for] { justify-content: start; justify-items: start; }
-.pills.going-back, .pills.going-back * { filter: none !important; } /* the blur is only for opening a tab, not for going back */
+.pills.going-back:not(.rise), .pills.going-back:not(.rise) * { filter: none !important; } /* the blur is only for opening a tab, not for going back */
 /* …and nothing animates out of a blur on the way back: the same timings as usual, just without the filter */
 .pills.going-back > .pill-btn, .pills.going-back > .pill-search, .pills.going-back > .sep {
   transition: width var(--dur) var(--spring), padding var(--dur) var(--spring), margin var(--dur) var(--spring),
@@ -1201,3 +1201,17 @@ html.kbd .pills .pill-btn:focus-visible, html.kbd .pills .icon-pill:focus-visibl
   .row.steps .cmd { margin-left: 0; }
   .row.steps .cmd .step { display: none; }
 }
+
+/* going back to the start: everything in the bar (tab names, dividers, the pause button) appears in its place, all
+   at once, fading in out of a blur and opening out from the middle while the bar grows back. Their own staggered fades are switched off for it. */
+@keyframes bar-rise { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: blur(0); } }
+@keyframes bar-open { from { transform: scale(0.8); } to { transform: none; } }
+/* every item scales about the bar's centre (--ox, set by the script), so the whole row opens out from the middle */
+.pills.rise > :not(.gone):not(.pill-ind):not(.pill-hov) { transform-origin: var(--ox, 50%) 50%; animation: bar-rise calc(var(--dur) * 0.5) ease-out calc(var(--dur) * 0.1) both, bar-open calc(var(--dur) * 0.5) var(--spring) calc(var(--dur) * 0.1) both; } /* while the bar is still growing: from 10% of its growth, fully in by 60%, before it visibly settles */
+/* …and nothing slides sideways: the items take their final widths and spots at once, centred, and the bar itself
+   grows (its width animated by the script) to uncover them */
+.pills.rise { justify-content: center; }
+.pills.rise > * { flex-shrink: 0; }
+.pills.going-back.rise > *, .pills.going-back.rise > .pill-btn:not(.gone), .pills.going-back.rise > .sep:not(.gone) { transition: none !important; }
+.pills.rise .pi, .pills.rise .tsep::before { transition: none !important; }
+.pills.rise { overflow: hidden; } /* the bar's edges uncover the content as it grows */
