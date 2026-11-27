@@ -75,10 +75,10 @@ async function copyPrompt(word) {
 // ---------- the word wall ----------
 // [slug, word, colour, weight]: each word takes its icon's colour; weights alternate like a checkerboard.
 const WALL = [
-  [["heart", "Heart", "#e8243c", 600], ["fish", "Goldfish", "#f5861f", 300], ["tree", "Tree", "#3fae49", 600], ["watermelon", "Watermelon", "#e23a4f", 300]],
-  [["rain", "Rain", "#3a8ee6", 300], ["key", "Key", "#d9a21a", 600], ["mushroom", "Mushroom", "#e5322d", 300], ["frog", "Frog", "#3f9e3a", 600]],
-  [["pizza", "Pizza", "#e2a04a", 300], ["house", "House", "#d9483b", 600], ["cat", "Cat", "#e8862a", 300], ["tulip", "Tulip", "#3a9a3e", 600]],
-  [["whale", "Whale", "#2f7fd8", 600], ["pencil", "Pencil", "#e09a12", 300], ["rocket", "Rocket", "#e23b3b", 600], ["ice-cream", "Ice cream", "#e0679b", 300]],
+  [["heart", "Heart", "#e8243c", 600], ["fish", "Goldfish", "#f5861f", 300], ["tree", "Tree", "#3fae49", 600], ["watermelon", "Watermelon", "#e23a4f", 300], ["sunflower", "Sunflower", "#d99a0b", 600], ["penguin", "Penguin", "#34404e", 300], ["sushi", "Sushi", "#e2574c", 600], ["planet", "Planet", "#7a5bd6", 300]],
+  [["rain", "Rain", "#3a8ee6", 300], ["key", "Key", "#d9a21a", 600], ["mushroom", "Mushroom", "#e5322d", 300], ["frog", "Frog", "#3f9e3a", 600], ["owl", "Owl", "#9a6a3a", 300], ["rainbow", "Rainbow", "#e0483c", 600], ["headphones", "Headphones", "#4a4f57", 300], ["lemonade", "Lemonade", "#d9b21a", 600]],
+  [["pizza", "Pizza", "#e2a04a", 300], ["house", "House", "#d9483b", 600], ["cat", "Cat", "#e8862a", 300], ["tulip", "Tulip", "#3a9a3e", 600], ["butterfly", "Butterfly", "#ef7d22", 300], ["medal-gold", "Medal", "#d9a21a", 600], ["crab", "Crab", "#e04a3a", 300], ["cactus", "Cactus", "#5a9a2a", 600]],
+  [["whale", "Whale", "#2f7fd8", 600], ["pencil", "Pencil", "#e09a12", 300], ["rocket", "Rocket", "#e23b3b", 600], ["ice-cream", "Ice cream", "#e0679b", 300], ["pineapple", "Pineapple", "#d9a21a", 600], ["dog", "Dog", "#a0703a", 300], ["hot-air-balloon", "Balloon", "#e8433c", 600], ["sprout", "Sprout", "#4caf50", 300]],
 ];
 const LEAD = ["coffee", "Coffee", "#6b3b1f", 600];
 const TRAIL = ["book", "Book", "#d93a3a", 300];
@@ -271,9 +271,9 @@ $$(".install .cmd").forEach((c) => (c.title = c.dataset.copy || c.textContent.tr
 $$("[data-copy-btn]").forEach((b) => b.addEventListener("click", async () => {
   const prev = b.previousElementSibling, cmd = prev && prev.classList.contains("cmd") ? prev : $(".cmd", b.closest(".row")); // each step has its own button
   const ok = await copyText(cmd.dataset.copy || cmd.textContent.trim());
-  const label = b.textContent;
-  b.textContent = ok ? "Copied" : "Couldn't copy";
-  setTimeout(() => (b.textContent = label), 1500);
+  const l = $(".bl", b) || b, label = l.textContent; // only the words change; the icon stays
+  l.textContent = ok ? "Copied" : "Couldn't copy";
+  setTimeout(() => (l.textContent = label), 1500);
 }));
 
 // ---------- search: the field in the floating bar filters the table ----------
@@ -833,7 +833,15 @@ function askWho(d) {
   draw();
 })();
 
-// About: copy the feedback email from the hover bubble
+// About: "Got feedback?" opens a bubble with the email (click again, or anywhere else, to close)
+{
+  const fb = $(".fb-wrap"), fbBtn = $("#fb-btn");
+  const setFb = (on) => { fb.classList.toggle("open", on); fbBtn.setAttribute("aria-expanded", on); };
+  fbBtn.addEventListener("click", (e) => { e.stopPropagation(); setFb(!fb.classList.contains("open")); });
+  document.addEventListener("click", (e) => { if (!e.target.closest(".fb-wrap")) setFb(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") setFb(false); });
+}
+// About: copy the feedback email
 $("#fb-copy")?.addEventListener("click", async (e) => { e.preventDefault(); toast((await copyText("iamjahanvi@gmail.com")) ? "Email copied." : "Couldn't copy. It's iamjahanvi@gmail.com"); });
 
 // ---------- views: the floating bar swaps the hero for another view ----------
@@ -873,7 +881,7 @@ function layoutBar(animate = true) {
   const solo = FOCUSED.includes(view);
   const hide = (el, gone) => {
     el.classList.toggle("gone", gone);
-    const f = el.matches("button, a") ? el : $("input, a", el); // a wrapped link (the feedback pill) gets focus too
+    const f = el.matches("button, a") ? el : $("input, a, button", el); // a wrapped control (the feedback pill) gets focus too
     if (f) f.tabIndex = gone ? -1 : 0;
   };
   viewBtns.forEach((b) => {

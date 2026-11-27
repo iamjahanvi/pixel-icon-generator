@@ -680,7 +680,7 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
 .bar-menu .n { font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
 .bar-menu [aria-checked="true"] .n { color: rgba(255, 255, 255, 0.6); }
 @media (prefers-reduced-motion: reduce) { .bar-menu { animation: none; } }
-/* About: "Got feedback?" opens an email; hovering shows the address with a Copy button */
+/* About: clicking "Got feedback?" shows the address (a mailto link) with a Copy button */
 .fb-wrap { position: relative; display: inline-flex; transition: width var(--dur) var(--ease), opacity 0.2s ease; }
 .fb-wrap > .pill-btn { flex: none; }
 .pills .fb-wrap.gone { overflow: hidden; }
@@ -691,8 +691,9 @@ html.switching .pills { -webkit-backdrop-filter: none; backdrop-filter: none; ba
   opacity: 0; visibility: hidden; transform: translate(-50%, 6px); transition: opacity 0.15s ease, transform 0.2s ease, visibility 0s 0.2s;
 }
 .fb-tip::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px; } /* bridges the gap so the bubble stays while the pointer moves up to it */
-.fb-wrap:not(.gone):hover .fb-tip, .fb-wrap:not(.gone):focus-within .fb-tip { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0s; }
-.fb-mail { user-select: all; -webkit-user-select: all; }
+.fb-wrap.open:not(.gone) .fb-tip { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0s; }
+.fb-mail { user-select: all; -webkit-user-select: all; color: inherit; text-decoration: none; }
+.fb-mail:hover { text-decoration: underline; text-underline-offset: 3px; }
 .fb-copy { border: 0; border-radius: 999px; padding: 7px 12px; background: var(--dark); color: var(--on-dark); font: 500 13px/1 var(--font); cursor: pointer; }
 .pills .gone { width: 0 !important; padding: 0; margin-left: -2px; opacity: 0; pointer-events: none; }
 /* everything in the bar folds and unfolds on one curve: width, padding and spacing together, so nothing jumps;
@@ -837,3 +838,7 @@ html.entering .pills { animation: enter-bar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 
 }
 .chat-in::placeholder { color: #c4c4c4; }
 .chat-in:focus { border-bottom-color: var(--text); }
+
+/* icons on the install buttons */
+.solid, .ghost { gap: 8px; }
+.solid .bi, .ghost .bi { flex: none; }
