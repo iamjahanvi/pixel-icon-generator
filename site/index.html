@@ -151,8 +151,6 @@
           </div>
           <div class="dd-acts"><button class="ghost" type="button" id="dd-clear">Clear</button><button class="solid" type="button" id="dd-drop" disabled>Draw and Drop</button></div>
         </aside>
-        <!-- the pile: the icons you drop, resting on the line above the credits -->
-        <div class="pile" id="pile" aria-hidden="true"></div>
       </div>
     </div></section>
 
@@ -200,6 +198,10 @@
       <p class="hint">Got an SVG back? Tweak it in the <a href="#paste" data-open-paste>editor</a>. Or <a href="#make" data-open-make>make one here</a> with an API key.</p>
     </div></section>
   </main>
+  <!-- About's wall: the icons people drop, falling to the bottom of the window. It lives here, outside the sections,
+       because their entrance animations move them, and a fixed layer inside something moving gets pinned to it
+       (squeezed to the moving content, with the floor halfway up the screen). Shown only while About is open. -->
+  <div class="pile" id="pile" aria-hidden="true"></div>
 
   <!-- floating pills: each swaps the hero for its view; the open one turns into a close button -->
   <div class="bar-glow" aria-hidden="true"></div>

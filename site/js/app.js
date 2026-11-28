@@ -656,7 +656,7 @@ const pile = (() => {
         b.vx *= 0.9; b.va *= 0.75; b.a *= 0.9;
         if (!b.vy) { b.vx *= 0.7; if (Math.abs(b.vx) < 0.08) b.vx = 0; if (Math.abs(b.a) < 0.3) { b.a = 0; b.va = 0; } }
       }
-      if (b.y < b.h / 2) { b.y = b.h / 2; b.vy *= -0.4; } // the top of the window is a ceiling: a hard throw bounces back down
+      if (b.y < b.h / 2 && b.vy < 0) { b.y = b.h / 2; b.vy *= -0.4; } // the top of the window is a ceiling for a hard throw (falling in from above passes through)
       if (b.x < b.r) { b.x = b.r; b.vx *= -0.5; }
       if (b.x > w - b.r) { b.x = w - b.r; b.vx *= -0.5; }
     }
@@ -683,16 +683,18 @@ const pile = (() => {
   function loop() {
     if (!running) return;
     still = step() || drag ? 0 : still + 1;
-    if (still > 40 || $("#how").hidden) { running = false; bodies.forEach((b) => (b.pinned = true)); save(); bodies.forEach((b) => (b.pinned = false)); return; }
+    if (still > 40 || $("#how").hidden) {
+      running = false;
+      // settled: a hair of tilt left over from the fall snaps level
+      bodies.forEach((b) => { if (b !== drag && Math.abs(b.a) < 2) { b.a = 0; b.va = 0; b.el.style.transform = `translate(${b.x - b.w / 2}px, ${b.y - b.h / 2}px)`; } });
+      bodies.forEach((b) => (b.pinned = true)); save(); bodies.forEach((b) => (b.pinned = false)); return;
+    }
     requestAnimationFrame(loop);
   }
   function wake() {
     if ($("#how").hidden) return;
     place();
     if (!W()) return;
-    // the layer covers the window, except while the page's entrance animation is moving it (it's then squeezed to the
-    // animating content, which would put the floor halfway up): wait for it to be full size before the first pour
-    if (!started && Math.abs(H() - innerHeight) > 2 && (waits = (waits || 0) + 1) < 60) { clearTimeout(waitT); waitT = setTimeout(wake, 60); return; }
     if (!started) { started = true; load(); return; }
     still = 0;
     if (!running) { running = true; requestAnimationFrame(loop); }
@@ -708,17 +710,16 @@ const pile = (() => {
     let poured = false;
     try { poured = sessionStorage.getItem("pb-poured") === "1"; sessionStorage.setItem("pb-poured", "1"); } catch { /* storage blocked */ }
     if (calm.matches || poured) { items.forEach((d) => add(d, { y: -60 })); for (let i = 0; i < 600; i++) step(); return; }
-    // the wall pours out from under the drawing grid, one icon after another, like fresh drops
-    const g = $("#dd-cv")?.getBoundingClientRect();
+    // the wall pours in from above the top of the window, one icon after another, and falls all the way down
     items.forEach((d, n) => setTimeout(() => {
-      add(d, { y: g && g.width ? g.bottom + 12 : -60 });
+      if ($("#how").hidden) { add(d, { y: H() - 40 }); return; } // About was closed mid-pour: the rest just lie down
+      add(d); // starts just above the window's top edge
       still = 0;
       if (!running) { running = true; requestAnimationFrame(loop); }
     }, n * 70));
     still = 0;
     if (!running) { running = true; requestAnimationFrame(loop); }
   }
-  let waits = 0, waitT = 0;
   addEventListener("resize", () => { if (!$("#how").hidden) wake(); });
   // whenever the layer itself changes size (an animation ending, the window, the address bar), let the pile resettle
   new ResizeObserver(() => { if (started && !$("#how").hidden) wake(); }).observe(box);
