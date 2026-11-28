@@ -224,15 +224,24 @@ function syncChat() {
   setChatLinks($("#any-chat"), w);
   setChatLinks($("#paste-dialog"), w || wordIn.value.trim()); // the paste box's "No reply yet? Open in Claude"
 }
-const textMeter = document.createElement("canvas").getContext("2d");
+// the field is as wide as its word (or the placeholder): measured by setting the same text, in the field's own
+// font, size, spacing and padding, in an invisible copy beside it. Re-measured whenever the size can change: the
+// text grows with the window, and the font may load late.
+const chatMeter = document.createElement("span");
+chatMeter.setAttribute("aria-hidden", "true");
+chatMeter.style.cssText = "position:absolute;visibility:hidden;white-space:pre;pointer-events:none;left:-9999px;top:0";
+chatIn.after(chatMeter);
 function fitChat() {
   const cs = getComputedStyle(chatIn);
-  textMeter.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-  const text = chatIn.value || chatIn.placeholder;
-  const ls = parseFloat(cs.letterSpacing) || 0; // the big text is set a little tight
-  chatIn.style.width = `${Math.ceil(textMeter.measureText(text).width + ls * text.length + parseFloat(cs.fontSize) * 0.08)}px`;
+  if (cs.display === "none" || !chatIn.offsetParent) return; // hidden (another section is open): sized when shown
+  for (const k of ["fontFamily", "fontSize", "fontWeight", "fontStyle", "letterSpacing", "fontFeatureSettings", "paddingLeft", "paddingRight", "borderLeftWidth", "borderRightWidth"]) chatMeter.style[k] = cs[k];
+  chatMeter.style.borderStyle = "solid"; chatMeter.style.borderColor = "transparent"; chatMeter.style.borderTopWidth = chatMeter.style.borderBottomWidth = "0";
+  chatMeter.textContent = chatIn.value || chatIn.placeholder;
+  chatIn.style.width = `${Math.ceil(chatMeter.getBoundingClientRect().width) + 2}px`; // +2: the caret at the end
 }
 document.fonts?.ready.then(fitChat);
+addEventListener("resize", fitChat);
+new MutationObserver(fitChat).observe($("#install"), { attributes: true, attributeFilter: ["hidden"] }); // the Skill section opening
 chatIn.addEventListener("input", syncChat);
 chatIn.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $('#any-chat a[data-chat="claude"]').click(); } });
 onWord();
